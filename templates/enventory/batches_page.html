@@ -1,0 +1,503 @@
+{% extends 'partials/base.html' %}
+{% block title %} Batches {% endblock %}
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Batches Table</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <!-- <a href="add_stock" data-toggle="tooltip" data-placement="left" title="Receive Stock" class="btn"><i class="notika-icon notika-edit"></i></a> -->
+                                    <button data-toggle="tooltip" data-placement="left" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                <div class="breadcomb-list">
+                    <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                        <div style="float: left;width: 50%; ">
+                            <span id="search-type"></span>
+                            <span id="page-detail"></span>
+                            <small id="table-summery"></small>
+                        </div>
+                        <div style="float: right;width: 50%; text-align: right;">
+                            <div>
+                                <span style="padding: 5px;display: none;">
+                                    <select class="" data-live-search="true" style="width: 30%;" id='search-selector'>
+                                        <option value="all">all</option>
+                                        <option value="Patient">Patient</option>
+                                        <option value="Stock">Stock</option>
+                                        <option value="Doctor">Doctor</option>
+                                        <option value="Total Days">Total Days</option>
+                                        <option value="Total Repeats">Total Repeats</option>
+                                    </select>
+                                
+                                    <input class="" type="" name="" style="width: %;" placeholder="Search" id='live-search-input' oninput="searchInputValueChanged()">
+                                </span>
+                           
+                                <a href="" title="Filter Sales" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#batchesFilterModal" id="simple-sales-filter-modal-button">Filters</a>
+
+                                <button title="Previous Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="previousPage()"><i class="notika-icon notika-left-arrow"></i></button>
+
+                                <span style="background-color:skyblue; padding: 5px; border-radius: 5%;" id="page-lable">1</span>
+
+
+                                <button title="Next Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="nextPage()"><i class="notika-icon notika-right-arrow"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include 'partials/modals/enventory/batchies_modals.html' %}
+{% load static %}
+{% load humanize %}
+
+<!--   FILTERS  -->
+<div class="modal fade animated bounce" id="batchesFilterModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Batches Filter</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <form class="widget-tabs-list" method="post" style="padding-top:10px; padding-bottom: 10px;">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                        <div class="form-example-int form-example-st">
+                                            <div class="form-group">
+                                                <label>Batch Number</label>
+                                                <div class="nk-int-st">
+                                                    <input class="form-control input-sm" id="batches-filter-form-batch-number-value" type="text" name="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                        <div class="form-example-int form-example-st">
+                                            <div class="form-group">
+                                                <label>Product Code</label>
+                                                <div class="nk-int-st">
+                                                    <input class="form-control input-sm" id="batches-filter-form-product-code-value" type="text" name="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                        <div class="form-example-int form-example-st">
+                                            <div class="form-group">
+                                                <label>Product Title</label>
+                                                <div class="nk-int-st">
+                                                    <input class="form-control input-sm" id="batches-filter-form-product-title-value" type="text">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" onclick="resetBatchesFilters()">Reset</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="loadBatchesFilterQuery()">Load</button>                  
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- //FILTERS  -->
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- Batches table -->
+        <table  class="table table-hover " style="background-color: lightgray;" id="batches-table">
+            
+        </table>
+    </div>
+</div>
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+$(document).ready(function() {
+
+    batchiesinitialLoad()
+
+    
+})
+
+
+//GLOBAL VARIABLES
+var page = 1
+
+
+
+function requestData(request_type){
+    //alert(request_type)
+    var searchQuery = document.getElementById('live-search-input').value
+    var search_field = document.getElementById('search-selector').value
+
+    
+
+
+    //if request type 
+    if (request_type == "INITIAL-LOAD"){
+        document.getElementById('search-type').innerHTML = "INITIAL-LOAD"
+
+    }else if (request_type == "LIVE-SEARCH"){
+
+        document.getElementById('search-type').innerHTML = "LIVE-SEARCH"
+
+    }else if (request_type == "FORM-FILTER"){
+        //alert('FF')
+        document.getElementById('search-type').innerHTML = "FORM-FILTER"
+
+        var batch_number = document.getElementById('batches-filter-form-batch-number-value').value
+        var product_code = document.getElementById('batches-filter-form-product-code-value').value
+        var product_title = document.getElementById('batches-filter-form-product-title-value').value
+
+        /*var form_filter_batch_date_from = document.getElementById('form-filter-batch-date-from').value
+        var form_filter_batch_date_to = document.getElementById('form-filter-batch-date-to').value
+        var form_filter_batch_supplier = document.getElementById('form-filter-batch-supplier-selector').value
+        var form_filter_batch_manufacturer = document.getElementById('form-filter-batch-manufacturer-selector').value
+        var form_filter_batch_invoice = document.getElementById('form-filter-batch-invoice-selector').value
+        //var form_filter_batch_VAT = document.getElementById('form-filter-batch-VAT-selector').value
+        //var form_filter_batch_recipt_number = document.getElementById('form-filter-batch-recipt-number-selector').value
+        var form_filter_batch_status = document.getElementById('form-filter-batch-status-selector').value
+        var form_filter_batch_created_by = document.getElementById('form-filter-batch-created-by-selector').value
+        var form_filter_batch_total_packs_min_quantity = document.getElementById('form-filter-batch-total-packs-min-quantity').value
+        var form_filter_batch_total_packs_max_quantity = document.getElementById('form-filter-batch-total-packs-max-quantity').value
+        var form_filter_batch_pack_size_min_quantity = document.getElementById('form-filter-batch-pack-size-min-quantity').value
+        var form_filter_batch_pack_size_max_quantity = document.getElementById('form-filter-batch-pack-size-max-quantity').value
+        var form_filter_batch_total_units_min_quantity = document.getElementById('form-filter-batch-total-units-min-quantity').value
+        var form_filter_batch_total_units_max_quantity = document.getElementById('form-filter-batch-total-units-max-quantity').value
+        var form_filter_batch_buying_pack_price_min_quantity = document.getElementById('form-filter-batch-buying-pack-price-min-quantity').value
+        var form_filter_batch_buying_pack_price_max_quantity = document.getElementById('form-filter-batch-buying-pack-price-max-quantity').value
+        //var form_filter_batch_markup_min_quantity = document.getElementById('form-filter-batch-markup-min-quantity').value
+        //var form_filter_batch_markup_max_quantity = document.getElementById('form-filter-batch-markup-max-quantity').value
+        //var form_filter_batch_expiration_date_from = document.getElementById('form-filter-batch-expiration-date-from').value
+        var form_filter_batch_expiration_date_to = document.getElementById('form-filter-batch-expiration-date-to').value
+        var form_filter_batch_pack_size_min_quantity = document.getElementById('form-filter-batch-pack-size-min-quantity').value
+        var form_filter_batch_pack_size_max_quantity = document.getElementById('form-filter-batch-pack-size-max-quantity').value
+        //var form_filter_batch_last_updated_from = document.getElementById('form-filter-batch-last-updated-from').value
+        //var form_filter_batch_last_updated_to = document.getElementById('form-filter-batch-last-updated-to').value*/
+
+
+
+        //alert(prescription_status + "::::::::::::::::::::")
+        //document.getElementById('myModal').style.display = "none"
+    }
+
+
+    //alert(searchQuery)
+    //alert("page number: " + page)
+    document.getElementById('loader').style.display = "block"
+    //alert(prescription_code + "(((((((((((((((((((((((((((()))):")
+
+    $.ajax({
+        url: "{% url 'ajax_batches_live_search' %}",
+        data: {
+            search_key: searchQuery,
+            search_field: search_field,
+            request_type: request_type,
+            page: page,
+
+            batch_number: batch_number,
+            product_code: product_code,
+            product_title: product_title,
+
+            //filter form
+            /*form_filter_prescription_date_from: form_filter_prescription_date_from,
+            form_filter_prescription_date_to: form_filter_prescription_date_to,
+            form_filter_prescription_min_quantity: form_filter_prescription_min_quantity,
+            form_filter_prescription_max_quantity: form_filter_prescription_max_quantity,
+            form_filter_prescription_stock: form_filter_prescription_stock,
+            form_filter_prescription_patient: form_filter_prescription_patient,
+            form_filter_prescription_status: form_filter_prescription_status,
+            form_filter_prescription_pharmacist: form_filter_prescription_pharmacist,*/
+
+            /*form_filter_batch_date_from: form_filter_batch_date_from,
+            form_filter_batch_date_to: form_filter_batch_date_to,
+            form_filter_batch_supplier: form_filter_batch_supplier,
+            form_filter_batch_manufacturer: form_filter_batch_manufacturer,
+            form_filter_batch_invoice: form_filter_batch_invoice,
+            form_filter_batch_status: form_filter_batch_status,
+            form_filter_batch_created_by: form_filter_batch_created_by,
+            form_filter_batch_total_packs_min_quantity: form_filter_batch_total_packs_min_quantity,
+            form_filter_batch_total_packs_max_quantity: form_filter_batch_total_packs_max_quantity,
+            form_filter_batch_pack_size_min_quantity: form_filter_batch_pack_size_min_quantity,
+            form_filter_batch_pack_size_max_quantity: form_filter_batch_pack_size_max_quantity,
+            form_filter_batch_total_units_min_quantity: form_filter_batch_total_units_min_quantity,
+            form_filter_batch_total_units_max_quantity: form_filter_batch_total_units_max_quantity,
+            form_filter_batch_buying_pack_price_min_quantity: form_filter_batch_buying_pack_price_min_quantity,
+            form_filter_batch_buying_pack_price_max_quantity: form_filter_batch_buying_pack_price_max_quantity,
+            form_filter_batch_expiration_date_to: form_filter_batch_expiration_date_to,
+            form_filter_batch_pack_size_min_quantity: form_filter_batch_pack_size_min_quantity,
+            form_filter_batch_pack_size_max_quantity: form_filter_batch_pack_size_max_quantity,*/
+         },
+        success: function(responseData) {
+            $('#batches-table').html(responseData.table)
+            document.getElementById('table-summery').innerHTML = responseData.table_summery
+            document.getElementById('loader').style.display = "none"
+            //alert(responseData.data)
+            document.getElementById('page-detail').innerHTML = "[" + responseData.data + "]"
+
+            //page numbers
+            var a = responseData.data
+            var before = true
+            var current_page_number = ""
+            var total_pages = ""
+            for (l=0; l<=a.length; l++){
+                if (a[l]=="o"){
+                    before = false
+                }
+                if (Number(a[l]) || a[l]=="0"){
+                    if (before == true){
+                        current_page_number = current_page_number + a[l]
+                    }else{
+                        total_pages = total_pages + a[l]
+                    }
+                }
+            }
+            document.getElementById('page-lable').innerHTML = current_page_number
+            //alert('done')
+           
+
+
+        },
+        error: function(responseData, error){
+            //alert("An error ocured! " + error)
+        }
+    });
+}
+
+
+function searchInputValueChanged(){
+    //request type is "LIVE-SEARCH"
+    requestData("LIVE-SEARCH")
+}
+
+function nextPage(){
+    //alert("NEXT-PAGE CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) + 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    //alert(':::::NXT PG' + request_type)
+    requestData(request_type)
+}
+
+function previousPage(){
+    //alert("previousPage CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) - 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    requestData(request_type)
+}
+
+
+function batchiesinitialLoad(){
+    //request type is "NEXT-PAGE"
+    //alert("INITIAL-LOAD")
+    requestData("INITIAL-LOAD")
+}
+
+function formFilter(){
+    //alert("Form filter ") //+ document.getElementById('prescription-title').value)
+    //request type is "FORM-FILTER"
+    requestData("FORM-FILTER")
+}
+
+
+
+/////////////////////////////////
+//live data
+/////////////////////////////////
+/*manufacturers*/
+$(document).on('keyup', '.form_filter_batch_manufacturer_selector_class .bs-searchbox input', function(e){
+    //alert('kkkk')
+    if (e.key.length === 1 || e.key === "Backspace") { 
+        var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_manufacturers_options' %}",
+                data: { search_text: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('form-filter-batch-manufacturer-selector')
+                    $("#form-filter-batch-manufacturer-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#form-filter-batch-manufacturer-selector").selectpicker('refresh')    
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+
+
+/*suppliers*/
+$(document).on('keyup', '.form_filter_batch_supplier_selector_class .bs-searchbox input', function(e){
+    //alert('kkkk')
+    if (e.key.length === 1 || e.key === "Backspace") { 
+        var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_suppliers_options' %}",
+                data: { search_text: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('form-filter-batch-supplier-selector')
+                    $("#form-filter-batch-supplier-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#form-filter-batch-supplier-selector").selectpicker('refresh')    
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+
+/*stock*/
+$(document).on('keyup', '.form_filter_batch_invoice_selector_class .bs-searchbox input', function(e){
+    //alert('::kkkk')
+    if (e.key.length === 1 || e.key === "Backspace") { 
+        var searchQuery = $(this).val();
+            $.ajax({
+                url: "ajax_search_invoices",
+                data: { search_text: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('form-filter-batch-invoice-selector')
+                    $("#form-filter-batch-invoice-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#form-filter-batch-invoice-selector").selectpicker('refresh')
+                    //alert('stock ajax ran')
+                },
+                error: function(responseData, error){
+                    alert("Server error, Contact Avail Tech!!!")
+                }
+            })
+        }
+    })
+
+
+/*operator*/
+$(document).on('keyup', '.form_filter_batch_created_by_selector_class .bs-searchbox input', function(e){
+    //alert('::kkkk')
+    if (e.key.length === 1 || e.key === "Backspace") { 
+        var searchQuery = $(this).val();
+            $.ajax({
+                url: "ajax_search_user",
+                data: { search_text: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('form-filter-batch-created-by-selector')
+                    $("#form-filter-batch-created-by-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#form-filter-batch-created-by-selector").selectpicker('refresh')
+                    //alert('stock ajax ran')
+                },
+                error: function(responseData, error){
+                    alert("Server error, Contact Avail Tech!!!")
+                }
+            })
+        }
+    })
+
+
+/*BUTTON TRIGERED FUNCTIONS*/
+    function resetBatchesFilters(){
+        document.getElementById('batches-filter-form-batch-number-value').value = ""
+        document.getElementById('batches-filter-form-product-code-value').value = ""
+        document.getElementById('batches-filter-form-product-title-value').value = ""
+    }
+
+    function loadBatchesFilterQuery(){
+        $('#batchesFilterModal').modal('hide');
+        requestData("FORM-FILTER")
+    }
+
+/*//BUTTON TRIGERED FUNCTIONS*/
+
+
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

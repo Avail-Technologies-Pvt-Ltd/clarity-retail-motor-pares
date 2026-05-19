@@ -1,0 +1,760 @@
+{% load static %}
+
+
+<!-- UPDATE RETURN OUT -->
+<div class="modal fade animated bounce" id="updateReturnOutModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Update Return Out</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Invoice Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-invoice-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Product Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Batch Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-batch-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-total-units-returned-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Supplier</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-supplier-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Return Reason</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-return-reasons-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-date-bought-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-date-returned-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>  
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Amound</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-refund-amount-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Received</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-refund-received-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Returned by</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-return-out-returned-by-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+                                <hr style="background: RGB(0 194 146);">
+
+                                <center><h3>Payments</h3></center>
+
+                                <hr>
+
+                                <div style="background: ;">
+                                    <div class="row" style="padding-top: 10px;">
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Payment Method</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0">
+                                                <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker update_return_out_add_refund_payment_method_selector" id="update-return-out-refund-payment-method-value" onchange="adjustPaidAmountBasedOnPaymentMethod()">
+                                                    <option value="0">Payment Method</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start number_element">Paid Amount &nbsp &nbsp</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <div class="form-group ic-cmp-int" style="width:100%;">
+                                                    <div class="nk-int-st">
+                                                        <input type="number" step="any" class="form-control number_element" placeholder="Price" id="update-return-out-update-paid-amount-value" value="0.00">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start number_element">Date Paid &nbsp &nbsp</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <div class="form-group ic-cmp-int" style="width:100%;">
+                                                    <div class="nk-int-st">
+                                                        <input type="date" step="any" class="form-control number_element" placeholder="Price" id="update-return-out-update-date-paid-value">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">&nbsp</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <div class="form-group ic-cmp-int" style="width:100%;">
+                                                    <div class="nk-int-st">
+                                                        <button onclick="addRefundPayment()" class="btn btn-success" style="width:100%">ADD PAYMENT</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <table class="table table-hover" id="update-return-out-refund-money-portions-table">
+                               
+                                </table>
+                            
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // UPDATE RETURN OUT -->
+
+
+
+<!-- RETURN OUT DETAILS -->
+<div class="modal fade animated bounce" id="returnOutDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Return Out Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Invoice Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-invoice-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Product Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Batch Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-batch-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-total-units-returned-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Supplier</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-supplier-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Return Reason</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-return-reasons-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-date-bought-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-date-returned-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>  
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Amound</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-refund-amount-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Received</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-refund-received-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Returned by</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-details-returned-by-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+                                <hr style="background: RGB(0 194 146);">
+
+                                
+
+                                <table class="table table-hover" id="return-out-details-refund-money-portions-table">
+                               
+                                </table>
+                            
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // RETURN OUT DETAILS -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#updateReturnOutModal').on('hidden.bs.modal', function (){
+            returnsOutInitialLoad()
+        })
+
+        $('#returnOutDetailsModal').on('hidden.bs.modal', function (){
+            returnsOutInitialLoad()
+        })
+
+        $('#updateReturnOutModal').on('show.bs.modal', function (){
+            document.getElementById('update-return-out-update-date-paid-value').value = toDayFormattedDate()
+        })
+
+
+        $('#updateReturnOutModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var return_out_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('return_out_id_for_update', return_out_id)
+                //alert(return_out_id)
+                $.ajax({
+                    url: "{% url 'get_return_out_details' %}",
+                    data: {
+                        return_out_id: return_out_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('update-return-out-invoice-number-value').innerHTML = responseData.details['invoice_number']
+                            document.getElementById('update-return-out-product-details-value').innerHTML = responseData.details['product_title'] + "<small>" + responseData.details['product_details'] + "</small>"
+                            document.getElementById('update-return-out-batch-number-value').innerHTML = responseData.details['batch_number']
+                            document.getElementById('update-return-out-total-units-returned-value').innerHTML = responseData.details['total_units_returned']
+                            document.getElementById('update-return-out-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                            document.getElementById('update-return-out-refund-received-value').innerHTML = responseData.details['refund_received']
+                            document.getElementById('update-return-out-supplier-value').innerHTML = responseData.details['supplier']
+                            document.getElementById('update-return-out-date-bought-value').innerHTML = responseData.details['date_bought']
+                            document.getElementById('update-return-out-date-returned-value').innerHTML = responseData.details['date_returned']
+                            document.getElementById('update-return-out-return-reasons-value').innerHTML = responseData.details['return_reasons']
+                            document.getElementById('update-return-out-returned-by-value').innerHTML = responseData.details['returned_by']
+
+                            //alert(responseData.return_out_refund_money_portions_table)
+
+                            document.getElementById('update-return-out-refund-money-portions-table').innerHTML = responseData.return_out_refund_money_portions_table
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        }) 
+
+
+
+        $('#returnOutDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var return_out_id = $(event.relatedTarget).data('object-id')
+                //alert(return_out_id)
+                $.ajax({
+                    url: "{% url 'get_return_out_details' %}",
+                    data: {
+                        return_out_id: return_out_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            alert(responseData.message)
+                        }else{
+                            document.getElementById('return-out-details-invoice-number-value').innerHTML = responseData.details['invoice_number']
+                            document.getElementById('return-out-details-product-details-value').innerHTML = responseData.details['product_title'] + " <small>" + responseData.details['product_details'] + "</small>"
+                            document.getElementById('return-out-details-batch-number-value').innerHTML = responseData.details['batch_number']
+                            document.getElementById('return-out-details-total-units-returned-value').innerHTML = responseData.details['total_units_returned']
+                            document.getElementById('return-out-details-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                            document.getElementById('return-out-details-refund-received-value').innerHTML = responseData.details['refund_received']
+                            document.getElementById('return-out-details-supplier-value').innerHTML = responseData.details['supplier']
+                            document.getElementById('return-out-details-date-bought-value').innerHTML = responseData.details['date_bought']
+                            document.getElementById('return-out-details-date-returned-value').innerHTML = responseData.details['date_returned']
+                            document.getElementById('return-out-details-return-reasons-value').innerHTML = responseData.details['return_reasons']
+                            document.getElementById('return-out-details-returned-by-value').innerHTML = responseData.details['returned_by']
+
+                            //alert(responseData.return_out_refund_money_portions_table)
+
+                            document.getElementById('return-out-details-refund-money-portions-table').innerHTML = responseData.return_out_refund_money_portions_table
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })  
+    })
+
+
+/* BUTTON TRIGGERED FUNCTIONS*/
+    function deleteReturnOutRefundMoneyPortion(return_out_refund_money_portion_id){
+        $.ajax({ 
+            url: "{% url 'delete_return_out_refund_money_portion' %}",
+            data:{
+                return_out_refund_money_portion_id: return_out_refund_money_portion_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){ 
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    swal({
+                    title: "Success",
+                    text: responseData.message,
+                    type: "success"
+                });
+                }
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "An error ocured " + error,
+                    type: "error"
+                });
+            },
+            complete: function(){
+                reloadReturnOutUpdateModal()
+            }
+        })
+    }
+
+
+
+    function reloadReturnOutUpdateModal(){
+        var return_out_id = sessionStorage.getItem('return_out_id_for_update')
+        //alert(return_out_id)
+        $.ajax({
+            url: "{% url 'get_return_out_details' %}",
+            data: {
+                return_out_id: return_out_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    document.getElementById('update-return-out-invoice-number-value').innerHTML = responseData.details['invoice_number']
+                    document.getElementById('update-return-out-product-details-value').innerHTML = responseData.details['product_title'] + "<small>" + responseData.details['product_details'] + "</small>"
+                    document.getElementById('update-return-out-batch-number-value').innerHTML = responseData.details['batch_number']
+                    document.getElementById('update-return-out-total-units-returned-value').innerHTML = responseData.details['total_units_returned']
+                    document.getElementById('update-return-out-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                    document.getElementById('update-return-out-refund-received-value').innerHTML = responseData.details['refund_received']
+                    document.getElementById('update-return-out-supplier-value').innerHTML = responseData.details['supplier']
+                    document.getElementById('update-return-out-date-bought-value').innerHTML = responseData.details['date_bought']
+                    document.getElementById('update-return-out-date-returned-value').innerHTML = responseData.details['date_returned']
+                    document.getElementById('update-return-out-return-reasons-value').innerHTML = responseData.details['return_reasons']
+                    document.getElementById('update-return-out-returned-by-value').innerHTML = responseData.details['returned_by']
+
+                    //alert(responseData.return_out_refund_money_portions_table)
+
+                    document.getElementById('update-return-out-refund-money-portions-table').innerHTML = responseData.return_out_refund_money_portions_table
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "Server error " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+
+    function adjustPaidAmountBasedOnPaymentMethod(){
+        var return_out_id = sessionStorage.getItem('return_out_id_for_update')
+        $.ajax({
+            url: "{% url 'get_return_out_details' %}",
+            data: {
+                return_out_id: return_out_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    var balance = responseData.details['balance']
+                    document.getElementById('update-return-out-update-paid-amount-value').value = responseData.details['balance']
+                    var paying_currency_id = document.getElementById('update-return-out-refund-payment-method-value').value
+                    $.ajax({
+                        url: "{% url 'get_paying_currency_details' %}",
+                        data: {
+                            paying_currency_id: paying_currency_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                var rate = responseData.paying_currency['rate']
+                                document.getElementById('update-return-out-update-paid-amount-value').value = (rate * balance).toFixed(2)
+
+                                
+                            }
+                        },
+                        error: function(responseData, error){
+                            //alert("An error ocured! " + error)
+                            swal({
+                                title: "Error",
+                                text: "An error ocured! " + error,
+                                type: "error"
+                            });
+                        }
+                    });
+
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+    function addRefundPayment(){
+        var payment_method = document.getElementById('update-return-out-refund-payment-method-value').value
+        var amount = document.getElementById('update-return-out-update-paid-amount-value').value
+        var date_paid = document.getElementById('update-return-out-update-date-paid-value').value
+        var return_out_id = sessionStorage.getItem('return_out_id_for_update')
+        var errors = ""
+        if (isIntegerGreaterThanOrEqualToOne(payment_method) == false){
+            errors = "Please select a valid payment method"
+        }else if(amount == ""){
+            errors = "Please input the amount paid"
+        }else if(date_paid == ""){
+            errors = "Please input a valid payment date"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_return_out_refund_money_portion' %}",
+                data: {
+                    payment_method: payment_method,
+                    amount: amount,
+                    return_out_id: return_out_id,
+                    date_paid: date_paid,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                },
+                complete: function(){
+                    reloadReturnOutUpdateModal()
+                }
+            });
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+/* // BUTTON TRIGGERED FUNCTIONS*/
+
+/*LIVE FUNCTIONS*/
+    $(document).on('keyup', '.update_return_out_add_refund_payment_method_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_payment_method_options' %}",
+                    data: { search_query: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('update-return-out-refund-payment-method-value')
+                        $("#update-return-out-refund-payment-method-value").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#update-return-out-refund-payment-method-value").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+/*LIVE FUNCTIONS*/
+
+   
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

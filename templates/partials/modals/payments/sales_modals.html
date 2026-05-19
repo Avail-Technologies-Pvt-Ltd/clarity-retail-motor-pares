@@ -1,0 +1,710 @@
+{% load static %}
+
+
+
+<!-- SALE DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="saleDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Sale Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                        <div class="col-sm text-start">Product Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Profit</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-profit-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Selling Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-selling-price-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">VAT</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-vat-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Average Unit Cost</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-average-unit-cost-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Xxxxx Xxxxx</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-total-units-value">xxx.xxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Quantity</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-quantity-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Receipt Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-receipt-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Sales Rep</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-cashier-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="sale-details-date-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // SALE DETAILS -->
+
+
+
+<!-- RETURN INN -->
+
+
+
+<div class="modal fade animated bounce" id="saleReturnInnModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Return Inn</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Receipt Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-inn-sale-receipt-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-inn-sale-product-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" class="form-control" id="return-inn-sale-date-returned-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" placeholder="Total Units Returned" id="return-inn-sale-total-units-value" onkeyup="totalUnitsReturnedChanged()">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Amount (Base Currence)</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" placeholder="Refund Amount" id="return-inn-sale-refund-amount-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <hr style="background: RGB(0 194 146);">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Return Reason</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <button class="btn btn-success add_object_button" onclick="openReturnReasonsPopup()">
+                                                +
+                                            </button>
+                                            <select data-live-search="true" style="width: 100%;" class="form-control return_inn_sale_return_reason_class" id="return-inn-sale-return-reason-value">
+                                                
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Payment Method</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker return_inn_refund_payment_method_selector" id="return-inn-refund-payment-payment-method-value" onchange="adjustPaidAmountBasedOnPaymentMethod()">
+                                                <option value="0">Payment Method</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start"> Amount Paid </div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control" id="return-inn-sale-amount-paid-value" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="returnInnSale()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // RETURN INN -->
+
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+        requestAndLoadBatchAdjustmentReasons()
+
+        $('#saleReturnInnModal').on('hidden.bs.modal', function (){
+            salesInitialLoad()
+        })
+
+
+        $('#saleReturnInnModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var sale_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('sale_id_for_returning', sale_id)
+                    $.ajax({
+                        url: "{% url 'get_sale_details' %}",
+                        data: {
+                            sale_id: sale_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                document.getElementById('return-inn-sale-receipt-number-value').innerHTML = responseData.details['receipt']
+                                document.getElementById('return-inn-sale-product-value').innerHTML = responseData.details['product_title'] + "<small> " + responseData.details['product_details'] + "</small>"
+
+                            }
+                        },
+                        error: function(responseData, error){
+                            //alert("An error ocured! " + error)
+                            swal({
+                                title: "Error",
+                                text: "An error ocured! " + error,
+                                type: "error"
+                            });
+                        }
+                    });
+                    document.getElementById('return-inn-sale-date-returned-value').value = toDayFormattedDate()
+                        
+            }
+        }) 
+
+
+
+        $('#saleDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var sale_id = $(event.relatedTarget).data('object-id')
+                    $.ajax({
+                        url: "{% url 'get_sale_details' %}",
+                        data: {
+                            sale_id: sale_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                document.getElementById('sale-details-product-title-value').innerHTML = responseData.details['product_title']
+                                document.getElementById('sale-details-product-details-value').innerHTML = responseData.details['product_details']
+                                document.getElementById('sale-details-profit-value').innerHTML = responseData.details['profit']
+
+                                document.getElementById('sale-details-selling-price-value').innerHTML = responseData.details['selling_price']
+                                document.getElementById('sale-details-vat-value').innerHTML = responseData.details['vat']
+                                document.getElementById('sale-details-average-unit-cost-value').innerHTML = responseData.details['average_unit_cost']
+
+                                document.getElementById('sale-details-quantity-value').innerHTML = responseData.details['quantity']
+                                document.getElementById('sale-details-receipt-value').innerHTML = responseData.details['receipt']
+                                document.getElementById('sale-details-cashier-value').innerHTML = responseData.details['cashier']
+                                document.getElementById('sale-details-date-value').innerHTML = responseData.details['date']
+
+                            }
+                        },
+                        error: function(responseData, error){
+                            //alert("An error ocured! " + error)
+                            swal({
+                                title: "Error",
+                                text: "An error ocured! " + error,
+                                type: "error"
+                            });
+                        }
+                    });
+            }
+        })          
+    })
+
+
+    function requestAndLoadBatchAdjustmentReasons(){
+        //alert('paying accounts requested')
+        $.ajax({
+            url:"{% url 'load_live_return_reason_options' %}",
+            success: function(responseData){
+                var selectElement = document.getElementById('return-inn-sale-return-reason-value')
+                $("#return-inn-sale-return-reason-value").empty();
+
+                responseData.options.forEach(optionString => {
+                    var newOption = document.createElement("option")
+                    var parsedOption = $(optionString)[0]
+                    newOption.value = parsedOption.value
+                    newOption.text = parsedOption.textContent
+                    selectElement.appendChild(newOption)
+                })
+                
+                $("#return-inn-sale-return-reason-value").selectpicker('refresh')
+                //alert("Done...")
+            },
+            error: function(responseData, error){
+                //alert(responseData)
+            }
+        })
+    }
+
+
+
+    function saveStockAdjustments(){
+        var selling_price_type = document.getElementById('adjust-stock-selling-price-type-value').value
+        var selling_price_number = document.getElementById('adjust-stock-selling-price-number-value').value
+        var reorder_quantity = document.getElementById('adjust-stock-reorder-quantity-value').value
+        var expiration_warning_days = document.getElementById('adjust-stock-expiration-warning-days-value').value
+        var status = document.getElementById('adjust-stock-status-value').value
+        var stock_id = sessionStorage.getItem('stock_id')
+
+        errors = ""
+
+        if (selling_price_type == ""){
+            errors = "Selling_price field can not be blank"
+        } 
+        if (selling_price_number == ""){
+            errors = "selling_price_number field can not be blank"
+        } 
+        if (reorder_quantity == ""){
+            errors = "reorder_quantity field can not be blank"
+        } 
+        if (expiration_warning_days == ""){
+            errors = "expiration_warning_days field can not be blank"
+        } 
+        if (status == ""){
+            errors = "status field can not be blank"
+        } 
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'save_stock_adjustments' %}",
+                data: {
+                    stock_id: stock_id,
+                    selling_price_type: selling_price_type,
+                    selling_price_number: selling_price_number,
+                    reorder_quantity: reorder_quantity,
+                    expiration_warning_days: expiration_warning_days,
+                    status: status
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+      $(document).on('keyup', '.return_inn_sale_return_reason_class .bs-searchbox input', function(e){
+            if (e.key.length === 1 || e.key === "Backspace") { 
+                var searchQuery = $(this).val();
+                //alert(searchQuery)
+                var mySelect = document.getElementById('return-inn-sale-return-reason-value')
+                var selectOption = mySelect.options[mySelect.selectedIndex]
+                
+                var selected_patient_text = selectOption.texty
+                $.ajax({
+                    url: "{% url 'load_live_return_reason_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('return-inn-sale-return-reason-value')
+                        $("#return-inn-sale-return-reason-value").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#return-inn-sale-return-reason-value").selectpicker('refresh')    
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })
+
+
+
+/*BUTTON FUNCTIONS*/
+    function openReturnReasonsPopup(){
+        newBrowserWindow("{% url 'return_reasons_page' %}")
+    }
+
+    function returnInnSale(){
+        var sale_id = sessionStorage.getItem('sale_id_for_returning')
+        var date_returned = document.getElementById('return-inn-sale-date-returned-value').value
+        var refund_amount = document.getElementById('return-inn-sale-refund-amount-value').value
+        var total_units = document.getElementById('return-inn-sale-total-units-value').value
+        var return_reason = document.getElementById('return-inn-sale-return-reason-value').value
+
+        var amount_paid = document.getElementById('return-inn-sale-amount-paid-value').value
+        var payment_method = document.getElementById('return-inn-refund-payment-payment-method-value').value
+
+        var errors = ""
+
+        if (date_returned == ""){
+            errors = "Select valid date"
+        }else if (refund_amount == ""){
+            errors = "Refund_amount field can not be blank"
+        }else if (isIntegerGreaterThanOrEqualToOne(total_units) == false){
+            errors = "Total_units must be a whole number greater than 0"
+        }else if (isIntegerGreaterThanOrEqualToOne(return_reason) == false){
+            errors = "Please select a valid reason"
+        }else if (total_units == ""){
+            errors = "Total_units field can not be blank"
+        }
+
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'return_inn_sale' %}",
+                data: {
+                    sale_id: sale_id,
+                    date_returned: date_returned,
+                    refund_amount: refund_amount,
+                    total_units: total_units,
+                    return_reason: return_reason,
+                    amount_paid: amount_paid,
+                    payment_method: payment_method
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        }).then((result =>{
+                            $.ajax({
+                                url: "{% url 'print_out_credit_note' %}",
+                                data: {
+                                    return_inn_id: responseData.return_inn_id
+                                },
+                                success: function(responseData) {
+                                    if(responseData.custome_status == "Error"){
+                                        //alert(responseData.message)
+                                        swal({
+                                            title: "Error",
+                                            text: responseData.message,
+                                            type: "error"
+                                        });
+                                    }else{
+                                        swal({
+                                            title: "Success",
+                                            text: responseData.message,
+                                            type: "success"
+                                        });
+                                    }
+                                },
+                                error: function(responseData, error){
+                                    //alert("An error ocured! " + error)
+                                    swal({
+                                        title: "Error",
+                                        text: "An error ocured! " + error,
+                                        type: "error"
+                                    });
+                                }
+                            });
+                        }))
+
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+            }else{
+                swal({
+                    title: "Error",
+                    text: errors,
+                    type: "error"
+                });
+            }
+        }
+
+    function totalUnitsReturnedChanged(){
+        /*auto fill refund*/
+        var total_units_to_be_returned = document.getElementById('return-inn-sale-total-units-value').value
+        var sale_id = sessionStorage.getItem('sale_id_for_returning')
+        $.ajax({
+            url: "{% url 'get_sale_details' %}",
+            data: {
+                sale_id: sale_id
+            },
+            success: function(responseData) {
+                var unit_price = responseData.details['unit_price']
+                var assumed_refund = unit_price * total_units_to_be_returned
+
+                document.getElementById('return-inn-sale-refund-amount-value').value = assumed_refund.toFixed(2)
+
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+            }
+        });
+
+    }
+
+    function adjustPaidAmountBasedOnPaymentMethod(){
+        var paying_currency_id = document.getElementById('return-inn-refund-payment-payment-method-value').value
+        $.ajax({
+            url: "{% url 'get_paying_currency_details' %}",
+            data: {
+                paying_currency_id: paying_currency_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    var rate = responseData.paying_currency['rate']
+                    var refund_amount_from_html = document.getElementById('return-inn-sale-refund-amount-value').value
+                    document.getElementById('return-inn-sale-amount-paid-value').value = (rate * refund_amount_from_html).toFixed(2)
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+
+/*/ BUTTON FUNCTIONS*/
+
+
+/* LIVE FUNCTIONS */
+    
+    $(document).on('keyup', '.return_inn_refund_payment_method_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_payment_method_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('return-inn-refund-payment-payment-method-value')
+                    $("#return-inn-refund-payment-payment-method-value").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#return-inn-refund-payment-payment-method-value").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+/* // LIVE FUNCTIONS */
+
+</script>

@@ -1,0 +1,350 @@
+{% extends 'partials/base.html' %}
+{% block title %} Products {% endblock %}
+
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Products Table</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <a href="" title="Add New Product" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#addProductModal" id="payment-modal-button"><i class="notika-icon notika-edit"></i></a>
+                                    <button data-toggle="tooltip" data-placement="left" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                    <div class="breadcomb-list">
+                        <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                                <!-- <div class="breadcomb-wp" style="background-color:black; border-radius: 5px; border-color: white; border: 2px; border-style: solid; width: 70%;">
+                                    <select class="" data-live-search="true" style="width: 45%;" id='search-selector'>
+                                        <option value="All">All</option>
+                                        <option value="Product">Product Code</option>
+                                        <option value="Category">Category</option>
+                                        <option value="Description">Description</option>
+                                        <option value="Form">Form</option>
+                                        <option value="VAT">VAT</option>
+                                    </select>
+                                    <input class="" type="" name="" style="width: 100%;" placeholder="Search" id='live-search-input' onkeyup ="searchInputValueChanged()">
+                                </div> -->
+                                <div style="float: left;width: 50%; ">
+                                    <span id="search-type"></span>
+                                    <span id="page-detail"></span>
+                                    <small id="table-summery"></small>
+                                </div>
+                                <div style="float: right;width: 50%; text-align: right;">
+                                    <div>
+                                        <span style="padding: 5px;display: none;">
+                                            <select class="" data-live-search="true" style="width: 30%;" id='search-selector'>
+                                                <option value="all">All</option>
+                                                <option value="Product Code">Product Code</option>
+                                                <option value="Category">Category</option>
+                                                <option value="Description">Description</option>
+                                                <option value="Form">Form</option>
+                                                <option value="VAT">VAT</option>
+                                            </select>
+                                        
+                                            <input class="" type="" name="" style="width: %;" placeholder="Search" id='live-search-input' oninput="searchInputValueChanged()">
+                                        </span>
+                                   
+                                        <a href="" title="Filter Sales" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#productsFilterModal" id="simple-sales-filter-modal-button">Filters</a>
+
+                                        <button title="Previous Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="previousPage()"><i class="notika-icon notika-left-arrow"></i></button>
+
+                                        <span style="background-color:skyblue; padding: 5px; border-radius: 5%;" id="page-lable">1</span>
+
+
+                                        <button title="Next Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="nextPage()"><i class="notika-icon notika-right-arrow"></i></button></div>
+                                </div>
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+{% include 'partials/modals/enventory/products_modals.html' %}
+{% load static %}
+{% load humanize %}
+
+<!--   MODAL -->
+<div class="modal fade animated bounce" id="productsFilterModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Products Filter</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <form class="widget-tabs-list" method="post">
+                                {% csrf_token %}
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Product Code</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="products-filter-form-product-code-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="products-filter-form-title-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="products-filter-form-details-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" onclick="resetProductFilters()">Reset</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="loadProductsFilterQuery()">Load</button>                  
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- /MODALE -->
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- products table -->
+        <table  class="table table-hover " style="background-color: lightgray;" id="products-table">
+            
+        </table>
+    </div>
+</div>
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+$(document).ready(function() {
+    productsInitialLoad()
+})
+
+
+//GLOBAL VARIABLES
+var page = 1
+
+
+
+function requestData(request_type){
+    //alert(request_type)
+    var searchQuery = document.getElementById('live-search-input').value
+    var search_field = document.getElementById('search-selector').value
+
+    
+
+
+    //if request type 
+    if (request_type == "INITIAL-LOAD"){
+        document.getElementById('search-type').innerHTML = "INITIAL-LOAD"
+
+    }else if (request_type == "LIVE-SEARCH"){
+        document.getElementById('search-type').innerHTML = "LIVE-SEARCH"
+
+    }else if (request_type == "FORM-FILTER"){
+        document.getElementById('search-type').innerHTML = "FORM-FILTER"
+
+
+        var product_code = document.getElementById('products-filter-form-product-code-value').value
+        var title = document.getElementById('products-filter-form-title-value').value
+        var details = document.getElementById('products-filter-form-details-value').value
+        
+        // sessionStorage.setItem('stored_product_code', product_code)
+        // sessionStorage.setItem('stored_product_title', product_title)
+        // sessionStorage.setItem('stored_product_category', product_category)
+        // sessionStorage.setItem('stored_product_form', product_form)
+        // sessionStorage.setItem('stored_product_status', product_status)
+
+
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+
+        //alert(product_status + "::::::::::::::::::::")
+        //document.getElementById('productsFilterModal').style.display = "none"
+    }
+
+
+    //alert(searchQuery)
+    //alert("page number: " + page)
+    document.getElementById('loader').style.display = "block"
+    //alert(product_code + "(((((((((((((((((((((((((((()))):")
+
+    $.ajax({
+        url: "{% url 'ajax_products_live_search' %}",
+        data: {
+            search_key: searchQuery,
+            search_field: search_field,
+            request_type: request_type,
+            page: page,
+
+            //filter form
+
+            /*product_code: product_code,
+            product_title: product_title,
+            product_category: product_category,
+            product_form: product_form,
+            product_status: product_status,*/
+
+            product_code: product_code,
+            title: title,
+            details: details
+         },
+        success: function(responseData) {
+            $('#products-table').html(responseData.table)
+            document.getElementById('table-summery').innerHTML = responseData.table_summery
+            document.getElementById('loader').style.display = "none"
+            //alert(responseData.data)
+            document.getElementById('page-detail').innerHTML = "[" + responseData.data + "]"
+
+            //page numbers
+            var a = responseData.data
+            var before = true
+            var current_page_number = ""
+            var total_pages = ""
+            for (l=0; l<=a.length; l++){
+                if (a[l]=="o"){
+                    before = false
+                }
+                if (Number(a[l]) || a[l]=="0"){
+                    if (before == true){
+                        current_page_number = current_page_number + a[l]
+                    }else{
+                        total_pages = total_pages + a[l]
+                    }
+                }
+            }
+            document.getElementById('page-lable').innerHTML = current_page_number
+           
+
+
+        },
+        error: function(responseData, error){
+            //alert("An error ocured! " + error)
+        }
+    });
+}
+
+
+function searchInputValueChanged(){
+    //request type is "LIVE-SEARCH"
+    requestData("LIVE-SEARCH")
+}
+
+function nextPage(){
+    //alert("NEXT-PAGE CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) + 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    //alert(':::::NXT PG' + request_type)
+    requestData(request_type)
+}
+
+function previousPage(){
+    //alert("previousPage CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) - 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    requestData(request_type)
+}
+
+
+function productsInitialLoad(){
+    //request type is "NEXT-PAGE"
+    //alert("INITIAL-LOAD")
+    requestData("INITIAL-LOAD")
+}
+
+
+
+/*BUTTON FUNCTIONS*/
+    
+    function resetProductFilters(){
+        document.getElementById('products-filter-form-product-code-value').value = ""
+        document.getElementById('products-filter-form-title-value').value = ""
+        document.getElementById('products-filter-form-details-value').value = ""
+    }
+    
+    function loadProductsFilterQuery(){
+        $('#productsFilterModal').modal('hide');
+        requestData("FORM-FILTER")
+    }
+
+
+/*//BUTTON FUNCTIONS*/
+
+
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

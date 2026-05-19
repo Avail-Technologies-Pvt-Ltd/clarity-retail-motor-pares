@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Parts Compatibility</title>
+    <style>
+        /* [Previous CSS styles remain exactly the same] */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+            --border-color: #bdc3c7;
+            --warning-color: #e74c3c;
+            --recommended-color: #27ae60;
+            --alternative-color: #f39c12;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.4;
+            padding: 1% 5% 1% 5%;
+        }
+        
+        .page-header {
+            margin-bottom: 15px;
+        }
+        
+        .page-title {
+            font-size: 20px;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .btn-nav {
+            padding: 6px 12px;
+            background-color: var(--dark-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        
+        .container {
+            display: flex;
+            gap: 10px;
+            height: 80vh;
+        }
+        
+        .column {
+            flex: 1;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .column-header {
+            padding: 10px;
+            background-color: var(--dark-color);
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .search-container {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .search-input, .compatibility-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        
+        .part-details {
+            padding: 10px;
+            font-size: 13px;
+            position: relative;
+        }
+        
+        .part-details h3 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .part-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .nav-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .nav-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .model-item, .selected-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .model-item:hover {
+            background-color: var(--light-color);
+        }
+        
+        .model-checkbox {
+            margin-right: 8px;
+        }
+        
+        .no-results, .loading {
+            padding: 15px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .btn-save {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-clear {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-add-model {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        .compatibility-selector {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .selection-summary {
+            padding: 8px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Custom select with search */
+        .custom-select {
+            position: relative;
+        }
+        
+        .select-search {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .select-options {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: none;
+            position: absolute;
+            width: 100%;
+            background: white;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 5px;
+        }
+        
+        .select-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .select-option:hover {
+            background-color: var(--light-color);
+        }
+        
+        .select-option.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .select-placeholder {
+            color: #999;
+        }
+
+        /* Model option styles with compatibility indicators */
+        .model-option {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .model-option:hover {
+            background-color: var(--light-color);
+        }
+        
+        .model-option:last-child {
+            border-bottom: none;
+        }
+
+        .model-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .compatibility-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            color: white;
+            margin-left: 8px;
+        }
+
+        .compatibility-badge.recommended {
+            background-color: var(--recommended-color);
+        }
+
+        .compatibility-badge.alternative {
+            background-color: var(--alternative-color);
+        }
+
+        /* Add Model Button Container */
+        .add-model-container {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* SweetAlert2 Custom Styling */
+        .swal2-popup {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        }
+
+        .swal2-title {
+            color: var(--dark-color) !important;
+        }
+
+        .swal2-confirm {
+            background-color: var(--secondary-color) !important;
+        }
+
+        .swal2-cancel {
+            background-color: var(--warning-color) !important;
+        }
+
+        /* Modal Form Styling */
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+    </style>
+    <script src="{% static '' %}jquery-3.6.0.min.js"></script>
+    <script src="{% static '' %}sweetalert2@11.js"></script>
+
+</head>
+<body>
+    <!-- Add CSRF token -->
+    {% csrf_token %}
+    
+    <div class="page-header">
+        <h1 class="page-title">Car Parts Compatibility</h1>
+        <div class="nav-buttons">
+            <a href="{% url 'pos' %}" class="btn-nav">Back to POS</a>
+            <a href="{% url 'home' %}" class="btn-nav">Back to Home</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Column 1: Part Selection -->
+        <div class="column">
+            <div class="column-header">1. Select Car Part</div>
+            <div class="search-container">
+                <div class="custom-select" style="display: none;"> <!-- this div can be removed but a clean up is needed in the js -->
+                    <input type="text" class="select-search" id="part-search" placeholder="Search parts...">
+                    <div class="select-options" id="part-options">
+                        <div class="select-option select-placeholder">Type to search parts...</div>
+                    </div>
+                    <select id="parts-select" class="search-input" style="display: none;">
+                        <option value="">Select a car part...</option>
+                    </select>
+                </div>
+
+
+                <input class="select-search" type="" name="" id="part-search-input" style="width: 100%; margin-bottom: 5px;" placeholder="Type here to search">
+
+                <select class="search-input" id="search-part-select" style="width: 100%;">
+                    <option>Option 1</option>
+                    <option>Option 1</option>
+                    <option>Option 1</option>
+                    <option>Option 1</option>
+                    <option>Option 1</option>
+                </select>
+
+            </div>
+            <div class="scrollable-content" id="part-details-container">
+                <div class="no-results">No part selected</div>
+            </div>
+        </div>
+        
+        <!-- Column 2: Model Selection -->
+        <div class="column">
+            <div class="column-header">2. Search & Select Models</div>
+            <div class="add-model-container">
+                <button class="btn btn-add-model" id="add-model-btn">+ Add New Car Model</button>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" id="model-search-filter" placeholder="Search models...">
+            </div>
+            <div class="selection-summary">
+                Found: <span id="found-count">0</span> models | Selected: <span id="selected-count">0</span>
+            </div>
+            <div class="scrollable-content" id="models-list">
+                <div class="no-results">Search for models above</div>
+            </div>
+        </div>
+        
+        <!-- Column 3: Selected Models -->
+        <div class="column">
+            <div class="column-header">3. Selected Models</div>
+            <div class="compatibility-selector">
+                <select id="compatibility-type" class="compatibility-select">
+                    <option value="recommended">Show Recommended</option>
+                    <option value="alternative">Show Alternative</option>
+                    <option value="all">Show All</option>
+                </select>
+            </div>
+            <div class="scrollable-content" id="selected-models">
+                <div class="no-results">No models selected</div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-clear" id="clear-btn">Clear All</button>
+                <button class="btn btn-save" id="save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get CSRF token
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Setup CSRF for all AJAX requests
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+                }
+            }
+        });
+
+        // Initialize state object
+        const state = {
+            selectedPart: null,
+            selectedPartIndex: -1,
+            selectedModels: new Map(), // stores {id: {model: modelObj, type: 'recommended'|'alternative'}}
+            viewType: 'all', // What to show in column 3: 'recommended', 'alternative', 'all'
+            allParts: [],
+            currentSearchResults: [],
+            existingCompatibility: new Map(), // stores existing compatibility for the selected part
+            transmissionOptions: [] // Store transmission options
+        };
+
+        // Custom SweetAlert2 configuration
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        // Declare functions in global scope
+        function handlePartChange() {
+            const partId = document.getElementById('parts-select').value;
+            state.selectedPart = partId;
+
+            //alert(partId)
+            
+            if (partId) {
+                // Find the index of the selected part
+                state.selectedPartIndex = state.allParts.findIndex(p => p.id === partId);
+                fetchPartDetails(partId);
+                loadExistingCompatibility(partId);
+                
+                // Update search input with selected part name
+                const selectedPart = state.allParts.find(p => p.id === partId);
+                if (selectedPart) {
+                    document.getElementById('part-search').value = selectedPart.name;
+                }
+                
+                // Clear search and results
+                document.getElementById('model-search-filter').value = '';
+                document.getElementById('models-list').innerHTML = '<div class="no-results">Search for models above</div>';
+                document.getElementById('found-count').textContent = '0';
+            } else {
+                document.getElementById('part-details-container').innerHTML = '<div class="no-results">No part selected</div>';
+                document.getElementById('models-list').innerHTML = '<div class="no-results">Select a part first</div>';
+                clearAllSelections();
+            }
+        }
+
+        function handleCompatibilityTypeChange() {
+            state.viewType = this.value;
+            renderSelectedModels(); // Re-render based on new view type
+        }
+
+
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize
+            fetchParts();
+            fetchTransmissionOptions();
+            
+            // Event listeners
+            document.getElementById('compatibility-type').addEventListener('change', handleCompatibilityTypeChange);
+            document.getElementById('clear-btn').addEventListener('click', clearAllSelections);
+            document.getElementById('save-btn').addEventListener('click', saveCompatibility);
+            document.getElementById('add-model-btn').addEventListener('click', showAddModelModal);
+
+            document.getElementById('part-search-input').addEventListener('keyup', partSearchTextChanged);
+
+            
+            // Model search with debounce
+            let searchTimeout;
+            document.getElementById('model-search-filter').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const searchTerm = this.value.trim();
+                
+                if (searchTerm.length >= 2) {
+                    searchTimeout = setTimeout(() => {
+                        searchModels(searchTerm);
+                    }, 300);
+                } else {
+                    document.getElementById('models-list').innerHTML = '<div class="no-results">Type at least 2 characters to search</div>';
+                    document.getElementById('found-count').textContent = '0';
+                }
+            });
+            
+            // Custom select with search for parts
+            const partSearch = document.getElementById('part-search');
+            const partOptions = document.getElementById('part-options');
+            
+            partSearch.addEventListener('input', function() {
+                filterParts(this.value);
+            });
+            
+            partSearch.addEventListener('focus', function() {
+                if (state.allParts.length > 0 && partOptions.children.length <= 1) {
+                    filterParts('');
+                }
+                partOptions.style.display = 'block';
+            });
+            
+            partSearch.addEventListener('click', function() {
+                if (state.allParts.length > 0 && partOptions.children.length <= 1) {
+                    filterParts('');
+                }
+                partOptions.style.display = 'block';
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.custom-select')) {
+                    partOptions.style.display = 'none';
+                }
+            });
+        });
+
+
+
+
+
+        /*-------------------------------------------------------------------------------------------------------------->>*/
+
+        function partSearchTextChanged(){
+            var search_text = document.getElementById('part-search-input').value
+            $.ajax({
+                url: "{% url 'ajax_get_parts' %}",
+                data: {
+                    search_text: search_text,
+                },
+                success: function(response) {
+                    state.allParts = response.results;
+                    
+                    // Populate the hidden select
+                    const select = document.getElementById('search-part-select');
+                    if (response.results.length > 0){
+                        select.innerHTML = '<option value="">Click here. ' + response.results.length + ' matches. </option>';
+                    }else{
+                        select.innerHTML = '<option value=""> No matches. </option>';
+                    }
+                    
+                    response.results.forEach(part => {
+                        const option = document.createElement('option');
+                        option.value = part.id;
+                        option.textContent = part.name;
+                        select.appendChild(option);
+                    });
+
+                },
+                error: function(error) {
+                    console.error('Failed to fetch parts:', error);
+                    document.getElementById('part-details-container').innerHTML = '<div class="no-results">Error loading parts</div>';
+                }
+            });
+        }
+
+
+        function partChange(){
+            const partId = document.getElementById('search-part-select').value;
+            state.selectedPart = partId;
+
+            //alert(partId)
+            
+            if (partId) {
+                // Find the index of the selected part
+                state.selectedPartIndex = state.allParts.findIndex(p => p.id === partId);
+                fetchPartDetails(partId);
+                loadExistingCompatibility(partId);
+                
+                // Update search input with selected part name
+                const selectedPart = state.allParts.find(p => p.id === partId);
+                if (selectedPart) {
+                    document.getElementById('part-search').value = selectedPart.name;
+                }
+                
+                // Clear search and results
+                document.getElementById('model-search-filter').value = '';
+                document.getElementById('models-list').innerHTML = '<div class="no-results">Search for models above</div>';
+                document.getElementById('found-count').textContent = '0';
+            } else {
+                document.getElementById('part-details-container').innerHTML = '<div class="no-results">No part selected</div>';
+                document.getElementById('models-list').innerHTML = '<div class="no-results">Select a part first</div>';
+                clearAllSelections();
+            }
+        }
+        /*<<--------------------------------------------------------------------------------------------------------------*/
+
+        // Fetch transmission options
+        function fetchTransmissionOptions() {
+            $.ajax({
+                url: "{% url 'ajax_get_transmission_options' %}", // New endpoint
+                success: function(response) {
+
+                    
+                    state.transmissionOptions = response.options;
+                },
+                error: function(error) {
+                    console.error('Failed to fetch transmission options:', error);
+                    state.transmissionOptions = [
+                        {"value": "manual", "label": "Manual"},
+                        {"value": "automatic", "label": "Automatic"}
+                    ]; // Fallback options
+                }
+            });
+        }
+
+        // Show Add Model Modal
+        function showAddModelModal() {
+            const transmissionOptionsHtml = state.transmissionOptions.map(option => 
+                `<option value="${option.value}">${option.label}</option>`
+            ).join('');
+
+            Swal.fire({
+                title: 'Add New Car Model',
+                html: `
+                    <div class="form-group">
+                        <label for="model-engine-number">Engine Number:</label>
+                        <input type="text" id="model-engine-number" placeholder="e.g., B20B4">
+                    </div>
+                    <div class="form-group">
+                        <label for="model-make">Make:</label>
+                        <input type="text" id="model-make" placeholder="e.g., Toyota, Honda, Ford">
+                    </div>
+                    <div class="form-group">
+                        <label for="model-name">Model:</label>
+                        <input type="text" id="model-name" placeholder="e.g., Camry, Civic, Focus">
+                    </div>
+                    <div class="form-group">
+                        <label for="model-year">Year:</label>
+                        <input type="number" id="model-year" min="1900" max="2030" placeholder="e.g., 2020">
+                    </div>
+                    <div class="form-group">
+                        <label for="model-transmission">Transmission:</label>
+                        <select id="model-transmission">
+                            <option value="">Select transmission...</option>
+                            ${transmissionOptionsHtml}
+                        </select>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Add Model',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#2ecc71',
+                cancelButtonColor: '#e74c3c',
+                preConfirm: () => {
+                    const engine_number = document.getElementById('model-engine-number').value.trim();
+                    const make = document.getElementById('model-make').value.trim();
+                    const name = document.getElementById('model-name').value.trim();
+                    const year = document.getElementById('model-year').value.trim();
+                    const transmission = document.getElementById('model-transmission').value;
+
+                    if (!make || !name || !year || !transmission || !engine_number) {
+                        Swal.showValidationMessage('Please fill in all fields');
+                        return false;
+                    }
+
+                    if (year < 1900 || year > 2030) {
+                        Swal.showValidationMessage('Please enter a valid year');
+                        return false;
+                    }
+
+                    return {
+                        engine_number: engine_number,
+                        make: make,
+                        name: name,
+                        year: parseInt(year),
+                        transmission: transmission
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    addNewModel(result.value);
+                }
+            });
+        }
+
+        // Add new model via AJAX
+        function addNewModel(modelData) {
+            $.ajax({
+                url: "{% url 'ajax_add_car_model' %}", // New endpoint
+                method: 'POST',
+                data: {
+                    engine_number: modelData.engine_number,
+                    make: modelData.make,
+                    name: modelData.name,
+                    year: modelData.year,
+                    transmission: modelData.transmission,
+                    csrfmiddlewaretoken: getCSRFToken()
+                },
+                success: function(response) {
+                    /*
+                    Expected response format:
+                    {
+                        "success": true,
+                        "model": {
+                            "id": "123",
+                            "name": "Toyota Camry 2020"
+                        },
+                        "message": "Car model added successfully"
+                    }
+                    */
+                    if (response.success) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.message || 'Car model added successfully!'
+                        });
+
+                        // Optionally refresh the current search results if there's an active search
+                        const currentSearch = document.getElementById('model-search-filter').value.trim();
+                        if (currentSearch.length >= 2) {
+                            searchModels(currentSearch);
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Failed to add car model'
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.error('Failed to add car model:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to add car model. Please try again.'
+                    });
+                }
+            });
+        }
+        
+        function fetchParts() {
+            $.ajax({
+                url: "{% url 'ajax_get_parts' %}",
+                data: {
+                    search_text: '',
+                    page: 1
+                },
+                success: function(response) {
+                    state.allParts = response.results;
+                    
+                    // Populate the hidden select
+                    const select = document.getElementById('search-part-select');
+                    select.innerHTML = '<option value="">Select a car part...</option>';
+                    
+                    response.results.forEach(part => {
+                        const option = document.createElement('option');
+                        option.value = part.id;
+                        option.textContent = part.name;
+                        select.appendChild(option);
+                    });
+                    
+                    // Add change event listener to the select
+                    select.addEventListener('change', partChange);
+                },
+                error: function(error) {
+                    console.error('Failed to fetch parts:', error);
+                    document.getElementById('part-details-container').innerHTML = '<div class="no-results">Error loading parts</div>';
+                }
+            });
+        }
+
+
+        function filterParts(searchTerm) {
+            searchTerm = searchTerm.toLowerCase();
+            const optionsContainer = document.getElementById('part-options');
+            optionsContainer.innerHTML = '';
+            
+            $.ajax({
+                url: "{% url 'ajax_get_parts' %}",
+                data: {
+                    search_text: searchTerm,
+                    page: 1
+                },
+                success: function(response) {
+                    const filteredParts = response.results.slice(0, 10);
+                    
+                    if (filteredParts.length === 0) {
+                        optionsContainer.innerHTML = '<div class="select-option">No results found !</div>';
+                        return;
+                    }else{
+                        filteredParts.forEach(part => {
+                            const optionDiv = document.createElement('div');
+                            optionDiv.className = 'select-option';
+                            optionDiv.textContent = part.name;
+                            optionDiv.dataset.id = part.id;
+                            optionDiv.addEventListener('click', function() {
+                                document.getElementById('parts-select').value = part.id;
+                                document.getElementById('part-search').value = part.name;
+                                //alert('here p: ' + part.id)
+                                //alert('here i: ' + document.getElementById('parts-select').value)
+                                optionsContainer.style.display = 'none';
+                                const event = new Event('change');
+                                document.getElementById('parts-select').dispatchEvent(event);
+                            });
+                            optionsContainer.appendChild(optionDiv);
+                        })
+                    }
+                },
+                error: function(error) {
+                    console.error('Failed to filter parts:', error);
+                    optionsContainer.innerHTML = '<div class="select-option">Error searching parts</div>';
+                }
+            });
+        }
+        
+        function fetchPartDetails(partId) {
+            $.ajax({
+                url: "{% url 'ajax_get_part_details' %}",
+                data: {
+                    part_id: partId
+                },
+                success: function(response) {
+                    const container = document.getElementById('part-details-container');
+                    container.innerHTML = `
+                        <div class="part-details">
+                            <table style="width: 100%">
+                                <tr>
+                                    <td>Code:</td>
+                                    <td>${response.product_code}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><br><hr><br></td>
+                                </tr>
+                                <tr>
+                                    <td>Title:</td>
+                                    <td>${response.title}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><br><hr><br></td>
+                                </tr>
+                                <tr>
+                                    <td>Details:</td>
+                                    <td>${response.details || 'No description available'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><br><hr><br></td>
+                                </tr>
+                            </table>
+                            <div class="part-navigation">
+                                <button class="nav-button" id="prev-part">
+                                    ← Previous
+                                </button>
+                                <button class="nav-button" id="next-part">
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add event listeners for navigation buttons with AJAX requests
+                    document.getElementById('prev-part').addEventListener('click', function() {
+                        navigateToAdjacentPart('prev');
+                    });
+                    
+                    document.getElementById('next-part').addEventListener('click', function() {
+                        navigateToAdjacentPart('next');
+                    });
+                },
+                error: function(error) {
+                    console.error('Failed to fetch part details:', error);
+                    document.getElementById('part-details-container').innerHTML = '<div class="no-results">Error loading part details</div>';
+                }
+            });
+        }
+        
+        // Load existing compatibility for the selected part
+        function loadExistingCompatibility(partId) {
+            $.ajax({
+                url: "{% url 'ajax_get_part_compatibility' %}", // New endpoint
+                data: {
+                    part_id: partId
+                },
+                success: function(response) {
+                    /*
+                    Expected response format:
+                    {
+                        "recommended": [
+                            {"id": "1", "name": "Toyota Camry 2020"},
+                            {"id": "2", "name": "Honda Civic 2019"}
+                        ],
+                        "alternative": [
+                            {"id": "3", "name": "Ford Focus 2021"}
+                        ]
+                    }
+                    */
+                    
+                    // Clear existing compatibility
+                    state.existingCompatibility.clear();
+                    state.selectedModels.clear();
+                    
+                    // Store existing compatibility
+                    response.recommended.forEach(model => {
+                        state.existingCompatibility.set(model.id, 'recommended');
+                        state.selectedModels.set(model.id, {model: model, type: 'recommended'});
+                    });
+                    
+                    response.alternative.forEach(model => {
+                        state.existingCompatibility.set(model.id, 'alternative');
+                        state.selectedModels.set(model.id, {model: model, type: 'alternative'});
+                    });
+                    
+                    renderSelectedModels();
+                    updateSelectionCount();
+                },
+                error: function(error) {
+                    console.error('Failed to load existing compatibility:', error);
+                    state.existingCompatibility.clear();
+                    state.selectedModels.clear();
+                    renderSelectedModels();
+                    updateSelectionCount();
+                }
+            });
+        }
+        
+        // Search for models
+        function searchModels(searchTerm) {
+            if (!state.selectedPart) {
+                document.getElementById('models-list').innerHTML = '<div class="no-results">Please select a part first</div>';
+                return;
+            }
+            
+            document.getElementById('models-list').innerHTML = '<div class="loading">Searching models...</div>';
+            
+            $.ajax({
+                url: "{% url 'ajax_search_models' %}", // New endpoint
+                data: {
+                    search_text: searchTerm,
+                    page: 1
+                },
+                success: function(response) {
+                    /*
+                    Expected response format:
+                    {
+                        "results": [
+                            {"id": "1", "name": "Toyota Camry 2020"},
+                            {"id": "2", "name": "Honda Civic 2019"},
+                            {"id": "3", "name": "Ford Focus 2021"}
+                        ]
+                    }
+                    */
+                    
+                    state.currentSearchResults = response.results;
+                    renderSearchResults();
+                    document.getElementById('found-count').textContent = response.results.length;
+                },
+                error: function(error) {
+                    console.error('Failed to search models:', error);
+                    document.getElementById('models-list').innerHTML = '<div class="no-results">Error searching models</div>';
+                    document.getElementById('found-count').textContent = '0';
+                }
+            });
+        }
+        
+        // Render search results with compatibility indicators
+        function renderSearchResults() {
+            const container = document.getElementById('models-list');
+            container.innerHTML = '';
+            
+            if (state.currentSearchResults.length === 0) {
+                container.innerHTML = '<div class="no-results">No models found</div>';
+                return;
+            }
+            
+            state.currentSearchResults.forEach(model => {
+                const existingType = state.existingCompatibility.get(model.id);
+                const isSelected = state.selectedModels.has(model.id);
+                
+                const modelDiv = document.createElement('div');
+                modelDiv.className = 'model-option';
+                modelDiv.innerHTML = `
+                    <div class="model-info">
+                        <input type="checkbox" class="model-checkbox" id="search-model-${model.id}" 
+                               data-id="${model.id}" ${isSelected ? 'checked' : ''}>
+                        <span>${model.name}</span>
+                        ${existingType ? `<span class="compatibility-badge ${existingType}">${existingType}</span>` : ''}
+                    </div>
+                `;
+                
+                // Add click handler for the entire div
+                modelDiv.addEventListener('click', function(e) {
+                    if (e.target.type !== 'checkbox') {
+                        const checkbox = modelDiv.querySelector('.model-checkbox');
+                        checkbox.checked = !checkbox.checked;
+                        handleModelSelection(checkbox, model);
+                    }
+                });
+                
+                // Add change handler for checkbox
+                const checkbox = modelDiv.querySelector('.model-checkbox');
+                checkbox.addEventListener('change', function() {
+                    handleModelSelection(this, model);
+                });
+                
+                container.appendChild(modelDiv);
+            });
+        }
+        
+        function handleModelSelection(checkbox, model) {
+            if (checkbox.checked) {
+                // Use SweetAlert2 for compatibility type selection
+                Swal.fire({
+                    title: 'Select Compatibility Type',
+                    text: `Choose compatibility type for ${model.name}`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Recommended',
+                    cancelButtonText: 'Alternative',
+                    confirmButtonColor: '#27ae60',
+                    cancelButtonColor: '#f39c12',
+                    showDenyButton: true,
+                    denyButtonText: 'Cancel',
+                    denyButtonColor: '#e74c3c'
+                }).then((result) => {
+                    let selectedType = null;
+                    
+                    if (result.isConfirmed) {
+                        selectedType = 'recommended';
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        selectedType = 'alternative';
+                    }
+                    
+                    if (selectedType) {
+                        state.selectedModels.set(model.id, {
+                            model: model, 
+                            type: selectedType
+                        });
+                        renderSelectedModels();
+                        updateSelectionCount();
+                    } else {
+                        // User cancelled, uncheck the checkbox
+                        checkbox.checked = false;
+                    }
+                });
+            } else {
+                // Remove model
+                state.selectedModels.delete(model.id);
+                renderSelectedModels();
+                updateSelectionCount();
+            }
+        }
+        
+        function renderSelectedModels() {
+            const selectedContainer = document.getElementById('selected-models');
+            selectedContainer.innerHTML = '';
+            
+            if (state.selectedModels.size === 0) {
+                selectedContainer.innerHTML = '<div class="no-results">No models selected</div>';
+                return;
+            }
+            
+            // Filter models based on view type
+            const modelsToShow = [];
+            state.selectedModels.forEach((data, id) => {
+                if (state.viewType === 'all' || data.type === state.viewType) {
+                    modelsToShow.push({id, ...data});
+                }
+            });
+            
+            if (modelsToShow.length === 0) {
+                selectedContainer.innerHTML = `<div class="no-results">No ${state.viewType} models selected</div>`;
+                return;
+            }
+            
+            // Group by compatibility type for display
+            const recommended = modelsToShow.filter(item => item.type === 'recommended');
+            const alternative = modelsToShow.filter(item => item.type === 'alternative');
+            
+            // Render recommended models
+            if (recommended.length > 0 && (state.viewType === 'all' || state.viewType === 'recommended')) {
+                const recHeader = document.createElement('div');
+                recHeader.style.cssText = 'padding: 8px; background: #27ae60; color: white; font-weight: bold; font-size: 12px;';
+                recHeader.textContent = `Recommended (${recommended.length})`;
+                selectedContainer.appendChild(recHeader);
+                
+                recommended.forEach(({id, model, type}) => {
+                    const selectedItem = createSelectedModelItem(id, model, type);
+                    selectedContainer.appendChild(selectedItem);
+                });
+            }
+            
+            // Render alternative models
+            if (alternative.length > 0 && (state.viewType === 'all' || state.viewType === 'alternative')) {
+                const altHeader = document.createElement('div');
+                altHeader.style.cssText = 'padding: 8px; background: #f39c12; color: white; font-weight: bold; font-size: 12px;';
+                altHeader.textContent = `Alternative (${alternative.length})`;
+                selectedContainer.appendChild(altHeader);
+                
+                alternative.forEach(({id, model, type}) => {
+                    const selectedItem = createSelectedModelItem(id, model, type);
+                    selectedContainer.appendChild(selectedItem);
+                });
+            }
+        }
+        
+        function createSelectedModelItem(id, model, type) {
+            const selectedItem = document.createElement('div');
+            selectedItem.className = 'selected-item';
+            selectedItem.innerHTML = `
+                <input type="checkbox" class="model-checkbox" data-id="${id}" checked>
+                <span>${model.name}</span>
+                <span class="compatibility-badge ${type}">${type}</span>
+            `;
+            
+            selectedItem.querySelector('.model-checkbox').addEventListener('change', function() {
+                if (!this.checked) {
+                    state.selectedModels.delete(id);
+                    
+                    // Uncheck in search results if visible
+                    const searchCheckbox = document.getElementById(`search-model-${id}`);
+                    if (searchCheckbox) searchCheckbox.checked = false;
+                    
+                    renderSelectedModels();
+                    updateSelectionCount();
+                }
+            });
+            
+            return selectedItem;
+        }
+        
+        function updateSelectionCount() {
+            document.getElementById('selected-count').textContent = state.selectedModels.size;
+        }
+        
+        function clearAllSelections() {
+            Swal.fire({
+                title: 'Clear All Selections?',
+                text: "This will remove all selected models from the compatibility list.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Yes, clear all',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    state.selectedModels.clear();
+                    
+                    // Uncheck all checkboxes in search results
+                    document.querySelectorAll('.model-checkbox').forEach(cb => {
+                        cb.checked = false;
+                    });
+                    
+                    renderSelectedModels();
+                    updateSelectionCount();
+                    
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'All selections cleared'
+                    });
+                }
+            });
+        }
+        
+
+
+        // Navigate to adjacent part via AJAX (Improved version)
+        function navigateToAdjacentPart(direction) {
+
+            if (!state.selectedPart) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'No part selected'
+                });
+                return;
+            }
+            
+            // Show loading state
+            const button = document.getElementById(direction === 'prev' ? 'prev-part' : 'next-part');
+            const originalText = button.textContent;
+            button.textContent = 'Loading...';
+            button.disabled = true;
+            
+            // Also show loading in the part details area
+            const container = document.getElementById('part-details-container');
+            container.innerHTML = '<div class="loading">Loading part details...</div>';
+            
+            $.ajax({
+                url: "{% url 'ajax_navigate_part' %}", 
+                method: 'POST',
+                data: {
+                    current_part_id: state.selectedPart,
+                    direction: direction,
+                    csrfmiddlewaretoken: getCSRFToken()
+                },
+                success: function(response) {
+                    if (response.success && response.part) {
+                        // Update state
+                        state.selectedPart = response.part.id;
+                        
+                        // Update or add the part to the select dropdown
+                        const select = document.getElementById('parts-select');
+                        let existingOption = select.querySelector(`option[value="${response.part.id}"]`);
+                        
+                        if (!existingOption) {
+                            // Create new option
+                            existingOption = document.createElement('option');
+                            existingOption.value = response.part.id;
+                            select.appendChild(existingOption);
+                            
+                            // Add to state array
+                            state.allParts.push({
+                                id: response.part.id,
+                                name: response.part.name
+                            });
+                        }
+                        
+                        // Update option text and select it
+                        existingOption.textContent = response.part.name;
+                        select.value = response.part.id;
+                        
+                        // Update search input
+                        document.getElementById('part-search').value = response.part.name;
+                        
+                        // Update the selected part index
+                        state.selectedPartIndex = state.allParts.findIndex(p => p.id === response.part.id);
+                        
+                        // Build the part details HTML
+                        const detailsHtml = `
+                            <div class="part-details">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td>Code:</td>
+                                        <td>${response.part.product_code || 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"><br><hr><br></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Title:</td>
+                                        <td>${response.part.title || 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"><br><hr><br></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Details:</td>
+                                        <td>${response.part.details || 'No description available'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"><br><hr><br></td>
+                                    </tr>
+                                </table>
+                                <div class="part-navigation">
+                                    <button class="nav-button" id="prev-part" ${!response.has_previous ? 'disabled' : ''}>
+                                        ← Previous
+                                    </button>
+                                    <button class="nav-button" id="next-part" ${!response.has_next ? 'disabled' : ''}>
+                                        Next →
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Update the container
+                        container.innerHTML = detailsHtml;
+                        
+                        // Re-add event listeners for navigation buttons
+                        const prevBtn = document.getElementById('prev-part');
+                        const nextBtn = document.getElementById('next-part');
+                        
+                        if (prevBtn && !prevBtn.disabled) {
+                            prevBtn.addEventListener('click', function() {
+                                navigateToAdjacentPart('prev');
+                            });
+                        }
+                        
+                        if (nextBtn && !nextBtn.disabled) {
+                            nextBtn.addEventListener('click', function() {
+                                navigateToAdjacentPart('next');
+                            });
+                        }
+                        
+                        // Load compatibility for new part (this will update column 3)
+                        loadExistingCompatibility(response.part.id);
+                        
+                        // Clear search and results in second column
+                        document.getElementById('model-search-filter').value = '';
+                        document.getElementById('models-list').innerHTML = '<div class="no-results">Search for models above</div>';
+                        document.getElementById('found-count').textContent = '0';
+                        
+                        console.log('Part navigation successful:', response.part.name); // Debug log
+                        
+                        Toast.fire({
+                            icon: 'success',
+                            title: `Loaded: ${response.part.name}`
+                        });
+                    } else {
+                        // Restore original content on failure
+                        if (state.selectedPart) {
+                            fetchPartDetails(state.selectedPart);
+                        } else {
+                            container.innerHTML = '<div class="no-results">No part selected</div>';
+                        }
+                        
+                        Toast.fire({
+                            icon: 'info',
+                            title: response.message || 'No more parts in that direction'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Navigation AJAX error:', {xhr, status, error}); // Debug log
+                    
+                    // Restore original content on error
+                    if (state.selectedPart) {
+                        fetchPartDetails(state.selectedPart);
+                    } else {
+                        container.innerHTML = '<div class="no-results">Error loading part</div>';
+                    }
+                    
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Failed to navigate to part'
+                    });
+                },
+                complete: function() {
+                    // Restore button state
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            });
+        }
+
+
+
+
+
+        // Navigate to adjacent part via AJAX
+        function navigateToAdjacentPart_1(direction) {
+            if (!state.selectedPart) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'No part selected'
+                });
+                return;
+            }
+            
+            // Show loading state
+            const button = document.getElementById(direction === 'prev' ? 'prev-part' : 'next-part');
+            const originalText = button.textContent;
+            button.textContent = 'Loading...';
+            button.disabled = true;
+            
+            $.ajax({
+                url: "{% url 'ajax_navigate_part' %}", // New endpoint
+                method: 'POST',
+                data: {
+                    current_part_id: state.selectedPart,
+                    direction: direction,
+                    csrfmiddlewaretoken: getCSRFToken()
+                },
+                success: function(response) {
+                    /*
+                    Expected response format:
+                    {
+                        "success": true,
+                        "part": {
+                            "id": "456",
+                            "name": "Brake Pad Set",
+                            "product_code": "BP001",
+                            "title": "Front Brake Pad Set",
+                            "details": "High quality brake pads..."
+                        },
+                        "message": "Part loaded successfully"
+                    }
+                    OR
+                    {
+                        "success": false,
+                        "message": "No more parts available in this direction"
+                    }
+                    */
+                    
+                    if (response.success && response.part) {
+                        // Update state
+                        state.selectedPart = response.part.id;
+                        
+                        // Update UI
+                        document.getElementById('parts-select').value = response.part.id;
+                        document.getElementById('part-search').value = response.part.name;
+                        
+                        // Update part details directly with the response data
+                        updatePartDetailsDisplay(response.part);
+                        
+                        // Load compatibility for new part
+                        loadExistingCompatibility(response.part.id);
+                        
+                        // Clear search and results
+                        document.getElementById('model-search-filter').value = '';
+                        document.getElementById('models-list').innerHTML = '<div class="no-results">Search for models above</div>';
+                        document.getElementById('found-count').textContent = '0';
+                        
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Part loaded successfully'
+                        });
+                    } else {
+                        Toast.fire({
+                            icon: 'info',
+                            title: response.message || 'No more parts in that direction'
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.error('Failed to navigate to adjacent part:', error);
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Failed to navigate to part'
+                    });
+                },
+                complete: function() {
+                    // Restore button state
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            });
+        }
+        
+        // Update part details display with provided data
+        function updatePartDetailsDisplay(partData) {
+            const container = document.getElementById('part-details-container');
+            container.innerHTML = `
+                <div class="part-details">
+                    <table style="width: 100%">
+                        <tr>
+                            <td>Code:</td>
+                            <td>${partData.product_code}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><br><hr><br></td>
+                        </tr>
+                        <tr>
+                            <td>Title:</td>
+                            <td>${partData.title}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><br><hr><br></td>
+                        </tr>
+                        <tr>
+                            <td>Details:</td>
+                            <td>${partData.details || 'No description available'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><br><hr><br></td>
+                        </tr>
+                    </table>
+                    <div class="part-navigation">
+                        <button class="nav-button" id="prev-part">
+                            ← Previous
+                        </button>
+                        <button class="nav-button" id="next-part">
+                            Next →
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Re-add event listeners for navigation buttons
+            document.getElementById('prev-part').addEventListener('click', function() {
+                navigateToAdjacentPart('prev');
+            });
+            
+            document.getElementById('next-part').addEventListener('click', function() {
+                navigateToAdjacentPart('next');
+            });
+        }
+        
+        function saveCompatibility() {
+            if (!state.selectedPart) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Part Selected',
+                    text: 'Please select a car part first'
+                });
+                return;
+            }
+            
+            // Show saving state
+            const saveBtn = document.getElementById('save-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+            
+            // Prepare data for saving
+            const recommended = [];
+            const alternative = [];
+            
+            state.selectedModels.forEach((data, id) => {
+                if (data.type === 'recommended') {
+                    recommended.push(id);
+                } else {
+                    alternative.push(id);
+                }
+            });
+
+            $.ajax({
+                url: "{% url 'ajax_save_compatibility' %}",
+                method: 'POST',
+                data: {
+                    part_id: state.selectedPart,
+                    recommended_models: JSON.stringify(recommended),
+                    alternative_models: JSON.stringify(alternative),
+                    csrfmiddlewaretoken: getCSRFToken()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.message || 'Compatibility saved successfully!'
+                        });
+                        
+                        // Reload existing compatibility to reflect saved state
+                        loadExistingCompatibility(state.selectedPart);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Save Failed',
+                            text: response.message || 'Failed to save compatibility'
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.error('Failed to save compatibility:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Save Error',
+                        text: 'Failed to save compatibility. Please try again.'
+                    });
+                },
+                complete: function() {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

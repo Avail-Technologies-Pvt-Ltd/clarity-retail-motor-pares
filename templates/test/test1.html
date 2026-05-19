@@ -1,0 +1,8 @@
+<form method="get">
+  {{ filtered_users.form.as_p }}
+  <input type="submit" name="" value="Press">
+</form>
+
+{% for user in users_page_obj %}
+  {{ user.id }}. {{ user.username }} {{ user.first_name }} {{ user.last_name }}<br>
+{% endfor %}

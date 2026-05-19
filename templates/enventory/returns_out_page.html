@@ -1,0 +1,437 @@
+{% extends 'partials/base.html' %}
+{% block title %} Returns Out {% endblock %}
+
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Returns Out Table</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <button data-toggle="tooltip" data-placement="left" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                    <div class="breadcomb-list">
+                        <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                                <!-- <div class="breadcomb-wp" style="background-color:black; border-radius: 5px; border-color: white; border: 2px; border-style: solid; width: 70%;">
+                                    <select class="" data-live-search="true" style="width: 45%;" id='search-selector'>
+                                        <option value="All">All</option>
+                                        <option value="Product">Product Code</option>
+                                        <option value="Category">Category</option>
+                                        <option value="Description">Description</option>
+                                        <option value="Form">Form</option>
+                                        <option value="VAT">VAT</option>
+                                    </select>
+                                    <input class="" type="" name="" style="width: 100%;" placeholder="Search" id='live-search-input' onkeyup ="searchInputValueChanged()">
+                                </div> -->
+                                <div style="float: left;width: 50%; ">
+                                    <span id="search-type"></span>
+                                    <span id="page-detail"></span>
+                                    <small id="table-summery"></small>
+                                </div>
+                                <div style="float: right;width: 50%; text-align: right;">
+                                    <div>
+                                        <span style="padding: 5px;display: none;">
+                                            <select class="" data-live-search="true" style="width: 30%;" id='search-selector'>
+                                                <option value="all">All</option>
+                                                <option value="Product Code">Product Code</option>
+                                                <option value="Category">Category</option>
+                                                <option value="Description">Description</option>
+                                                <option value="Form">Form</option>
+                                                <option value="VAT">VAT</option>
+                                            </select>
+                                        
+                                            <input class="" type="" name="" style="width: %;" placeholder="Search" id='live-search-input' oninput="searchInputValueChanged()">
+                                        </span>
+                                   
+                                        <a href="" title="Filter Sales" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#FilterModal" id="simple-sales-filter-modal-button">Filters</a>
+
+                                        <button title="Previous Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="previousPage()"><i class="notika-icon notika-left-arrow"></i></button>
+
+                                        <span style="background-color:skyblue; padding: 5px; border-radius: 5%;" id="page-lable">1</span>
+
+
+                                        <button title="Next Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="nextPage()"><i class="notika-icon notika-right-arrow"></i></button></div>
+                                </div>
+                           <!--  <div class="d-flex justify-space-between align-center" style="background-color:red;"> hhhh
+                                <div class="breadcomb-report">
+                                    <div class="breadcomb-wp" style="background-color:red; border-radius: 5px; border-color: white; border: 2px; border-style: solid; width: 70%;">
+                                        <select class="" data-live-search="true" style="width: 45%;" id='search-selector'>
+                                            <option value="All">All</option>
+                                            <option value="Product">Product Code</option>
+                                            <option value="Category">Category</option>
+                                            <option value="Description">Description</option>
+                                            <option value="Form">Form</option>
+                                            <option value="VAT">VAT</option>
+                                        </select>
+                                        <input class="" type="" name="" style="width: 100%;" placeholder="Search" id='live-search-input' onkeyup ="searchInputValueChanged()">
+                                    </div>
+                                    <div>
+                                        <button title="Filter" id="openModal" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-sliders"></i></button>
+
+                                        <button title="Fields" id="openModal" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-columns"></i></button>
+                                    </div>
+                                </div> 
+                            </div>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+{% include 'partials/modals/enventory/returns_out_modals.html' %}
+{% load static %}
+{% load humanize %}
+
+<!--   MODAL -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>
+            <div class="form-container">
+                <br>
+                <hr>
+                <span>Filter</span>
+                <br>
+                <div class="row">
+                    <div class="col-lg-4 col-md-3 col-sm-3 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st">
+                                    <input class="form-control input-sm" id="product-code" type="text" name="product_code" placeholder="Product Code" >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-3 col-sm-3 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st">
+                                    <input class="form-control input-sm" id="product-title" type="text" name="title" placeholder="Title" >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-3 col-sm-3 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st">
+                                    <select class="form-control selectpicker" data-live-search="true" id="product-category" name="category">
+                                        <option value="all" selected>Select Med Category</option>
+                                        <option value="all">All</option>
+                                        {% for category in drug_categories %}
+                                            <option value="{{ category.id }}">{{ category.title }}</option>
+                                        {% endfor %}
+                                    </select> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-lg-4 col-md-3 col-sm-3 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st">
+                                    <select class="form-control selectpicker" data-live-search="true" id="product-form" name="form_">
+                                        <option value="all" selected>Select Form</option>
+                                        {% for drug_form in drug_forms %}
+                                            <option value="{{ drug_form.id }}"> {{ drug_form.title }}</option>
+                                        {% endfor %}
+                                    </select> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-3 col-sm-3 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st">
+                                    <select class="form-control selectpicker" data-live-search="true" id="product-status" name="status">
+                                        <option value="all" selected>Status</option>
+                                        <option value="all">All</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st">
+                                    <button class="btn btn-primary mb-3" id="login" onclick="formFilter()" style="width:100%;">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <hr>
+                <span>Fields</span>
+                <br><br>
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="form-example-int form-example-st">
+                            <div class="form-group">
+                                <div class="nk-int-st" style="display: inline-flex;">
+                                    <span style="width:50%">
+                                        <input checked type="radio"> Title<br>
+                                        <input type="radio"> Number<br>
+                                        <input checked type="radio"> Title<br>
+                                    </span>
+
+                                    <span style="width:50%">
+                                        <input checked type="radio"> Title<br>
+                                        <input type="radio"> Number<br>
+                                        <input checked type="radio"> Title<br>
+                                    </span>
+
+                                    <span style="width:50%">
+                                        <input checked type="radio"> Title<br>
+                                        <input type="radio"> Number<br>
+                                        <input checked type="radio"> Title<br>
+                                    </span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </p>
+    </div>
+</div>
+  <!-- /MODALE -->
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- products table -->
+        <table  class="table table-hover " style="background-color: lightgray;" id="products-table">
+            <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th style="text-align: right;">Total packs</th>
+                                        <th style="text-align: right;">Buying Price</th>
+                                        <th style="text-align: right;">Invoice Number</th>
+                                        <th>Supplier</th>
+                                        <th>Return date</th>
+                                        <th>Date bought</th>
+                                        <th>Manage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for return_out in returns_out %}
+                                        <tr>
+                                            <th>{{ return_out.batch.stock.product.title }} {{ return_out.batch.stock.product.form.title }} </th>
+                                            <td style="text-align: right;">{{ return_out.total_packs }}</td>
+                                            <td style="text-align: right;">{{ return_out.batch.buying_pack_price }}</td>
+                                            <td style="text-align: right;">{{ return_out.batch.recipt_number }}</td>
+                                            <td>{{ return_out.batch.supplier }}</td>
+                                            <td>{{ return_out.created_at|date:"d/m/Y" }}</td>
+                                            <td>{{ return_out.batch.created_at|date:"d/m/Y" }}</td>
+                                            <td><a href="return_out_details/{{return_out.id}}" title="Details" data-toggle="tooltip"><i class="notika-icon notika-menus"></i></a></td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr style="background-color:rgb(0,194,146);">
+                                        
+                                    </tr>
+                                </tbody>
+        </table>
+    </div>
+</div>
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+$(document).ready(function() {
+
+    returnsOutInitialLoad()
+})
+
+
+//GLOBAL VARIABLES
+var page = 1
+
+
+
+function requestData(request_type){
+    //alert(request_type)
+    var searchQuery = document.getElementById('live-search-input').value
+    var search_field = document.getElementById('search-selector').value
+
+    
+
+
+    //if request type 
+    if (request_type == "INITIAL-LOAD"){
+        document.getElementById('search-type').innerHTML = "INITIAL-LOAD"
+
+    }else if (request_type == "LIVE-SEARCH"){
+        document.getElementById('search-type').innerHTML = "LIVE-SEARCH"
+
+    }else if (request_type == "FORM-FILTER"){
+        document.getElementById('search-type').innerHTML = "FORM-FILTER"
+
+
+        var product_code = document.getElementById('product-code').value
+        var product_title = document.getElementById('product-title').value
+        var product_category = document.getElementById('product-category').value
+        var product_form = document.getElementById('product-form').value
+        var product_status = document.getElementById('product-status').value
+
+        // sessionStorage.setItem('stored_product_code', product_code)
+        // sessionStorage.setItem('stored_product_title', product_title)
+        // sessionStorage.setItem('stored_product_category', product_category)
+        // sessionStorage.setItem('stored_product_form', product_form)
+        // sessionStorage.setItem('stored_product_status', product_status)
+
+
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+
+        //alert(product_status + "::::::::::::::::::::")
+        document.getElementById('myModal').style.display = "none"
+    }
+
+
+    //alert(searchQuery)
+    //alert("page number: " + page)
+    document.getElementById('loader').style.display = "block"
+    //alert(product_code + "(((((((((((((((((((((((((((()))):")
+
+    $.ajax({
+        url: "{% url 'ajax_returns_out_live_search' %}",
+        data: {
+            search_key: searchQuery,
+            search_field: search_field,
+            request_type: request_type,
+            page: page,
+
+            //filter form
+            product_code: product_code,
+            product_title: product_title,
+            product_category: product_category,
+            product_form: product_form,
+            product_status: product_status,
+         },
+        success: function(responseData) {
+            $('#products-table').html(responseData.table)
+            document.getElementById('table-summery').innerHTML = responseData.table_summery
+            document.getElementById('loader').style.display = "none"
+            //alert(responseData.data)
+            document.getElementById('page-detail').innerHTML = "[" + responseData.data + "]"
+
+            //page numbers
+            var a = responseData.data
+            var before = true
+            var current_page_number = ""
+            var total_pages = ""
+            for (l=0; l<=a.length; l++){
+                if (a[l]=="o"){
+                    before = false
+                }
+                if (Number(a[l]) || a[l]=="0"){
+                    if (before == true){
+                        current_page_number = current_page_number + a[l]
+                    }else{
+                        total_pages = total_pages + a[l]
+                    }
+                }
+            }
+            document.getElementById('page-lable').innerHTML = current_page_number
+           
+
+
+        },
+        error: function(responseData, error){
+            //alert("An error ocured! " + error)
+        }
+    });
+}
+
+
+function searchInputValueChanged(){
+    //request type is "LIVE-SEARCH"
+    requestData("LIVE-SEARCH")
+}
+
+function nextPage(){
+    //alert("NEXT-PAGE CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) + 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    //alert(':::::NXT PG' + request_type)
+    requestData(request_type)
+}
+
+function previousPage(){
+    //alert("previousPage CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) - 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    requestData(request_type)
+}
+
+
+function returnsOutInitialLoad(){
+    //request type is "NEXT-PAGE"
+    //alert("INITIAL-LOAD")
+    requestData("INITIAL-LOAD")
+}
+
+function formFilter(){
+    //alert("Form filter " + document.getElementById('product-title').value)
+    //request type is "FORM-FILTER"
+    requestData("FORM-FILTER")
+}
+
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

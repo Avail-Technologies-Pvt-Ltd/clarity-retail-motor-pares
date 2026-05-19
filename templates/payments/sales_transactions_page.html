@@ -1,0 +1,447 @@
+{% extends 'partials/base.html' %}
+{% block title %} Transactions {% endblock %}
+
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Transactions Table</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <a href="{% url 'pos' %}" data-toggle="tooltip" data-placement="left" title="P.O.S" class="btn"><i class="notika-icon notika-edit"></i></a>
+                                    <button onclick="downloadSaleTransactionsCSV()" data-toggle="tooltip" data-placement="left" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                    <div class="breadcomb-list">
+                        <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                                
+                                <div style="float: left;width: 50%; ">
+                                    <span id="search-type"></span>
+                                    <span id="page-detail"></span>
+                                    <small id="table-summery"></small>
+                                </div>
+                                <div style="float: right;width: 50%; text-align: right;">
+                                    <div>
+                                        <span style="padding: 5px; display: none;">
+                                            <select class="" data-live-search="true" style="width: 30%;" id='search-selector'>
+                                                <option value="all">All</option>
+                                                <option value="Product Code">Product Code</option>
+                                                <option value="Category">Category</option>
+                                                <option value="Description">Description</option>
+                                                <option value="Form">Form</option>
+                                                <option value="VAT">VAT</option>
+                                            </select>
+                                        
+                                            <input class="" type="" name="" style="width: %;" placeholder="Search" id='live-search-input' oninput="searchInputValueChanged()">
+                                        </span>
+                                   
+                                        <a href="" title="Filter Sales" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#salesTransactionsFilter" id="simple-sales-filter-modal-button">Filters</a>
+
+                                        <button title="Previous Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="previousPage()"><i class="notika-icon notika-left-arrow"></i></button>
+
+                                        <span style="background-color:skyblue; padding: 5px; border-radius: 5%;" id="page-lable">1</span>
+
+
+                                        <button title="Next Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="nextPage()"><i class="notika-icon notika-right-arrow"></i></button></div>
+                                </div>
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+{% include 'partials/modals/payments/sale_transactions_modals.html' %}
+{% load static %}
+{% load humanize %}
+
+<!--   MODAL -->
+<div class="modal fade animated bounce" id="salesTransactionsFilter" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Sales Transactions Filter</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <form class="widget-tabs-list" method="post">
+                                {% csrf_token %}
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">From</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" class="form-control" id="sales-transactions-filter-form-date-from-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">To</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" class="form-control" id="sales-transactions-filter-form-date-to-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Invoice/Receipt Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="sales-transactions-filter-form-receipt-number-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" onclick="resetFilters()">Reset</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="loadQuery()">Load</button>                  
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- /MODALE -->
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- products table -->
+        <table  class="table table-hover " style="background-color: lightgray;" id="products-table">
+            <thead>
+                                    <tr>
+                                        <th>Recipt Number</th>
+                                        <th style="text-align: right;">Subtotal</th>
+                                        <th style="text-align: right;">Discount</th>
+                                        <th style="text-align: right;">VAT</th>
+                                        <th style="text-align: right;">Total Cost</th>
+                                        <th style="text-align: right;">Amound Paid</th>
+                                        <th style="text-align: right;">Change Left</th>
+                                        <th>Sales Rep</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                        <tr>
+                                            <td><a href="transaction/{{ transaction.recipt_number }}" title="View Details">{{ transaction.recipt_number }}</a> </td>
+                                            <td style="text-align: right;">{{ transaction.subtotal|floatformat:2|intcomma }} </td>
+                                            <td style="text-align: right;">{{ transaction.combined_money.discount|floatformat:2|intcomma }} </td>
+                                            <td style="text-align: right;">{{ transaction.VAT|floatformat:2|intcomma }} </td>
+                                            <td style="text-align: right;">{{ transaction.total_cost|floatformat:2|intcomma }} </td>
+                                            <td style="text-align: right;">{{ transaction.combined_money.total_money|floatformat:2|intcomma }} </td>
+                                            <td style="text-align: right;">{{ transaction.change_left|floatformat:2|intcomma }} </td>
+                                            <td><a href="/accounts/user_detail/{{transaction.created_by.id}}"> {{ transaction.created_by|title }}</a></td>
+                                            <td>{{ transaction.created_at|date:'d-m-Y' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr style="background-color:rgb(0,194,146);">
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+        </table>
+    </div>
+</div>
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+$(document).ready(function() {
+
+    initialLoad()
+})
+
+
+//GLOBAL VARIABLES
+var page = 1
+
+
+function loadQuery(){
+    $('#salesTransactionsFilter').modal('hide');
+    requestData("FORM-FILTER")
+}
+
+
+function requestData(request_type){
+    //alert(request_type)
+    var searchQuery = document.getElementById('live-search-input').value
+    var search_field = document.getElementById('search-selector').value
+
+    
+
+
+    //if request type 
+    if (request_type == "INITIAL-LOAD"){
+        document.getElementById('search-type').innerHTML = "INITIAL-LOAD"
+
+    }else if (request_type == "LIVE-SEARCH"){
+        document.getElementById('search-type').innerHTML = "LIVE-SEARCH"
+
+    }else if (request_type == "FORM-FILTER"){
+        document.getElementById('search-type').innerHTML = "FORM-FILTER"
+
+        /*
+        var product_code = document.getElementById('product-code').value
+        var product_title = document.getElementById('product-title').value
+        var product_category = document.getElementById('product-category').value
+        var product_form = document.getElementById('product-form').value
+        var product_status = document.getElementById('product-status').value*/
+
+        /*new form filter*/
+        var date_from = document.getElementById('sales-transactions-filter-form-date-from-value').value
+        var date_to = document.getElementById('sales-transactions-filter-form-date-to-value').value
+        var receipt_number = document.getElementById('sales-transactions-filter-form-receipt-number-value').value
+
+        // sessionStorage.setItem('stored_product_code', product_code)
+        // sessionStorage.setItem('stored_product_title', product_title)
+        // sessionStorage.setItem('stored_product_category', product_category)
+        // sessionStorage.setItem('stored_product_form', product_form)
+        // sessionStorage.setItem('stored_product_status', product_status)
+
+
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+
+        //alert(product_status + "::::::::::::::::::::")
+        document.getElementById('salesTransactionsFilter').style.display = "none"
+    }
+
+
+    //alert(searchQuery)
+    //alert("page number: " + page)
+    document.getElementById('loader').style.display = "block"
+    //alert(product_code + "(((((((((((((((((((((((((((()))):")
+
+    $.ajax({
+        url: "{% url 'ajax_transactions_live_search' %}",
+        data: {
+            search_key: searchQuery,
+            search_field: search_field,
+            request_type: request_type,
+            page: page,
+
+            /*//filter form
+            product_code: product_code,
+            product_title: product_title,
+            product_category: product_category,
+            product_form: product_form,
+            product_status: product_status,*/
+
+            /*new form filter*/
+            date_from: date_from,
+            date_to: date_to,
+            receipt_number: receipt_number,
+
+         },
+        success: function(responseData) {
+            $('#products-table').html(responseData.table)
+            document.getElementById('table-summery').innerHTML = responseData.table_summery
+            //document.getElementById('loader').style.display = "none"
+            //alert(responseData.data)
+            document.getElementById('page-detail').innerHTML = "[" + responseData.data + "]"
+
+            //page numbers
+            var a = responseData.data
+            var before = true
+            var current_page_number = ""
+            var total_pages = ""
+            for (l=0; l<=a.length; l++){
+                if (a[l]=="o"){
+                    before = false
+                }
+                if (Number(a[l]) || a[l]=="0"){
+                    if (before == true){
+                        current_page_number = current_page_number + a[l]
+                    }else{
+                        total_pages = total_pages + a[l]
+                    }
+                }
+            }
+            document.getElementById('page-lable').innerHTML = current_page_number
+           
+
+
+        },
+        error: function(responseData, error){
+            swal({
+                title: "Error",
+                text: "An error ocured! " + error,
+                type: "error"
+            });
+        },
+        complete: function(){
+            document.getElementById('loader').style.display = "none"
+            document.getElementById('salesTransactionsFilter').style.display = "none"
+        }
+    });
+}
+
+
+function searchInputValueChanged(){
+    //request type is "LIVE-SEARCH"
+    requestData("LIVE-SEARCH")
+}
+
+function nextPage(){
+    //alert("NEXT-PAGE CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) + 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    //alert(':::::NXT PG' + request_type)
+    requestData(request_type)
+}
+
+function previousPage(){
+    //alert("previousPage CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) - 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    requestData(request_type)
+}
+
+
+function initialLoad(){
+    //request type is "NEXT-PAGE"
+    //alert("INITIAL-LOAD")
+    requestData("INITIAL-LOAD")
+}
+
+function formFilter(){
+    //alert("Form filter " + document.getElementById('product-title').value)
+    //request type is "FORM-FILTER"
+    requestData("FORM-FILTER")
+}
+
+
+
+// BUTTON FUCNTIONS //
+
+    function downloadSaleTransactionsCSV(){
+        var date_from = document.getElementById('sales-transactions-filter-form-date-from-value').value
+        var date_to = document.getElementById('sales-transactions-filter-form-date-to-value').value
+        var receipt_number = document.getElementById('sales-transactions-filter-form-receipt-number-value').value
+        //alert("date date_from " + date_from)
+        $.ajax({
+            url: "{% url 'download_sale_transactions_csv' %}",
+            type: 'GET',
+            data: {
+                date_from: date_from,
+                date_to: date_to,
+                receipt_number: receipt_number
+            },
+            contentType: 'application/json',
+            success: function(responseData) {
+                const salesData = responseData.sale_transactions; 
+
+                // Function to convert JSON data to CSV format
+                function convertToCSV(data) {
+                    const headerRow = Object.keys(data[0]).join(','); // Get headers from first object
+                    let csvContent = headerRow + '\n'; // Add header row with newline
+
+                    for (const sale of data) {
+                        // Handle Decimal values (assuming you want them as strings)
+                        const formattedSale = Object.entries(sale).map(([key, value]) => {
+                            return value.toString(); // Convert Decimal values to strings
+                        });
+                        const row = formattedSale.join(',');
+                        csvContent += row + '\n';
+                    }
+
+                    return csvContent;
+                }
+
+                const csvString = convertToCSV(salesData);
+
+                // Download the CSV file
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'sale_transactions_data.csv';
+                link.click();
+
+                // Revoke the object URL to avoid memory leaks
+                URL.revokeObjectURL(link.href);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("Error downloading CSV:", textStatus, errorThrown);
+                // You can display an error message to the user here
+            }
+        });
+    }
+
+// //BUTTON FUCNTIONS //
+
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

@@ -1,0 +1,261 @@
+{% load static %}
+
+
+
+<!-- ADD -->
+
+
+
+<div class="modal fade animated bounce" id="adjustStockModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Adjust Stock</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Company Name" id="add-manufacturer-company-name">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Registration Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Registration Number" id="add-manufacturer-registration-number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" placeholder="Phone Number" id="add-manufacturer-phone-number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Email" id="add-manufacturer-email">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Address" id="add-manufacturer-address">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="add-manufacturer-status" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addManufacturer()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+    function addManufacturer(){
+
+        var company_name = document.getElementById('add-manufacturer-company-name').value
+        var registration_number = document.getElementById('add-manufacturer-registration-number').value
+        var phone_number = document.getElementById('add-manufacturer-phone-number').value
+        var email = document.getElementById('add-manufacturer-email').value
+        var address = document.getElementById('add-manufacturer-address').value
+        var status = document.getElementById('add-manufacturer-status').value
+
+        var errors = ""
+
+        if(company_name == ""){
+            errors = "Company_name field can not be blank"
+        }else if(registration_number == ""){
+            registration_number = "N/A"
+        }else if(phone_number == ""){
+            errors = "Phone_number field can not be blank"
+        }else if(email == ""){
+            email = "none@null.com"
+        }else if(address == ""){
+            errors = "Address field can not be blank"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_manufacturer' %}",
+                data: {
+                    company_name: company_name,
+                    registration_number: registration_number,
+                    phone_number: phone_number,
+                    email: email,
+                    address: address,
+                    status: status
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: responseData.message,
+                type: "error"
+            });
+        }
+        
+    }
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+CREATE A JSON DATA FILE
+
+in the old system:
+	set PYTHONIOENCODING=utf-8
+	python manage.py dumpdata --exclude=contenttypes --exclude=auth.Permission --indent=2 > data.json
+
+in the new system:
+	python manage.py loaddata data.json

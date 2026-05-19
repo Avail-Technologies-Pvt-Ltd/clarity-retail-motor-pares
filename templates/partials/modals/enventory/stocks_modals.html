@@ -1,0 +1,643 @@
+{% load static %}
+
+
+<!-- REORDER -->
+
+
+
+<div class="modal fade animated bounce" id="reorderModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Stock Running Out <small>(Bassed on set reorder quanties)</small></h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding: 15px; height: 20rem;">
+                                    <div style="background: gray; height: 100%; overflow: scroll;">
+                                        <table class="table table-hover" style="border: 1px;">
+                                            <thead>
+                                                <tr>
+                                                    <th><input type="checkbox" onclick="toggleAllCheckboxes()">invert </th>
+                                                    <th>Product</th>
+                                                    <th>Buying Unit Price</th>
+                                                    <th>In Stock</th>
+                                                    <th>Suggested Units</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="reorder-list-table">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="submitCheckedProducts();">Print Order List</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // REORDER -->
+
+
+<!-- STOCK DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="stockDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Stock Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Selling Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-selling-price-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Markup %</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-markup-price-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Reorder Quantity</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-reorder-quantity-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Warning Days</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-expiration-warning-days-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-status-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Average Unit Cost</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-average-unit-cost-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-total-units-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Stock Value</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-stock-value-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">To Order Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-to-order-ststus-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                        <div class="col-sm text-start">Product Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <hr style="background: RGB(0 194 146);">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Sales</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-total-sales-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Sales Value</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-sales-value-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Profit</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-total-profit-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Returns Inn</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="stock-details-returns-inn-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                                
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // STOCK DETAILS -->
+
+<!-- UPDATE STOCK  -->
+
+<div class="modal fade animated bounce" id="adjustStockModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Adjust Stock</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="adjust-stock-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12" >
+                                        <div class="col-sm text-start">Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="adjust-stock-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Selling Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <select style="width: 50%;" class="form-control" id="adjust-stock-selling-price-type-value" onchange="adjustStockSellingPriceTypeChanged()">
+                                                <option value="SELLING PRICE">Selling Price</option>
+                                                <option value="MARKUP PERCENTAGE">Markup Pecentage</option>
+                                            </select>
+                                            <div class="form-group ic-cmp-int" style="width:50%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control" placeholder="Sected Value" id="adjust-stock-selling-price-number-value" style="text-align: right;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" >
+                                        <div class="col-sm text-start">Reorder Quantity</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control number_element" placeholder="Reorder Quantity" id="adjust-stock-reorder-quantity-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Warning Days</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control number_element" placeholder="Reorder Quantity" id="adjust-stock-expiration-warning-days-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="adjust-stock-status-value" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="saveStockAdjustments()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- // UPDATE STOCK  -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#adjustStockModal').on('hidden.bs.modal', function (){
+            stocksInitialLoad()
+        })
+
+        $('#reorderModal').on('show.bs.modal', function (event) {
+            $.ajax({
+                url: "{% url 'get_reorder_suggestion_list' %}",
+                data: {},
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        $('#reorder-list-table').html(responseData.table)
+                    }
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error)
+                }
+            });
+        })
+
+        $('#stockDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var stock_id = $(event.relatedTarget).data('object-id')
+                    $.ajax({
+                        url: "{% url 'get_stock_details' %}",
+                        data: {
+                            stock_id: stock_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                document.getElementById('stock-details-total-sales-value').innerHTML = responseData.details['total_sales']
+                                document.getElementById('stock-details-sales-value-value').innerHTML = responseData.details['sales_value']
+                                document.getElementById('stock-details-total-profit-value').innerHTML = responseData.details['total_profit']
+                                document.getElementById('stock-details-returns-inn-value').innerHTML = responseData.details['returns_inn']
+
+
+
+                                document.getElementById('stock-details-expiration-warning-days-value').innerHTML = responseData.details['expiration_warning_days']
+                                document.getElementById('stock-details-status-value').innerHTML = responseData.details['status']
+                                document.getElementById('stock-details-average-unit-cost-value').innerHTML = responseData.details['average_unit_cost']
+                                document.getElementById('stock-details-total-units-value').innerHTML = responseData.details['total_units']
+
+
+
+                                document.getElementById('stock-details-product-title-value').innerHTML = responseData.details['product_title']
+                                document.getElementById('stock-details-selling-price-value').innerHTML = responseData.details['selling_price']
+                                document.getElementById('stock-details-markup-price-value').innerHTML = responseData.details['markup_percentage']
+                                document.getElementById('stock-details-reorder-quantity-value').innerHTML = responseData.details['reorder_quantity']
+                                
+
+
+                                document.getElementById('stock-details-stock-value-value').innerHTML = responseData.details['stock_value']
+                                document.getElementById('stock-details-to-order-ststus-value').innerHTML = responseData.details['to_order_status']
+                                document.getElementById('stock-details-product-details-value').innerHTML = responseData.details['product_details']
+
+                            }
+                        },
+                        error: function(responseData, error){
+                            alert("An error ocured! " + error)
+                        }
+                    });
+            }
+        })  
+
+
+
+
+
+
+
+        $('#adjustStockModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var stock_id = $(event.relatedTarget).data('object-id')
+                    $.ajax({
+                        url: "{% url 'get_stock_details' %}",
+                        data: {
+                            stock_id: stock_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                document.getElementById('adjust-stock-product-title-value').innerHTML = responseData.details['product_title']
+                                document.getElementById('adjust-stock-product-details-value').innerHTML = responseData.details['product_details']
+
+                                //document.getElementById('adjust-stock-selling-price-type-value').innerHTML = responseData.details['selling_price']
+                                document.getElementById('adjust-stock-selling-price-number-value').value = responseData.details['selling_price']
+                                //alert(responseData.details['reorder_quantity'])
+                                document.getElementById('adjust-stock-reorder-quantity-value').value = responseData.details['reorder_quantity']
+                                document.getElementById('adjust-stock-expiration-warning-days-value').value = responseData.details['expiration_warning_days']
+                                
+                                if(responseData.details['status'] == true){
+                                    document.getElementById('adjust-stock-status-value').value = "True"
+                                }else{
+                                    document.getElementById('adjust-stock-status-value').value = "False"
+                                }
+                                
+
+                                //session storage
+                                sessionStorage.setItem('selling_price', responseData.details['selling_price'])
+                                sessionStorage.setItem('markup_percentage', responseData.details['markup_percentage'])
+                                sessionStorage.setItem('stock_id', responseData.details['stock_id'])
+
+
+                            }
+                        },
+                        error: function(responseData, error){
+                            alert("An error ocured! " + error)
+                        }
+                    });
+            }
+        })            
+    })
+
+
+    function adjustStockSellingPriceTypeChanged(){
+        var selling_price_type = document.getElementById('adjust-stock-selling-price-type-value').value
+        if (selling_price_type == "SELLING PRICE"){
+            document.getElementById('adjust-stock-selling-price-number-value').value = sessionStorage.getItem('selling_price')
+        }else{
+            document.getElementById('adjust-stock-selling-price-number-value').value = sessionStorage.getItem('markup_percentage')
+        }
+    }
+
+
+    
+    function toggleAllCheckboxes() {
+        $('.select-item').prop('checked', function(index, checked) {
+            return !checked;
+        });
+    }
+
+    function submitCheckedProducts() {
+        const checkedProducts = getCheckedProducts();
+
+        if (checkedProducts.length > 0) {
+            $.ajax({
+                url: "{% url 'print_out_order_list' %}",
+                data: {
+                    order_list_array: JSON.stringify(checkedProducts)
+                },
+                success: function(responseData) {
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                    
+                },
+                error: function(responseData, error) {
+                    alert("An error ocured! " + error)
+                }
+            });
+        } else {
+            swal({
+                title: "Error",
+                text: "Please select at least one product.",
+                type: "error"
+            });
+        }
+    }
+
+    function getCheckedProducts() {
+      const checkedProducts = [];
+
+      $('.select-item:checked').each(function() {
+        const itemId = $(this).data('itemId'); // Assuming the data attribute is 'itemId'
+
+        // Get the elements from the same row as the checkbox
+        const $productDescription = $(this).closest('tr').find('#product-description');
+        const $averageUnitCost = $(this).closest('tr').find('#avarege-unit-cost');
+        const $totalUnitsAvailable = $(this).closest('tr').find('#total-units-available');
+        const $orderQuantity = $(this).closest('tr').find('.quantity-input'); // Use class for quantity input
+
+        checkedProducts.push({
+          itemId,
+          productDescription: $productDescription.text().trim(),
+          averageUnitCost: parseFloat($averageUnitCost.text().trim()),
+          totalUnitsAvailable: parseInt($totalUnitsAvailable.text().trim(), 10),
+          orderQuantity: parseInt($orderQuantity.val(), 10)
+        });
+      });
+      console.log(checkedProducts)
+      return checkedProducts;
+    }
+
+
+
+
+   
+
+
+
+    function saveStockAdjustments(){
+        var selling_price_type = document.getElementById('adjust-stock-selling-price-type-value').value
+        var selling_price_number = document.getElementById('adjust-stock-selling-price-number-value').value
+        var reorder_quantity = document.getElementById('adjust-stock-reorder-quantity-value').value
+        var expiration_warning_days = document.getElementById('adjust-stock-expiration-warning-days-value').value
+        var status = document.getElementById('adjust-stock-status-value').value
+        var stock_id = sessionStorage.getItem('stock_id')
+
+        errors = ""
+
+        if (selling_price_type == ""){
+            errors = "Selling_price field can not be blank"
+        } 
+        if (selling_price_number == ""){
+            errors = "selling_price_number field can not be blank"
+        } 
+        if (reorder_quantity == ""){
+            errors = "reorder_quantity field can not be blank"
+        } 
+        if (expiration_warning_days == ""){
+            errors = "expiration_warning_days field can not be blank"
+        } 
+        if (status == ""){
+            errors = "status field can not be blank"
+        } 
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'save_stock_adjustments' %}",
+                data: {
+                    stock_id: stock_id,
+                    selling_price_type: selling_price_type,
+                    selling_price_number: selling_price_number,
+                    reorder_quantity: reorder_quantity,
+                    expiration_warning_days: expiration_warning_days,
+                    status: status
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Sussess",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error)
+                }
+            });
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+</script>

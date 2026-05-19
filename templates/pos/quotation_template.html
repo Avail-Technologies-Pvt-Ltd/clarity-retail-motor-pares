@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quotation - {{ date }}</title>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Simple print styles */
+        @media print {
+            body { margin: 0; padding: 0; }
+            .no-print { display: none; }
+            @page { margin: 15mm; }
+        }
+        
+        /* Simple screen styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        
+        .company-info {
+            margin-top: 10px;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .quotation-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+        }
+        
+        .metadata {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .meta-item {
+            flex: 1;
+        }
+        
+        .meta-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        
+        .parties {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .party {
+            flex: 1;
+        }
+        
+        .party-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #333;
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .totals {
+            float: right;
+            width: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+        
+        .grand-total {
+            border-top: 2px solid #333;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .footer {
+            clear: both;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .notes-section {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 30px;
+        }
+        
+        .notes {
+            flex: 1;
+        }
+        
+        .banking-details {
+            flex: 1;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #333;
+        }
+        
+        .bank-detail-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        
+        .bank-label {
+            font-weight: bold;
+            min-width: 80px;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        
+        .signature {
+            width: 45%;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #000;
+            margin: 30px 0 5px 0;
+        }
+        
+        .print-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        
+        button {
+            padding: 8px 15px;
+            margin-left: 5px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        
+        button:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Simple Print Controls -->
+    <div class="print-controls no-print">
+        <button onclick="window.print()">Print</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header with Logo -->
+        <div class="header">
+            {% if logo_url %}
+            <img src="{{ logo_url }}" alt="Company Logo" class="logo" style="width: 20%; height: auto;">
+            {% else %}
+            <div style="height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 24px; font-weight: bold; color: #333;">
+                {{ company_name }}
+            </div>
+            {% endif %}
+            
+            <div class="company-info">
+                <div>{{ company_address }}</div>
+                <div>{{ company_phone }} • {{ company_email }}</div>
+            </div>
+            
+            <div class="quotation-title">QUOTATION</div>
+        </div>
+        
+        <!-- Metadata -->
+        <div class="metadata">
+            <div class="meta-item">
+                <div class="meta-label">QUOTATION #</div>
+                <div>{{ quotation_number }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">DATE</div>
+                <div>{{ date }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">VALID UNTIL</div>
+                <div>{{ expiration_date }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">CURRENCY</div>
+                <div>{{ currency }}</div>
+            </div>
+        </div>
+        
+        <!-- Parties -->
+        <div class="parties">
+            <div class="party">
+                <div class="party-title">FROM</div>
+                <div><strong>{{ company_name }}</strong></div>
+                <div>{{ company_address }}</div>
+                <div>Phone: {{ company_phone }}</div>
+                <div>Email: {{ company_email }}</div>
+                <br>
+                <div>VAT : {{ vat_number }}</div>
+                <div>TIN : {{ tin_number }}</div>
+                <div>PRZ : {{ prz_number }}</div>
+            </div>
+            <div class="party">
+                <div class="party-title">BILL TO</div>
+                <div>Name : {{ buyer_name }}</div>
+                <div>TIN  : {{ buyer_tin }}</div>
+                <div>PRZ  : {{ buyer_prz }}</div>
+                <div>Email: {{ buyer_vat }}</div>
+                <div>Address: {{ buyer_address }}</div>
+
+            </div>
+        </div>
+        
+        <!-- Items Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="50%">DESCRIPTION</th>
+                    <th width="10%" style="text-align: center;">QTY</th>
+                    <th width="15%" style="text-align: right;">UNIT PRICE</th>
+                    <th width="20%" style="text-align: right;">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div><strong>{{ item.title }}</strong></div>
+                        {% if item.details %}
+                        <div style="color: #666; font-size: 11px; margin-top: 3px;">{{ item.details }}</div>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">{{ item.quantity }}</td>
+                    <td style="text-align: right;">{{ currency_symbol }}{{ item.unit_price|floatformat:2 }}</td>
+                    <td style="text-align: right;"><strong>{{ currency_symbol }}{{ item.total|floatformat:2 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Totals -->
+        <div class="totals">
+            <div class="total-row">
+                <div>Subtotal:</div>
+                <div>{{ currency_symbol }}{{ subtotal|floatformat:2 }}</div>
+            </div>
+            <div class="total-row">
+                <div>VAT:</div>
+                <div>{{ currency_symbol }}{{ vat|floatformat:2 }}</div>
+            </div>
+            <div class="total-row grand-total">
+                <div>TOTAL:</div>
+                <div>{{ currency_symbol }}{{ total|floatformat:2 }}</div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <!-- Notes and Banking Details side by side -->
+            <div class="notes-section">
+                
+                <div class="banking-details">
+                    <strong>BANKING DETAILS:</strong>
+                    <div style="margin-top: 10px;">
+                        <div class="bank-detail-row">
+                            <div class="bank-label">BANK:</div>
+                            <div>{{ bank_name }}</div>
+                        </div>
+                        <div class="bank-detail-row">
+                            <div class="bank-label">ACC NAME:</div>
+                            <div>{{ account_name }}</div>
+                        </div>
+                        <div class="bank-detail-row">
+                            <div class="bank-label">ACC NOSTRO:</div>
+                            <div>{{ nostro_account }}</div>
+                        </div>
+                        <div class="bank-detail-row">
+                            <div class="bank-label">ACC ZIG:</div>
+                            <div>{{ zig_account }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Signatures -->
+            <div class="signatures">
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <div><strong>AUTHORIZED SIGNATURE</strong></div>
+                    <div>{{ company_name|default:"TAJO MOTOR SPARES (PVT) LTD" }}</div>
+                    <div>Name: {{ authorized_signature }}</div>
+                    <div>Signature: <img src="{% static '' %}{{ user.e_signature_link }}" style="height: 15px; width: auto;"></div>
+                </div>
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <div><strong>CUSTOMER SIGNATURE</strong></div>
+                    <div><br></div>
+                    <div>Date: ________________</div>
+                </div>
+            </div>
+            
+            <!-- Thank you message -->
+            <div style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ccc; font-style: italic;">
+                Thank you for your business. We look forward to working with you.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple auto-print if requested
+        if (new URLSearchParams(window.location.search).get('autoprint') === '1') {
+            setTimeout(() => window.print(), 300);
+        }
+    </script>
+</body>
+</html>

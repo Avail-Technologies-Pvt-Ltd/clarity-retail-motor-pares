@@ -1,0 +1,346 @@
+{% extends 'partials/base.html' %}
+{% block title %} Daily Transactions Summery {% endblock %}
+
+
+{% block info %}
+<style type="text/css">
+    table, th, td {
+    width: 20%;
+    margin: auto;
+    border: 1px solid black;
+    border-collapse: collapse;
+
+}
+</style>
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Daily Transactions Summery</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <!-- <a href="add_patient" data-toggle="tooltip" data-placement="left" title="Add New Patient" class="btn"><i class="notika-icon notika-edit"></i></a>
+                                    <a href="merge_patients" data-toggle="tooltip" data-placement="bottom" title="Add New Patient" class="btn"><i class="notika-icon notika-refresh"></i></a> -->
+                                    <button onclick="printOutDailyTransactionsSummery()" data-toggle="tooltip" data-placement="bottom" title="Print" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                <div class="breadcomb-list">
+                    <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                            
+                            <div style="float: left;width: 75%; ">
+                                <span id="search-type"></span>
+                                <span id="page-detail"></span>
+                                <small id="table-summery"></small>
+                            </div>
+                            <div style="float: right;width: 25%; text-align: right;">
+                                <div style="display: flex;">
+                                    <input type="date" class="today form-control" id="transactions-summery-date-filter-value" name="trip-start" value="2018-07-22">
+                                    <button class="btn btn-primary" title="UPDATE" style="margin-left: 10px;" onclick="transactionsSummeryInitialLoad()"><i class="notika-icon notika-right-arrow"></i></button>
+                                </div>
+                            </div>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- summery boxes -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$ <span id="transactions-summery-sales-profit-value">xxxx.xxx</span></h2>
+                        <p>Sales Profit</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span id="transactions-summery-number-of-sales-value">xxxx.xxx</span></h2>
+                        <p>Number of Sales</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$<span id="transactions-summery-sales-value-value">xxxx.xxx</span></h2>
+                        <p>Sales Value</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$<span id="transactions-summery-expenses-value-value">xxxx.xxx</span></h2>
+                        <p>Expenses Value</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span id="transactions-summery-total-returns-inn-value">xxxx.xxx</span></h2>
+                        <p>Total Returns Inn</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span id="transactions-summery-total-returns-out-value">xxxx.xxx</span></h2>
+                        <p>Total Returns Out</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$<span id="transactions-summery-received-stock-value-value">xxxx.xxx</span></h2>
+                        <p>Received Stock Value</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$<span id="transactions-summery-total-profit-value">xxxx.xxx</span></h2>
+                        <p>Total Profit</p>
+                    </div>
+                    <div class="sparkline-bar-stats1">9,4,8,6,5,6,4,8,3,5,9,5</div>
+                </div>
+            </div>
+        </div>
+        <br>
+         <!-- // summery boxes -->
+         <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>Payments</h2>
+                        <p>All Transactions</p>
+                        
+                    </div><hr>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <br>
+                    <table class="table table-hover" style="width: 100%;" id="transactions-summery-payments-table-value">
+                    <tr>
+                        <th>Payment Method</th>
+                        <th colspan="2">Amount</th>
+                        <th colspan="2">Value</th>
+                        <th >Total Value</th>
+                    </tr>
+                    <tr>
+                        <th>ZiG</th>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                        <td style="text-align: right; color: red;">-765.90</td>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                        <td style="text-align: right; color: red;">-765.90</td>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                    </tr>
+                    <tr>
+                        <th>RTGS</th>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                        <td style="text-align: right; color: red;">-765.90</td>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                        <td style="text-align: right; color: red;">-765.90</td>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                    </tr>
+                    <tr>
+                        <th>ECOCASH</th>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                        <td style="text-align: right; color: red;">-765.90</td>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                        <td style="text-align: right; color: red;">-765.90</td>
+                        <td style="text-align: right; color: blue;">2343.09</td>
+                    </tr>
+                    <tr>
+                        <th colspan="3">Total</th>
+                        <th style="text-align: right;">2343.09</th>
+                        <th style="text-align: right;">765.90</th>
+                        <th style="text-align: right;"><h1>2343.09</h1></th>
+                    </tr>
+
+                </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static '' %}jquery.min.js"></script>
+<script src="{% static '' %}Chart.js"></script>
+</script>
+<script>
+    window.onload = function() {
+        document.getElementById('transactions-summery-date-filter-value').value = new Date().toISOString().slice(0, 10);
+        transactionsSummeryInitialLoad()
+    };
+
+    $(document).ready(function() {
+        transactionsSummeryInitialLoad()
+    })
+
+    function transactionsSummeryInitialLoad(){
+        var filter_date = document.getElementById('transactions-summery-date-filter-value').value
+        sessionStorage.setItem('transactions_summery_filter_date', filter_date)
+
+
+        if (filter_date == ""){
+            filter_date = new Date().toLocaleDateString()
+        }else{
+            document.getElementById('loader').style.display = "block"
+            $.ajax({
+                url: "{% url 'ajax_transactions_summery' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('transactions-summery-sales-profit-value').innerHTML = responseData.summery_details['sales_profit']
+                        document.getElementById('transactions-summery-number-of-sales-value').innerHTML = responseData.summery_details['number_of_sales']
+                        document.getElementById('transactions-summery-sales-value-value').innerHTML = responseData.summery_details['sales_value']
+                        document.getElementById('transactions-summery-expenses-value-value').innerHTML = responseData.summery_details['expenses_value']
+                        document.getElementById('transactions-summery-total-returns-inn-value').innerHTML = responseData.summery_details['total_returns_inn']
+                        document.getElementById('transactions-summery-total-returns-out-value').innerHTML = responseData.summery_details['total_returns_out']
+                        document.getElementById('transactions-summery-received-stock-value-value').innerHTML = responseData.summery_details['received_stock_value']
+                        document.getElementById('transactions-summery-total-profit-value').innerHTML = responseData.summery_details['total_profit']
+
+
+                        document.getElementById('transactions-summery-payments-table-value').innerHTML = responseData.payments_table
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+    //BUTTON TRIGERED FUNCTIONS
+
+    function printOutDailyTransactionsSummery(){
+        var sales_profit = document.getElementById('transactions-summery-sales-profit-value').innerHTML
+        var number_of_sales = document.getElementById('transactions-summery-number-of-sales-value').innerHTML
+        var sales_value = document.getElementById('transactions-summery-sales-value-value').innerHTML
+        var expenses_value = document.getElementById('transactions-summery-expenses-value-value').innerHTML
+        var total_returns_inn = document.getElementById('transactions-summery-total-returns-inn-value').innerHTML
+        var total_returns_out = document.getElementById('transactions-summery-total-returns-out-value').innerHTML
+        var received_stock = document.getElementById('transactions-summery-received-stock-value-value').innerHTML
+        var total_profit = document.getElementById('transactions-summery-total-profit-value').innerHTML
+
+        var filter_date = sessionStorage.getItem('transactions_summery_filter_date')
+
+
+        $.ajax({
+            url: "{% url 'print_out_daily_transactions_summery' %}",
+            data: {
+                filter_date: filter_date,
+                sales_profit: sales_profit,
+                number_of_sales: number_of_sales,
+                sales_value: sales_value,
+                expenses_value: expenses_value,
+                total_returns_inn: total_returns_inn,
+                total_returns_out: total_returns_out,
+                received_stock: received_stock,
+                total_profit: total_profit,
+                today_s_date: toDayFormattedDate()
+            },
+            success: function(responseData) {
+                document.getElementById('loader').style.display = "none"
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            }
+        })
+    }
+
+    // //BUTTON TRIGERED FUNCTIONS
+            
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

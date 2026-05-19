@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <!--<meta http-equiv="refresh" content="5"> -->
+    <!--<meta http-equiv="refresh" content="1"> -->
+    <title> Clarit: {% block title %} POS {% endblock %} </title>
+    {% load static %}
+    {% load humanize %}
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- favicon
+    ============================================ -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static '' %}img/favicon.ico">
+
+<!-- Google Fonts
+    ============================================ -->
+    <!-- <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet"> -->
+<!-- Bootstrap CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/bootstrap.min.css">
+<!-- font awesome CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/font-awesome.min.css">
+<!-- owl.carousel CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/owl.carousel.css">
+    <link rel="stylesheet" href="{% static '' %}css/owl.theme.css">
+    <link rel="stylesheet" href="{% static '' %}css/owl.transitions.css">
+<!-- animate CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/animate.css">
+<!-- normalize CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/normalize.css">
+<!-- mCustomScrollbar CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/scrollbar/jquery.mCustomScrollbar.min.css">
+<!-- wave CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/wave/waves.min.css">
+<!-- Notika icon CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/notika-custom-icon.css">
+<!-- main CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/main.css">
+    <link rel="stylesheet" href="{% static '' %}css/datapicker/datepicker3.css">
+<!-- style CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}style.css">
+<!-- responsive CSS
+    ============================================ -->
+    <link rel="stylesheet" href="{% static '' %}css/responsive.css">
+    <!--============================================ -->
+    <!-- <link rel="stylesheet" href="{% static '' %}css/bootstrap-select.css"> -->
+    <link rel="stylesheet" href="{% static '' %}css/bootstrap-select/bootstrap-select.css">
+
+    <link rel="stylesheet" href="{% static '' %}css/dialog/dialog.css">
+    <link rel="stylesheet" href="{% static '' %}css/dialog/sweetalert2.min.css">
+
+
+    <script src="{% static '' %}js/dialog/dialog-active.js"></script>
+    <script src="{% static '' %}js/dialog/sweetalert2.min.js"></script>
+
+    <!--============================================ -->
+
+    <!-- <link rel="stylesheet" type="text/css" href="https://common.olemiss.edu/_js/sweet-alert/sweet-alert.css"> -->
+
+</head>
+
+<style>
+    /* new styles*/
+
+    ::-webkit-scrollbar {
+        width:2px;
+        height:8px;
+        border-radius:50%
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color:black
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color:grey
+    }
+
+    * {
+        box-sizing:border-box;
+    }
+    
+
+    body {
+        background-image:url("{%static 'images/bg.jpeg'%}");
+        margin:0px;
+        padding:30px;
+
+    }
+
+    .wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        grid-auto-rows: minmax(100px, auto);
+
+        height: 550px;
+
+        margin: 2px;
+
+        border: 2px;
+        border-color: black;
+
+
+    }
+    .one {
+        grid-column: 1 / 3;
+        grid-row: 1/3;
+
+        background-color: white;
+        padding: 20px;
+        padding-left: 30px;
+
+    }
+    .two {
+        grid-column: 2 / 4;
+        grid-row: 1 / 3;
+
+        background-color: pink;
+
+        padding: 20px;
+        padding-top: 0px;
+        overflow-y: auto;
+
+    }
+    th{
+        width:190px;
+    }
+    .info{
+        background-color: RGB(0 194 146);
+        padding: 10px;
+        text-align: right;
+
+        font-family: monospace;
+        font-size: 15px;
+    }
+    label{
+        width: 15%;
+        margin: 2px;
+    }
+    .pos_stock_details_lable {
+        width: 100%;
+    }
+    .short_input{
+        width: 15%;
+        height:35px;
+        margin: 2px;
+
+        text-align: right;
+    }
+    td{
+        width: 20%;
+    }
+    .min_table_row_title{
+        text-align: right;
+    }
+    .min_table_row_value{
+        text-align: right;
+        color: white;
+        font-size: 20px;
+    }
+
+    .currency_styling{
+        width: 100%;
+    }
+
+    .currency_lable_styling{
+        width: 100%;
+    }
+
+    .table-container {
+        height: 24rem;  /* Set your desired table height */
+        overflow-y: auto;
+    }
+
+    .table-container thead {
+        position: sticky;
+        top: 0;
+        background-color: #fff;  /* Optional: Set background color for header */
+        z-index: 1;
+    }
+
+    @media print {
+        header, footer {
+            display: none;
+        }
+
+        @page {
+            @top-center {
+                content: "Custome header";
+            }
+
+            @bottom-center {
+                content: "custome footer";
+            }
+        }
+    }
+
+
+
+
+
+    /*---------------------*/
+
+    .look_up_search_box_selector .dropdown-menu {
+        width: auto !important; /* or a specific width like 300px */
+        max-width: 400px; /* prevents it from getting too wide */
+    }
+
+</style>
+<body>
+{% include 'partials/nav_bar.html' %}
+
+
+
+    <!-- Modals area start-->
+
+    <div class="modal fade animated bounce" id="partLookUpModal" role="dialog">
+        <div class="modal-dialog modal-large">
+            <div class="modal-content" style="padding: 2rem;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                            <div class="inbox-left-sd">
+                                <div class="inbox-status">
+                                    <select class=" selectpicker" id="look-up-search-type-option" onchange="lookUpSearchTypeChanged()">
+                                        <option value="0">SEARCH BY</option>
+                                        <option value="model">SEARCH BY CAR MODEL</option>
+                                        <option value="part">SEARCH BY PART</option>
+                                    </select>
+                                    <hr>
+                                    <div id="look-up-search-box-container" style="display: none;">
+                                        <select data-live-search="true" class=" selectpicker look_up_search_box_selector" id="look-up-search-box-selector" name="" onchange="partOrModelChanged()">
+                                            <option value="0">Type here</option>
+                                        </select>
+                                    </div>
+
+                                    <br> 
+                                    <div style="background: whitesmoke;" id="active-selection-details">
+
+                                        <!-- part details -->
+                                        <div id="part-details" style="display: ;">
+                                            <table style="width: 100%; table-layout: fixed;">
+                                                <tr>
+                                                    <td colspan="2"><br></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Title: </th> <td id="title">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Part Code: </th>
+                                                    <td id="part_code">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Selling Price: </th>
+                                                    <td id="selling_price">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Details: </th>
+                                                    <td id="details">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><br></td>
+                                                </tr>
+                                            </table>
+                                            
+                                        </div>
+
+                                        <!-- model details -->
+                                        <div id="model-details" style="display: none;">
+                                            <table style="width: 100%; table-layout: fixed;">
+                                                <tr>
+                                                    <td colspan="2"><br></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Engine Number: </th>
+                                                    <td id="engine-number">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Make: </th>
+                                                    <td id="make">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Model: </th>
+                                                    <td id="model">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Year: </th>
+                                                    <td id="year">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><hr></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width: 30%;">Transmission: </th>
+                                                    <td id="transmission">XXXXX</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><br></td>
+                                                </tr>
+                                            </table>
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                            <div class="view-mail-list sm-res-mg-t-30" id="compatable-models-view" style="background: whitesmoke; display: ;">
+                                <div class="table-container">
+                                    <table class="table table-striped" style="width: 100%; table-layout: fixed;">
+                                        <thead >
+                                            <tr style="background-color: RGB(0 194 146);">
+                                                <th style="width: 10%;">#</th>
+                                                <th style="width: 90%;">Car Model</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="compatable-models-table">
+                                            <tr>
+                                                <td colspan="2">nothing loaded yet</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="view-mail-list sm-res-mg-t-30" id="compatable-parts-view" style="background: ; display: none;">
+                                <div class="table-container">
+                                    <table class="table table-striped" id="compatable-parts-table" style="width: 100%; table-layout: fixed;">
+                                        <thead>
+                                            <tr style="background-color: RGB(0 194 146);">
+                                                <th style="width: 5%;">#</th> <th style="width: 45%;">Part</th> <th style="width: 15%; text-align: right;">Price</th>
+                                                <th style="width: 15%; text-align: right;">Stock</th>
+                                                <th style="width: 20%; text-align:right;">Cart +</th> </tr>
+                                        </thead>
+                                        <tbody id="compatable-parts-table-body">
+                                            <tr>
+                                                <td colspan="5">No data yet. Select a car model first</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div style="text-align: right; background: RGB(0 194 146); padding: 1rem; display: flex; justify-content: space-between;">
+                                    <button class="btn btn-danger">Clear All</button>
+                                    <button class="btn btn-primary" id="add-to-cart-from-look-up-button">Add To Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+   
+    <div class="modal fade animated bounce" id="posPaymentModal" role="dialog">
+        <div class="modal-dialog modal-large">
+            <div class="modal-content" style="padding: 2rem;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                            <div class="inbox-left-sd">
+                                <div class="compose-ml">
+                                    <div class="btn">TOTAL RECEIPT: <span id="total-receipt-price">XXX.XX</span></div>
+                                </div>
+                                <div class="inbox-status">
+                                    <select data-live-search="true" class=" selectpicker payment_method_selector_class" id="payment-method-selector" name="payment_method" onchange="paymentMethodChanged()">
+                                    </select>
+                                    <br> 
+                                    <label class="currency_lable_styling" >Discount</label> <input id="discount-amount-input" class="currency_styling short_input" type="number" name="discount" id="discount" value="0.00" step="any" oninput="calculateFieldsBasedOnDiscount()" required> <br>
+                                    <label class="currency_lable_styling" >Paid    </label> <input id="paid-amount-input" class="currency_styling short_input" type="number" name="paid" id="paid-input" oninput="calculateFieldsBasedOnPaidAmount()" step="any" required> <br>
+                                    <label class="currency_lable_styling" >Change  </label> <input id="change-amount-input" class="currency_styling short_input" type="number"  name="change" id="change" step="any" value="0.00" required readonly> <br>
+                                    <label class="currency_lable_styling" >Change given</label> <input id="change-given-amount-input" class="currency_styling short_input" type="number" name="change_given" id="change_given" step="any" required> <br>
+                                    <div style="display: flex;">
+                                        <button class="btn btn-success add_object_button" onclick="openCustomersPopup()" title="Add customer Account">
+                                            +
+                                        </button>
+                                        <select style="width:100%" data-live-search="true" class="selectpicker customer_selector_class" id="customer-selector" name="customer">
+                                            <option>Buyer Not Selected</option>
+                                        </select>
+                                    </div>
+                                    
+                                </div>
+                                <hr>
+                                <div class="button-container d-flex flex-column align-items-center">
+                                  <button onclick="addPayment()" class="btn btn-primary" style="width: 49%; text-align: center; padding-left: 0px; padding-right: 0px;">ADD PAYMENT</button>
+                                  <button onclick="voidPayment()" class="btn btn-danger" style="width: 49%">VOID</button>
+                                  <br>
+                                  <br>
+                                  <button onclick="checkOut()" class="btn btn-success" id="check-out-button" style="width: 99%; display: none;">CHECK OUT</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                            <div class="view-mail-list sm-res-mg-t-30">
+                                <div class="table-container">
+                                    <table class="table table-striped">
+                                        <thead >
+                                            <tr style=" width: auto; background-color: RGB(0 194 146);">
+                                                <th>CURRENCE</th>
+                                                <th style="text-align:right;">AMOUNT</th>
+                                                <th style="text-align:right;">RATE</th>
+                                                <th style="text-align:right;">RATED AMOUNT</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="payment-potions-table">
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div style="text-align: right; background: RGB(0 194 146); padding: 1rem;">
+                                    <span>DISCOUNT:</span>
+                                    <span id='discount-text' style="width: 100px; display: inline-block;">xxx.xx</span><br>
+                                    <span>PAID VALUE:</span>
+                                    <span id='paid-value-text' style="width: 100px; display: inline-block;">xxx.xx</span><br>
+                                    <span id='change-or-remaining-lable'>CHANGE/REMAINING:</span>
+                                    <span id='change-or-remaining-text' style="width: 100px; display: inline-block;">xxx.xx</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade animated bounce" id="printQuotationModal" role="dialog">
+        <div class="modal-dialog modal-large">
+            <div class="modal-content" style="padding: 2rem;">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeQuotationModal()" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="view-mail-list sm-res-mg-t-30">
+                                <select data-live-search="true" class=" selectpicker quotation_payment_method_selector_class" id="quotation-payment-method-selector" name="payment_method" onchange="quotationPaymentMethodChanged()">
+                                        <option>PAYMENT METHOD</option>
+                                </select>
+                                <div class="table-container" id="quotation-area" style="background: whitesmoke; height: 30rem;">
+                                    <div class="letter_head">
+                                        
+                                    </div>
+                                    <div class="default_letter_head" style="text-align: left; margin: 30px;">
+                                        <center><img src="{% static '' %}images/logo.jpg" style="width:25%"></center>
+                                        <div style="display: inline-flex; width:100%">
+                                            <div style="width:50%;">
+                                                <h2 id="print-quotation-company-name-value"></h2><hr>
+                                                <span id="print-quotation-address-value">1232 wywyue trueu <br> agjjhhkam</span><br><hr>
+                                                <span id='print-quotation-phone-number-value' style="width:; display: inline-block;">Tel: +427735782357/ +4367263733</span><br>
+                                                <span>email:</span><span id='print-quotation-email-value' style="width:; display: inline-block;">a@mail.com</span>
+                                            </div>
+
+                                            <div style="width:50%; text-align: right;">
+                                                <span>TIN:</span><span id='print-quotation-tin-number-value' style="width: 150px; display: inline-block;"></span><br>
+                                                <span>PRZ:</span><span id='print-quotation-prz-number-value' style="width: 150px; display: inline-block;"></span><br>
+                                                <span>VAT:</span><span id='print-quotation-vat-number-value' style="width: 150px; display: inline-block;"></span><br>
+
+                                                <span></span><span id='' style="width: 150px; display: inline-block;"><hr></span><br>
+
+                                                <span>DATE:</span><span id='print-quotation-date-created-value' style="width: 150px; display: inline-block;"></span><br>
+                                                <span>VALID UNTIL:</span><div id='print-quotation-due-date-value' style="width: 150px; display: inline-block;">........./........./............</div><br>
+                                                <span>SALES REP:</span><span id='print-quotation-cashier-value' style="width: 150px; display: inline-block;"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <table style="text-align:left; margin: 30px;" id="print-quotation-table-value">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Unit Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><hr></td>
+                                        </tr>
+                                        <tr>
+                                            <td>P1 iqwueyiuiy qhiiqyuyue hqaeiuoiqhghey jqyyejyuyyusn shjh</td>
+                                            <td>12.33</td>
+                                            <td>1</td>
+                                            <td>12.33</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><hr></td>
+                                        </tr>
+                                        <tr>
+                                            <td>P1 iqwueyiuiy qhiiqyuyue hqaeiuoiqhghey jqyyejyuyyusn shjh</td>
+                                            <td>12.33</td>
+                                            <td>1</td>
+                                            <td>12.33</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><hr></td>
+                                        </tr>
+                                        <tr>
+                                            <td>P1 iqwueyiuiy qhiiqyuyue hqaeiuoiqhghey jqyyejyuyyusn shjh</td>
+                                            <td>12.33</td>
+                                            <td>1</td>
+                                            <td>12.33</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><hr></td>
+                                        </tr>
+                                    </table>
+                                    <div style="text-align: right; margin: 30px;">
+                                        <span>CURRENCY:</span><span id='print-quotation-currency-text-value' style="width: 100px; display: inline-block;">XXX.XX</span><br>
+                                        <span>SUBTOTAL:</span><span id='print-quotation-subtotal-value' style="width: 100px; display: inline-block;">786898.89</span><br>
+                                        <span>VAT:</span><span id='print-quotation-vat-value' style="width: 100px; display: inline-block;">786898.89</span><br>
+                                        <span>TOTAL COST:</span><span id='print-quotation-total-cost-value' style="width: 100px; display: inline-block;">777.78</span>
+                                    </div>
+                                    <div style="text-align: right; margin: 30px;">
+                                        <hr>
+                                    </div>
+                                    <div style="text-align:; margin: 30px; display: flex; justify-content: space-between;">
+                                        <div style="width:50%">
+                                            <h2>BANKING DETAILS</h2>
+                                            <div style="width:100%;">
+                                                <table style="width:100%;">
+                                                    <tr>
+                                                        <td><b>BANK</b></td>
+                                                        <td id="print-quotation-bank-value">XXXX</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><b>ACC NAME</b></td>
+                                                        <td id="print-quotation-acc-nane-value">XXXX</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><b>ACC NOSTRO</b></td>
+                                                        <td id="print-quotation-acc-nostro-value">XXXX</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><b>ACC ZIG</b></td>
+                                                        <td id="print-quotation-acc-zig-value">XXXX</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div style="text-align: left; position: relative; width: 25%;">
+                                            <p style="position: absolute; bottom: 0;">
+                                                Signature:<br>
+                                                
+                                                {% if user.e_signature_link %}
+                                                    <img src="{% static '' %}{{ user.e_signature_link }}" width="100px">
+                                                {% else %}
+                                                .............................................
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content:space-between; background: RGB(0 194 146); padding: 1rem;">
+                                    <button class="btn btn-primary" onclick="printDiv('quotation-area')">PRINT / CREATE PDF</button>
+                                    <!-- <button class="btn btn-warning">SHARE</button>
+                                    <button class="btn btn-default">SAVE</button> -->
+                                    <button class="btn btn-danger" onclick="closeQuotationModal()">CLOSE</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STOCK DETAILS -->
+    <div class="modal fade animated bounce" id="posStockDetailsModal" role="dialog">
+        <div class="modal-dialog modal-large">
+            <div class="modal-content" style="padding: 2rem;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="widget-tabs-int">
+                                <div class="tab-hd">
+                                    <h2 id="test">Stock Details</h2>
+                                </div>
+
+                                <hr style="background: RGB(0 194 146);">
+
+                                <div class="widget-tabs-list">
+
+                                    <div class="row" style="padding-top: 10px;">
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Product</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-product-title-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Selling Price</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <input type="number" step="0.01" class="" id="pos-stock-details-selling-price-value">
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Markup %</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-markup-price-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Reorder Quantity</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-reorder-quantity-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" style="padding-top: 10px;">
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Expiration Warning Days</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-expiration-warning-days-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Status</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-status-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Average Unit Cost</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-average-unit-cost-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Total Units</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-total-units-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" style="padding-top: 10px;">
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Stock Value</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-stock-value-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">To Order Status</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-to-order-ststus-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                            <div class="col-sm text-start">Product Details</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <label class="pos_stock_details_lable" id="pos-stock-details-product-details-value">xxxx.xx</label>
+                                            </div>
+                                            <hr>
+                                        </div>
+                                    </div>
+                                                                  
+                                </div>
+
+                                <hr style="background: RGB(0 194 146);">
+
+                                <div class="btn-list">
+                                    <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                        <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                        <button class="btn btn-success notika-btn-success" onclick="onPosChangePrice()">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- // STOCK DETAILS -->
+
+    <!-- Modals area End-->
+    <div class="container" style="padding-top: 30px">
+        <div class="wrapper">
+            <div class="one">
+                <br>
+                <div>
+                    {% csrf_token %}
+                    <select data-live-search="true" class="selectpicker stock_selector_class" id="stock" name="stock" autofocus>
+                        <option value="0">Select Product</option>
+                    </select>
+                    <div class="btn btn-info" title="Stock Details" type="button"  data-toggle="modal" data-target="#posStockDetailsModal" id="payment-modal-button">ℹ️</div>
+
+                    <div class="btn btn-info" title="Look Up" type="button"  data-toggle="modal" data-target="#partLookUpModal" id="payment-modal-button">📚</div>
+                    <br><br>
+                    <input  type="number" name="quantity" id="quantity" value="1" placeholder="Total Units" style="width:28.5%; height:35px; text-align: center;"  title="" data-trigger="hover" data-toggle="popover" data-placement="left" data-content="Enter the number of units or pack size."  data-original-title="Quantity">
+                    <br><br>
+                    <div>
+                        <div class="form-group ic-cmp-int" style="width:65%;">
+                            <button onclick="addToCart()" class="btn btn-primary" style="width:44%; height:35px;">ADD TO CART</button>
+                        </div>
+                        <hr>
+                        <div class="form-group ic-cmp-int" style="width:65%;">
+                            <button class="btn btn-primary" style="width:44%; height:35px;" type="button"  data-toggle="modal" data-target="#posPaymentModal" id="payment-modal-button">PAYMENT</button>
+                        </div>
+                        
+                        <div class="form-group ic-cmp-int" style="width:65%;">
+                            <button href="" onclick="voidCart()" class="btn btn-danger" value="1" style="width:44%; height:35px;">VOID</button>
+                        </div>
+
+                        <div class="form-group ic-cmp-int" style="width:65%;">
+                            <!-- <button class="btn btn-primary" style="width:44%; height:35px;" type="button" onclick="createQuotation('default')"  data-toggle="modal" data-target="#printQuotationModal" id="payment-modal-button">QUATATION</button> -->
+                            <a href="{% url 'create_quotation_page' %}" class="btn btn-primary" style="width:44%; height:35px;" type="button">QUATATION</a>
+                        </div>
+                        <hr>
+                        <div class="form-group ic-cmp-int" style="width:65%;">
+                            <button class="btn btn-primary" style="width:44%; height:35px;" type="button" onclick="reprintLastReceipt()">REPRINT LAST RECEIPT</button>
+                        </div>
+                        
+                    </div>
+                </div>
+                <br>
+            </div>
+            <div class="two ">
+                <div class="table-container">
+                    <table class="table table-striped">
+                        <thead >
+                            <tr style="position: ; background-color: RGB(0 194 146); ">
+                                <th>Product</th>
+                                <th style="text-align:right;">Stock</th>
+                                <th style="text-align:right;">Price</th>
+                                <th style="text-align:right;">Quantity</th>
+                                <th style="text-align:right;">Total</th>
+                                <th style="text-align:right; cursor: pointer;" title="Delete All Items" onclick="voidCart()">🗑️</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-table">
+                            <!-- cart table -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="info" style="">
+                    <table class="totals_table_class" style="display: inline-flex; justify-content: flex-end;">
+                        <tr>
+                            <th class="min_table_row_title">Subtotal:</th><td id="subtotal-value" class="min_table_row_value">0.00</td>
+                        </tr>
+                        <tr>
+                            <th class="min_table_row_title">VAT:</th><td id="VAT-value" class="min_table_row_value">0.00</td>
+                        </tr>
+                        <tr>
+                            <th class="min_table_row_title">Total Price USD:</th><td id="total-price-value" class="min_table_row_value">0.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="{% static '' %}jquery.min.js"></script>
+    <script>
+        // Get CSRF token
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Setup CSRF for all AJAX requests
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+                }
+            }
+        });
+
+
+    /* AJAX---------------------------------------------*/
+    $(document).ready(function(){
+        //EVENT LISTENERS
+        var fromLookUpToCartBtn = document.getElementById('add-to-cart-from-look-up-button')
+
+        fromLookUpToCartBtn.addEventListener('click', () => {
+            addToCartFromLookUp()
+        })
+        //alert("loading all")
+        window.onload = loadAllPosPageData()
+
+
+        $('#posStockDetailsModal').on('show.bs.modal', function (event) {
+            var stock_id = document.getElementById('stock').value
+            sessionStorage.setItem('stock_id_for_price_updating', stock_id)
+            if(!isIntegerGreaterThanOrEqualToOne(stock_id)==false){
+                $.ajax({
+                    url: "{% url 'get_stock_details' %}",
+                    data: {
+                        stock_id: stock_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('pos-stock-details-expiration-warning-days-value').innerHTML = responseData.details['expiration_warning_days']
+                            document.getElementById('pos-stock-details-status-value').innerHTML = responseData.details['status']
+                            document.getElementById('pos-stock-details-average-unit-cost-value').innerHTML = responseData.details['average_unit_cost']
+                            document.getElementById('pos-stock-details-total-units-value').innerHTML = responseData.details['total_units']
+
+
+
+                            document.getElementById('pos-stock-details-product-title-value').innerHTML = responseData.details['product_title']
+                            document.getElementById('pos-stock-details-selling-price-value').value = responseData.details['selling_price']
+                            document.getElementById('pos-stock-details-markup-price-value').innerHTML = responseData.details['markup_percentage']
+                            document.getElementById('pos-stock-details-reorder-quantity-value').innerHTML = responseData.details['reorder_quantity']
+                            
+
+
+                            document.getElementById('pos-stock-details-stock-value-value').innerHTML = responseData.details['stock_value']
+                            document.getElementById('pos-stock-details-to-order-ststus-value').innerHTML = responseData.details['to_order_status']
+                            document.getElementById('pos-stock-details-product-details-value').innerHTML = responseData.details['product_details']
+
+                        }
+                    },
+                    error: function(responseData, error){
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }else{
+                swal({
+                    title: "Error",
+                    text: "Please select a valid product first",
+                    type: "error"
+                });
+            }
+        })  
+    })
+
+        async function loadAllPosPageData() {
+            //alert("loading list")
+            
+            await requestAndLoadPaymentPortionsData()
+            await requestAndLoadStock()
+            //await requestAndLoadPayingAccounts()
+            await requestAndLoadCartData()
+            await requestAndLoadPaymentMethods()
+
+        };
+
+
+///////////////////////////////
+//BUTON FUCTIONS
+///////////////////////////////
+
+
+        function onPosChangePrice(){
+            var stock_id = sessionStorage.getItem('stock_id_for_price_updating')
+            var new_price = document.getElementById('pos-stock-details-selling-price-value').value
+            var errors = ""
+
+            if (new_price == ""){
+                errors = "Invalid value on selling_price"
+            } else if(isIntegerGreaterThanOrEqualToOne(stock_id)==false){
+                errors = "Somehow the Stock ID is Invalid. Please note this down and inform your developers."
+            }
+            if (errors == ""){
+                $.ajax({
+                    url: "{% url 'on_pos_change_price' %}",
+                    data: {
+                        'stock_id': stock_id,
+                        'new_price': new_price
+                    },
+                    success: function(responseData){
+                        if (responseData.custome_status == "Error"){
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+
+                        }else{
+                            swal({
+                                title: "Success",
+                                text: responseData.message,
+                                type: "success"
+                            });
+                        }
+                    },
+                    error: function(responseData, error){
+                        swal({
+                            title: "Error",
+                            text: "Server error!",
+                            type: "error"
+                        });
+                    }
+                })
+            }
+        }
+
+
+        var paymentModalButton = document.getElementById('payment-modal-button')
+
+        paymentModalButton.addEventListener('click', () => {
+            document.getElementById('payment-method-selector').focus()
+        })
+
+        function closeQuotationModal(){
+            location.reload()
+        }
+        
+        function printDiv(divName) {
+              var printContents = document.getElementById(divName).innerHTML;
+              var originalContents = document.body.innerHTML;
+
+              document.body.innerHTML = printContents;
+
+              window.print();
+
+              document.body.innerHTML = originalContents;
+          }
+
+
+
+        function createQuotation(payment_method_id){
+            $.ajax({
+                url: "{% url 'get_quotation_data' %}",
+                data: {
+                    payment_method_id: payment_method_id
+                },
+                success: function(responseData){
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+
+                    }else{
+                        $('#print-quotation-table-value').html(responseData.table_rows)
+
+                        document.getElementById('print-quotation-subtotal-value').innerHTML = responseData.totals['subtotal']
+                        document.getElementById('print-quotation-currency-text-value').innerHTML = responseData.totals['currency_text']
+                        document.getElementById('print-quotation-vat-value').innerHTML = responseData.totals['VAT']
+                        document.getElementById('print-quotation-total-cost-value').innerHTML = responseData.totals['total_cost']
+
+                        document.getElementById('print-quotation-company-name-value').innerHTML = responseData.details['company_name']
+                        document.getElementById('print-quotation-address-value').innerHTML = responseData.details['address']
+                        document.getElementById('print-quotation-phone-number-value').innerHTML = responseData.details['phone_number']
+                        document.getElementById('print-quotation-email-value').innerHTML = responseData.details['email']
+
+                        document.getElementById('print-quotation-date-created-value').innerHTML = responseData.details['date']
+                        document.getElementById('print-quotation-cashier-value').innerHTML = responseData.details['cashier']
+
+                        document.getElementById('print-quotation-tin-number-value').innerHTML = responseData.details['tin_number']
+                        document.getElementById('print-quotation-prz-number-value').innerHTML = responseData.details['prz_number']
+                        document.getElementById('print-quotation-vat-number-value').innerHTML = responseData.details['vat_number']
+
+                        document.getElementById('print-quotation-bank-value').innerHTML = responseData.details['bank_1_bank_name']
+                        document.getElementById('print-quotation-acc-nane-value').innerHTML = responseData.details['bank_1_account_name']
+                        document.getElementById('print-quotation-acc-nostro-value').innerHTML = responseData.details['bank_1_name_nostro']
+                        document.getElementById('print-quotation-acc-zig-value').innerHTML = responseData.details['bank_1_name_zig']
+
+                    }
+                },
+                error: function(responseData, error){
+                    swal({
+                        title: "Error",
+                        text: "Server error!",
+                        type: "error"
+                    });
+                }
+            })
+        }
+
+
+        function deleteCartItem(cart_item_id){
+            $.ajax({
+                url: "{% url 'delete_cart_item' %}",
+                data: {
+                    cart_item_id: cart_item_id
+                },
+                success: function(responseData){
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+
+                    }else{
+                        
+                    }
+                    requestAndLoadCartData()
+                },
+                error: function(responseData, error){
+                    swal({
+                        title: "Error",
+                        text: "Server error!",
+                        type: "error"
+                    });
+                }
+            })
+            
+        }
+        
+
+
+
+        function voidCart(){
+            $.ajax({
+                url: "{% url 'void_cart' %}",
+                data: {},
+                success: function(responseData){
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success",
+                            timer: 1000
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    swal({
+                        title: "Error",
+                        text: "Server error!",
+                        type: "error"
+                    });
+                },
+                complete: function(){
+                    requestAndLoadCartData()
+                    requestAndLoadPaymentPortionsData()
+                }
+            })
+            
+        }
+
+
+
+        function checkOut(){
+            var customer_id = document.getElementById('customer-selector').value
+            $.ajax({
+                url:"{% url 'check_out' %}",
+                data: {
+                    customer_id: customer_id
+                },
+                success: function(responseData){
+                    //alert("Done...")
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+
+                    }else{
+                        swal({
+                            title: "Succession",
+                            text: responseData.message,
+                            type: "success",
+                            timer: 1000
+                        });
+                        
+                    }
+                    requestAndLoadPaymentPortionsData()
+                    requestAndLoadCartData()
+
+                },
+                error: function(responseData, error){
+                            //alert(responseData) 
+                    swal({
+                        title: "Error",
+                        text: "Server error " + error,
+                        type: "error"
+                    });      
+                }
+            })
+            
+            //$('#payment-method-selector').modal('hide');
+
+
+        }
+
+
+
+
+        function addPayment(){
+            //alert('Add payment function')
+            var paying_currency_id = document.getElementById('payment-method-selector').value
+            var discount = document.getElementById('discount-amount-input').value
+            var paid = document.getElementById('paid-amount-input').value
+            var change = document.getElementById('change-amount-input').value
+            var change_given = document.getElementById('change-given-amount-input').value
+
+            var error_messages = ""
+
+            if (isIntegerGreaterThanOrEqualToOne(paying_currency_id) == false){
+                error_messages = "Please select a valid currency!"
+            }else if (discount == ""){
+                error_messages = "Discount field is required"
+            }else if (isGreaterThanOrEqualToOne(paid) == false){
+                error_messages = "Paid field must be a number greater than 0"
+            }else if (change_given == ""){
+                error_messages = "Change_given field is required"
+            }
+
+            if(error_messages == ""){
+                $.ajax({
+                    url:"{% url 'add_reciept_payment_portion' %}",
+                    data: {
+                        paying_currency_id: paying_currency_id,
+                        discount: discount,
+                        paid: paid,
+                        change: change,
+                        change_given: change_given
+                    },
+                    success: function(responseData){
+                        //alert("Done...")
+
+                        if (responseData.custome_status == "Error"){
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+
+                        }else{
+                            swal({
+                                title: "Succession",
+                                text: responseData.message,
+                                type: "success",
+                                timer: 1000
+                            });
+                        }
+                        requestAndLoadCartData()
+                        requestAndLoadPaymentPortionsData()
+
+                    },
+                    error: function(responseData, error){
+                        //alert(responseData) 
+                        swal({
+                            title: "Error",
+                            text: "Server error " + error,
+                            type: "error"
+                        });      
+                    }
+                })
+            }else{
+                swal({
+                    title: "Error",
+                    text: error_messages,
+                    type: "error"
+                });
+            }
+            //alert('RRRRRRRRRRRR')
+
+            
+
+        }
+
+
+
+        function addToCart(){
+            stock_id = document.getElementById('stock').value
+            quantity = document.getElementById('quantity').value
+
+            if (isIntegerGreaterThanOrEqualToOne(stock_id)){
+                if (isIntegerGreaterThanOrEqualToOne(quantity)){
+                    $.ajax({
+                        url:"{% url 'add_stock_to_cart' %}",
+                        data: {
+                            stock_id: stock_id,
+                            quantity: quantity
+                        },
+                        success: function(responseData){
+                            //alert("Done...")
+                            if (responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error",
+                                });
+
+
+                            }else{
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Succession",
+                                    text: responseData.message,
+                                    type: "success",
+                                    timer: 1000
+                                });
+                                //requestAndLoadCartData()
+                            }
+                            requestAndLoadCartData()
+                            requestAndLoadPaymentPortionsData()
+                            $('#stock').val('0')
+                            $("#stock").selectpicker('refresh')
+
+                        },
+                        error: function(responseData, error){
+                            //alert(responseData) 
+                            //alert("Server error")
+                            swal({
+                                title: "Error",
+                                text: "Server error " + error,
+                                te: "error"
+                            });     
+                        }
+                    })
+                }else{
+                    //alert("The number of units must be a whole number and greater than 0.")
+                    swal({
+                        title: "Error",
+                        text: "The number of units must be a whole number and greater than 0.",
+                        type: "error"
+                    });
+                }
+                
+            }else{
+                //console.log("Please select a valid product.")
+                swal({
+                    title: "Error",
+                    text: "Please select a valid product.",
+                    type: "error"
+                });
+            }
+        }
+
+
+///////////////////////////////
+// //BUTON FUCTIONS
+///////////////////////////////
+/*window.onbeforeunload = function (e) {
+    var e = e || window.event;
+
+    // For IE and Firefox
+    if (e) {
+        e.returnValue = 'Leaving the page';
+    }
+
+    // For Safari
+    return 'Leaving the page';
+};*/
+
+
+
+
+///////////////////////////////
+//CHECK FUNCTIONS
+///////////////////////////////
+
+        function isIntegerGreaterThanOrEqualToOne(string) {
+            string = string.trim();
+            const regex = /^\d+$/;
+            return regex.test(string) && Number(string) >= 1;
+        }
+
+        function isGreaterThanOrEqualToOne(string) {
+            return Number(string) > 0;
+        }
+
+///////////////////////////////
+// //CHECK FUNCTIONS
+///////////////////////////////
+
+///////////////////////////////
+//BUTTON FUNCTIONS
+///////////////////////////////
+
+
+    function addToCartFromLookUp(){
+        const table = document.getElementById('compatable-parts-table');
+        const rows = table.querySelectorAll('tbody tr');
+        const collectedData = [];
+        
+        rows.forEach(row => {
+            const id = row.cells[0].textContent;
+            const qtyInput = row.querySelector('.qty-input')
+
+            if (qtyInput){ //is not a topic/heading row
+                collectedData.push({
+                    id: id,
+                    quantity: qtyInput.value,
+                });
+            }
+            
+            
+        });
+        
+        $.ajax({
+            url: "{% url 'add_to_cart_from_look_up' %}",
+            method: 'POST',
+            data: {
+                stock_ids_and_quantities: JSON.stringify(collectedData),
+                csrfmiddlewaretoken: getCSRFToken()
+            },
+            success: function(responseData){
+                //alert("Done...")
+                if (responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error",
+                    });
+
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Succession",
+                        text: responseData.message,
+                        type: "success",
+                        timer: 1000
+                    }).then(() => { 
+                        alert('here llll')
+                    });
+                }
+
+            },
+            error: function(responseData, error){
+                //alert(responseData) 
+                //alert("Server error")
+                swal({
+                    title: "Error",
+                    text: "Server error " + error,
+                    te: "error"
+                });     
+            },
+            complete: function(){
+                requestAndLoadCartData()
+                requestAndLoadPaymentPortionsData()
+            }
+        });
+    }
+
+    function openCustomersPopup(){
+        newBrowserWindow("{% url 'customers_page' %}")
+    }
+
+
+    function reprintLastReceipt(){
+        $.ajax({
+            url:"{% url 'reprint_user_last_receipt' %}",
+            data: {},
+            success: function(responseData){
+                //alert("Done...")
+                if (responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error",
+                    });
+
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Succession",
+                        text: responseData.message,
+                        type: "success",
+                        timer: 1000
+                    });
+                    //requestAndLoadCartData()
+                }
+
+            },
+            error: function(responseData, error){
+                //alert(responseData) 
+                //alert("Server error")
+                swal({
+                    title: "Error",
+                    text: "Server error " + error,
+                    te: "error"
+                });     
+            }
+        })
+    }
+
+
+///////////////////////////////
+//BUTTON FUNCTIONS
+///////////////////////////////
+
+///////////////////////////////
+//CALLED FUNCTIONS
+///////////////////////////////
+    function voidPayment(){
+        $.ajax({
+            url:"{% url 'void_payment'%}",
+            success: function(responseData){
+                requestAndLoadPaymentPortionsData() 
+            },
+                error: function(responseData, error){
+            }
+        })
+    }
+
+    function requestAndLoadPaymentPortionsData(){
+        //alert("requesting And Loading Payment Portions Data")
+            $.ajax({
+                url:"{% url 'load_receipt_payment_portions_data'%}",
+                success: function(responseData){
+                    //alert('success')
+                    var tableContainer = document.getElementById('payment-potions-table')
+                    tableContainer.innerHTML = ""
+                    responseData.receipt_money_portions_table_rows.forEach(row => {
+                        const tableRow = `
+                            <tr>
+                                <td style="width:30%;">` + row[0] + `</td>
+                                <td style="text-align:right;">` + row[1] + `</td>
+                                <td style="text-align:right;">` + row[2] + `</td>
+                                <td style="text-align:right;">` + row[3] + `</td>
+                            </tr>
+                            `
+                        tableContainer.innerHTML += tableRow
+                    })
+
+                    //alert(responseData.totals['total_receipt_price'])
+                    document.getElementById('total-receipt-price').innerHTML = responseData.totals['total_receipt_price']
+                    document.getElementById('discount-text').innerHTML = responseData.totals['discount']
+                    document.getElementById('paid-value-text').innerHTML = responseData.totals['paid_value']
+                    document.getElementById('change-or-remaining-lable').innerHTML = responseData.totals['change_or_remaining_text'] +":"
+                    document.getElementById('change-or-remaining-text').innerHTML = responseData.totals['change_or_remaining_value']
+
+
+                    if(responseData.totals['change_or_remaining_value'] > 0){
+                        //
+                    }else{
+                        if (responseData.totals['total_receipt_price'] == 0){
+                            document.getElementById('check-out-button').style.display = 'none'
+                        }else{
+                            document.getElementById('check-out-button').style.display = 'block'
+                        }
+                    }
+            },
+            error: function(responseData, error){
+                ////alert(responseData)
+            }
+        })
+    }
+
+    function noneAccountPaymentSelected(){
+        //alert("none account payment_method selected")
+
+        var paying_currency_id = document.getElementById('payment-method-selector').value
+
+        //paying currency details
+        $.ajax({
+            url: "{% url 'get_paying_currency_details' %}",
+            data: { paying_currency_id: paying_currency_id },
+            success: function(responseData) {
+                var rated_price_text = responseData.paying_currency['currency']
+                var rate = responseData.paying_currency['rate']
+
+                var rated_required_price_value = Number(cleanNumber(document.getElementById('change-or-remaining-text').innerHTML))*Number(rate)
+    
+
+                //alert('rated_required_price_value: ' + rated_required_price_value)
+
+                document.getElementById('discount-amount-input').value = '0.00'
+                document.getElementById('paid-amount-input').value = rated_required_price_value.toFixed(2)
+                document.getElementById('change-amount-input').value = '0.00'
+                document.getElementById('change-given-amount-input').value = '0.00'
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "Server error while trying to get currency details",
+                    type: "error"
+                });
+            }
+        });
+        //alert("Done...")
+    }
+
+
+        function requestAndLoadCartData(){
+            //alert("requesting cart data")
+            $.ajax({
+                url:"{% url 'load_cart_data'%}",
+                success: function(responseData){
+                    var tableContainer = document.getElementById('cart-table')
+                    tableContainer.innerHTML = ""
+                    responseData.cart_items_table_rows.forEach(row => {
+                        const tableRow = `
+                        <tr>
+                            <td style="width:50%;">` + row[0] + `</td>
+                            <td style="text-align:right;">` + row[5] + `</td>
+                            <td style="text-align:right;">` + row[1] + `</td>
+                            <td style="text-align:right;">` + row[2] + `</td>
+                            <td style="text-align:right;">` + row[3] + `</td>
+                            <td style="text-align:right;">
+                                <a href="" onclick="deleteCartItem(` + row[4] + `)" type="button" value="" title="Remove from cart">
+                                    <i class="notika-icon notika-trash"></i>
+                                </a>
+                            </td>
+                        </tr>`
+                        tableContainer.innerHTML += tableRow
+                    })
+                    //min table data
+                    document.getElementById('subtotal-value').innerHTML = responseData.totals['subtotal_value']
+                    document.getElementById('VAT-value').innerHTML = responseData.totals['VAT_value']
+                    document.getElementById('total-price-value').innerHTML = responseData.totals['total_price_value']
+
+
+                    //rate with auto selected price if there is any
+                    var payment_method_text = document.getElementById('payment-method-selector').value
+                    if (!Number(payment_method_text)){
+                        //it is not a number. selected payment methord is not valid
+                    }else{
+                        //selected payment method is a number
+                        if (Number(payment_method_text)>0){
+                            //alert('run rate function')
+                            //run rate function'
+                            noneAccountPaymentSelected()
+                        }
+                    }
+
+                },
+                error: function(responseData, error){
+                    //alert(responseData)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }
+            })
+        }
+
+
+
+
+
+
+        function requestAndLoadStock(){
+            //alert("requesting otc")
+            $.ajax({
+                url:"{% url 'load_live_stock_options' %}",
+                success: function(responseData){
+                    var selectElement = document.getElementById('stock')
+//$("#stock").empty();
+
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+
+                    $("#stock").selectpicker('refresh')
+//alert("Done...")
+                },
+                error: function(responseData, error){
+//console.log(responseData)
+                }
+            })
+//alert("done...")
+        }
+
+
+        function requestAndLoadPaymentMethods(){
+            //alert("requesting payment_methods")
+            $.ajax({
+                url:"{% url 'load_payment_method_options' %}",
+                success: function(responseData){
+                    var selectElement = document.getElementById('payment-method-selector')
+                    $("#payment-method-selector").empty();
+
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+
+                    $("#payment-method-selector").selectpicker('refresh')
+
+                },
+                error: function(responseData, error){
+                    swal({
+                        title: "Error",
+                        text: "Server error while trying to load payment options",
+                        type: "error"
+                    });
+                }
+            })
+        } 
+
+        function cleanNumber(number_string){
+            return number_string.replace(/,/g, '')
+        }
+
+        function quotationPaymentMethodChanged(){
+            var paying_currency_id = document.getElementById('quotation-payment-method-selector').value
+            createQuotation(paying_currency_id)
+        }
+
+        function paymentMethodChanged(){
+            //alert("payment_method changed")
+            var selected_payment_methord = document.getElementById('payment-method-selector').value
+            if (Number.isInteger(parseInt(selected_payment_methord))){
+                ////alert('Valid' + selected_payment_methord)
+                if (Number(selected_payment_methord) == 0){
+                    /*account payment*/
+                    //AccountPaymentSelected()
+
+                }else{
+                    /*none account payment*/
+                    noneAccountPaymentSelected()
+
+                }
+            }else{
+
+            }        
+        }
+
+
+        function lookUpSearchTypeChanged(){
+            var selectected_look_up_option = document.getElementById('look-up-search-type-option').value
+
+            if (selectected_look_up_option == 'part'){
+
+                // show and hide accodingly
+                document.getElementById('compatable-parts-view').style.display = 'none'
+                document.getElementById('model-details').style.display = 'none'
+
+                document.getElementById('compatable-models-view').style.display = 'block'
+                document.getElementById('part-details').style.display = 'block'
+
+                document.getElementById('look-up-search-box-container').style.display = 'block'
+
+            }else if(selectected_look_up_option == 'model'){
+
+                // show and hide accodingly
+                document.getElementById('compatable-parts-view').style.display = 'block'
+                document.getElementById('model-details').style.display = 'block'
+
+                document.getElementById('compatable-models-view').style.display = 'none'
+                document.getElementById('part-details').style.display = 'none'
+
+                document.getElementById('look-up-search-box-container').style.display = 'block'
+
+            } else{
+                // show and hide accodingly
+                document.getElementById('compatable-parts-view').style.display = 'none'
+                document.getElementById('model-details').style.display = 'none'
+
+                document.getElementById('compatable-models-view').style.display = 'none'
+                document.getElementById('part-details').style.display = 'none'
+
+                document.getElementById('look-up-search-box-container').style.display = 'none'
+
+            }
+
+
+        }
+
+
+
+        function partOrModelChanged(){
+            var selected_item_id = document.getElementById('look-up-search-box-selector').value
+            var selectected_look_up_option = document.getElementById('look-up-search-type-option').value
+
+
+            if (selectected_look_up_option == 'part'){
+                getPartDetailsAndCompatableModels(selected_item_id)
+            }else if(selectected_look_up_option == 'model'){
+                getModelDetailsAndCompatableParts(selected_item_id)
+            }
+
+        }
+
+
+
+        function getModelDetailsAndCompatableParts(model_id){
+            $.ajax({
+                url: "{% url 'get_model_and_compatable_parts' %}",
+                data: { model_id: model_id },
+                success: function(responseData) {
+                    document.getElementById('engine-number').innerHTML = responseData.details['engine_number']
+                    document.getElementById('make').innerHTML = responseData.details['make']
+                    document.getElementById('model').innerHTML = responseData.details['model']
+                    document.getElementById('year').innerHTML = responseData.details['year']
+                    document.getElementById('transmission').innerHTML = responseData.details['transmission']
+
+                    document.getElementById('compatable-parts-table-body').innerHTML = responseData.table_body
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error)
+                }
+            });
+        }
+
+
+
+        function getPartDetailsAndCompatableModels(part_id){
+            $.ajax({
+                url: "{% url 'get_part_and_compatable_models' %}",
+                data: { part_id: part_id },
+                success: function(responseData) {
+                    document.getElementById('title').innerHTML = responseData.part_details['title']
+                    document.getElementById('part_code').innerHTML = responseData.part_details['part_code']
+                    document.getElementById('selling_price').innerHTML = responseData.part_details['selling_price']
+                    document.getElementById('details').innerHTML = responseData.part_details['details']
+
+                    document.getElementById('compatable-models-table').innerHTML = responseData.table
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error)
+                }
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+        function calculateFieldsBasedOnPaidAmount(){
+
+            var rated_value = cleanNumber(document.getElementById('change-or-remaining-text').innerHTML)
+            var discount = document.getElementById('discount-amount-input').value
+            var paid = document.getElementById('paid-amount-input').value
+
+
+            var change = Number(paid) - Number(rated_value)
+            var change_given = change
+
+            document.getElementById('change-amount-input').value = change.toFixed(2)
+            document.getElementById('change-given-amount-input').value = change_given.toFixed(2)
+        }
+
+
+        function calculateFieldsBasedOnDiscount(){
+            var discount = document.getElementById('discount-amount-input').value
+            var rated_price = cleanNumber(document.getElementById('change-or-remaining-text').innerHTML)
+
+            var paid = Number(rated_price) - Number(discount)
+
+
+//fill fields
+            document.getElementById('paid-amount-input').value = paid.toFixed(2)
+            document.getElementById('change-amount-input').value = "0.00"
+            document.getElementById('change-given-amount-input').value = "0.00"
+
+        }
+
+
+    ///////////////////////////////////////
+    //LIVE FUNCTIONS
+    ///////////////////////////////////////
+
+    $(document).on('keyup', '.look_up_search_box_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+
+            var search_type = document.getElementById('look-up-search-type-option').value
+            if (search_type == 'part'){
+                var url = "{% url 'load_live_stock_options' %}"
+                
+            }else{
+                var url = "{% url 'ajax_search_models_1' %}"
+                
+
+
+            }
+            $.ajax({
+                url: url,
+                data: { 
+                    search_query: searchQuery,
+                    search_text: searchQuery
+                },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('look-up-search-box-selector')
+                    $("#look-up-search-box-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#look-up-search-box-selector").selectpicker('refresh') 
+                    
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+
+
+    $(document).on('keyup', '.customer_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_customer_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('customer-selector')
+                    $("#customer-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#customer-selector").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+
+    $(document).on('keyup', '.quotation_payment_method_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_payment_method_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('quotation-payment-method-selector')
+                    $("#quotation-payment-method-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#quotation-payment-method-selector").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+
+
+
+
+    $(document).on('keyup', '.payment_method_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_payment_method_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('payment-method-selector')
+                    $("#payment-method-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#payment-method-selector").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+    /*stock*/
+    $(document).on('keyup', '.stock_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                //alert(searchQuery)
+                $.ajax({
+                    url: "{% url 'load_live_stock_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('stock')
+                        $("#stock").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#stock").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+
+    ///////////////////////////////////////
+    //LIVE FUNCTIONS
+    ///////////////////////////////////////
+    
+
+    </script>
+
+<script src="{% static '' %}js/vendor/modernizr-2.8.3.min.js"></script>
+<!-- jquery
+    ============================================ -->
+    <script src="{% static '' %}js/vendor/jquery-1.12.4.min.js"></script>
+<!-- bootstrap JS
+    ============================================ -->
+    <script src="{% static '' %}js/bootstrap.min.js"></script>
+<!-- wow JS
+    ============================================ -->
+    <script src="{% static '' %}js/wow.min.js"></script>
+<!-- price-slider JS
+    ============================================ -->
+    <script src="{% static '' %}js/jquery-price-slider.js"></script>
+<!-- owl.carousel JS
+    ============================================ -->
+    <script src="{% static '' %}js/owl.carousel.min.js"></script>
+<!-- scrollUp JS
+    ============================================ -->
+    <script src="{% static '' %}js/jquery.scrollUp.min.js"></script>
+<!-- meanmenu JS
+    ============================================ -->
+    <script src="{% static '' %}js/meanmenu/jquery.meanmenu.js"></script>
+<!-- counterup JS
+    ============================================ -->
+    <script src="{% static '' %}js/counterup/jquery.counterup.min.js"></script>
+    <script src="{% static '' %}js/counterup/waypoints.min.js"></script>
+    <script src="{% static '' %}js/counterup/counterup-active.js"></script>
+<!-- mCustomScrollbar JS
+    ============================================ -->
+    <script src="{% static '' %}js/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+<!-- sparkline JS
+    ============================================ -->
+    <script src="{% static '' %}js/sparkline/jquery.sparkline.min.js"></script>
+    <script src="{% static '' %}js/sparkline/sparkline-active.js"></script>
+<!-- flot JS
+    ============================================ -->
+    <script src="{% static '' %}js/flot/jquery.flot.js"></script>
+    <script src="{% static '' %}js/flot/jquery.flot.resize.js"></script>
+    <script src="{% static '' %}js/flot/flot-active.js"></script>
+<!-- knob JS
+    ============================================ -->
+    <script src="{% static '' %}js/knob/jquery.knob.js"></script>
+    <script src="{% static '' %}js/knob/jquery.appear.js"></script>
+    <script src="{% static '' %}js/knob/knob-active.js"></script>
+<!--  Chat JS
+    ============================================ -->
+    <script src="{% static '' %}js/chat/jquery.chat.js"></script>
+<!--  wave JS
+    ============================================ -->
+    <script src="{% static '' %}js/wave/waves.min.js"></script>
+    <script src="{% static '' %}js/wave/wave-active.js"></script>
+<!-- icheck JS
+    ============================================ -->
+    <script src="{% static '' %}js/icheck/icheck.min.js"></script>
+    <script src="{% static '' %}js/icheck/icheck-active.js"></script>
+<!--  todo JS
+    ============================================ -->
+    <script src="{% static '' %}js/todo/jquery.todo.js"></script>
+<!-- Login JS
+    ============================================ -->
+    <script src="{% static '' %}js/login/login-action.js"></script>
+<!-- plugins JS
+    ============================================ -->
+    <script src="{% static '' %}js/plugins.js"></script>
+<!-- main JS
+    ============================================ -->
+    <script src="{% static '' %}js/main.js"></script>
+
+    <!--============================================ -->
+    <script src="{% static '' %}js/bootstrap-select.js"></script>
+    <script src="{% static '' %}js/datapicker/bootstrap-datepicker.js"></script>
+    <!-- <script src="{% static '' %}js/datapicker/bootstrap-active.js"></script> -->
+
+
+    <script>
+//custome
+///open new window
+        function newBrowserWindow(url){
+            var myWindow = window.open(url,"","width=1000, height=600");
+        }
+
+//custome
+// ------------------------------------------------------- //
+//   Inject SVG Sprite - 
+//   see more here 
+//   https://css-tricks.com/ajaxing-svg-sprite/
+// ------------------------------------------------------ //
+        function injectSvgSprite(path) {
+
+            var ajax = new XMLHttpRequest();
+            ajax.open("GET", path, true);
+            ajax.send();
+            ajax.onload = function(e) {
+                var div = document.createElement("div");
+                div.className = 'd-none';
+                div.innerHTML = ajax.responseText;
+                document.body.insertBefore(div, document.body.childNodes[0]);
+            }
+        }
+// this is set to BootstrapTemple website as you cannot 
+// inject local SVG sprite (using only 'icons/orion-svg-sprite.svg' path)
+// while using file:// protocol
+// pls don't forget to change to your domain :)
+        //injectSvgSprite('https://bootstraptemple.com/files/icons/orion-svg-sprite.svg'); 
+
+
+    </script>
+    <!-- FontAwesome CSS - loading as last, so it doesn't block rendering-->
+    <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"> -->
+    <!-- <script src="https://common.olemiss.edu/_js/sweet-alert/sweet-alert.min.js"></script> -->
+    
+    <!--</div> -->
+</body>
+</html>

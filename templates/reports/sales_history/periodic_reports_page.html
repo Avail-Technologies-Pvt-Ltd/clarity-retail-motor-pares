@@ -1,0 +1,805 @@
+{% extends 'partials/base.html' %}
+{% block title %}Periodic Reports{% endblock %}
+
+
+{% block info %}
+<style type="text/css">
+    table, th, td {
+    width: 20%;
+    margin: auto;
+    border: 1px solid black;
+    border-collapse: collapse;
+
+}
+</style>
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Periodic Reports</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <!-- <a href="add_patient" data-toggle="tooltip" data-placement="left" title="Add New Patient" class="btn"><i class="notika-icon notika-edit"></i></a>
+                                    <a href="merge_patients" data-toggle="tooltip" data-placement="bottom" title="Add New Patient" class="btn"><i class="notika-icon notika-refresh"></i></a> -->
+                                    <button onclick="printOutDailyTransactionsSummery()" data-toggle="tooltip" data-placement="bottom" title="Print" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                <div class="breadcomb-list">
+                    <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                        <div style="display:flex; justify-content: space-between; width: 100%; padding-left: 15px; padding-right: 15px;">
+                            <div class="btn btn-primary" onclick="syncCurrentStockData()" disabled>SYNC STOCK DATA</div>
+                            <div><b>LAST STOCK SYNC: </b><span id="last-sync-time">{{ last_sync_time }}</span></div>
+                            <div><b>LAST STOCK SYNC: </b><span id="last-sync-user">{{ last_sync_user }}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- summery boxes -->
+        <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn" style="width: 100%;">
+                        <h2>DAY END REPORT</h2>
+                        <hr>
+                        <p style="display:flex;">
+                            <input type="date" class="today form-control" id="periodic-reports-day-end-section-date-filter-value" name="trip-start" value="">
+                            <button class="btn btn-primary" title="UPDATE" style="margin-left: 10px;" onclick="loadDataForDayEndPeriodicReportsSection()"><i class="notika-icon notika-right-arrow"></i></button>
+                            <p>
+                                <br>
+                                <h4>SUMMERY</h4>
+                                <table style="width:100%;" id="periodic-reports-day-end-section-summery-table" class="table table table-striped">
+                                    
+                                </table>
+                                <h4>CASH</h4>
+                                <table style="width:100%;" id="periodic-reports-day-end-section-cash-table" class="table table table-striped">
+                                    
+                                </table>
+                                <br>
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="printOutDataForDayEndPeriodicReportsSection()">PRINT OUT SUMMERY</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="printOutDataForDayEndAsPerInvoicePeriodicReportsSection()">PRINT OUT PER INVOICE REPORT</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="" disabled>DOWNLOAD PER INVOICE REPORT</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="syncDataForDayEndAsPerInvoicePeriodicReportsSection()" disabled>SYNC TO CLOUD</button>
+
+                            </p>
+                        </p>
+                    </div> 
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn" style="width: 100%;">
+                        <h2>MONTH END REPORT</h2>
+                        <hr>
+                        <p style="display:flex;">
+                            <input type="month" class="today form-control" id="periodic-reports-month-end-section-date-filter-value" name="trip-start" value="">
+                            <button class="btn btn-primary" title="UPDATE" style="margin-left: 10px;" onclick="loadDataForMonthEndPeriodicReportsSection()"><i class="notika-icon notika-right-arrow"></i>
+                            </button>
+                            <p>
+                                <br>
+                                <h4>SUMMERY</h4>
+                                <table style="width:100%;" id="periodic-reports-month-end-section-summery-table" class="table table table-striped">
+                                    
+                                </table>
+                                <h4>CASH</h4>
+                                <table style="width:100%;" id="periodic-reports-month-end-section-cash-table" class="table table table-striped">
+                                    
+                                </table>
+                                <br>
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="printOutDataForMonthEndPeriodicReportsSection()">PRINT OUT SUMMERY</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="()" disabled>PRINT OUT PER INVOICE REPORT</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="" disabled>DOWNLOAD PER INVOICE REPORT</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="syncDataForMonthEndAsPerInvoicePeriodicReportsSection()" disabled>SYNC TO CLOUD</button>
+
+                            </p>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn" style="width: 100%;">
+                        <h2>YEAR END REPORT</h2>
+                        <hr>
+                        <p style="display:flex;">
+                            <input type="number" min="1900" max="2100" step="1" placeholder="Year" class="today form-control" id="periodic-reports-year-end-section-date-filter-value" name="trip-start" value="">
+                            <button class="btn btn-primary" title="UPDATE" style="margin-left: 10px;" onclick="loadDataForYearEndPeriodicReportsSection()"><i class="notika-icon notika-right-arrow"></i>
+                            </button>
+                            <p>
+                                <br>
+                                <h4>SUMMERY</h4>
+                                <table style="width:100%;" id="periodic-reports-year-end-section-summery-table" class="table table table-striped">
+                                    
+                                </table>
+                                <h4>CASH</h4>
+                                <table style="width:100%;" id="periodic-reports-year-end-section-cash-table" class="table table table-striped">
+                                    
+                                </table>
+                                <br>
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="printOutDataForYearEndPeriodicReportsSection()">PRINT OUT SUMMERY</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="()" disabled>PRINT OUT PER INVOICE REPORT</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="" disabled>DOWNLOAD PER INVOICE REPORT</button>
+
+                                <button class="btn btn-primary" title="Print to POS Printer" style="width: 100%; margin-bottom: 5px;" onclick="syncDataForYearEndAsPerInvoicePeriodicReportsSection()" disabled>SYNC TO CLOUD</button>
+
+                            </p>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <br>
+    </div>
+</div>
+
+
+<script src="{% static '' %}jquery.min.js"></script>
+<script src="{% static '' %}Chart.js"></script>
+</script>
+<script>
+
+    //BUTTON TRIGERED FUNCTIONS
+
+    function loadDataForDayEndPeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-day-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'get_data_for_day_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('periodic-reports-day-end-section-summery-table').innerHTML = responseData.summery_table
+                        document.getElementById('periodic-reports-day-end-section-cash-table').innerHTML = responseData.cash_table
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+
+    function loadDataForYearEndPeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-year-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'get_data_for_year_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('periodic-reports-year-end-section-summery-table').innerHTML = responseData.summery_table
+                        document.getElementById('periodic-reports-year-end-section-cash-table').innerHTML = responseData.cash_table
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+    function loadDataForMonthEndPeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-month-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'get_data_for_month_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('periodic-reports-month-end-section-summery-table').innerHTML = responseData.summery_table
+                        document.getElementById('periodic-reports-month-end-section-cash-table').innerHTML = responseData.cash_table
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+    function printOutDataForDayEndAsPerInvoicePeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-day-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'print_out_daily_transactions_per_invoice' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+
+
+
+    function printOutDataForYearEndPeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-year-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'print_data_for_year_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+
+    function printOutDataForMonthEndPeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-month-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'print_data_for_month_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+    function printOutDataForDayEndPeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-day-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'print_data_for_day_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+    // DATA SYNC
+
+
+    function syncDataForDayEndAsPerInvoicePeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-day-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'sync_data_for_day_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+    function syncDataForMonthEndAsPerInvoicePeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-month-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'sync_data_for_month_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+
+    function syncDataForYearEndAsPerInvoicePeriodicReportsSection(){
+        var filter_date = document.getElementById('periodic-reports-year-end-section-date-filter-value').value
+
+        if (filter_date == ""){
+            swal({
+                title: "Error",
+                text: "Please select a valid date",
+                type: "error"
+            });
+        }else{
+            $.ajax({
+                url: "{% url 'sync_data_for_year_end' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+    function syncCurrentStockData(){
+        $.ajax({
+                url: "{% url 'sync_current_stock_data' %}",
+                data: {
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('last-sync-time').value = responseData.last_sync_data['last_sync_time']
+                        document.getElementById('last-sync-user').value = responseData.last_sync_data['last_sync_user']
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+    }
+
+
+    // //DATA SYNC
+    // // BUTTON TRIGERED FUNCTIONS
+
+
+
+   /* window.onload = function() {
+        document.getElementById('transactions-summery-date-filter-value').value = new Date().toISOString().slice(0, 10);
+        transactionsSummeryInitialLoad()
+    };
+
+    $(document).ready(function() {
+        transactionsSummeryInitialLoad()
+    })
+
+    function transactionsSummeryInitialLoad(){
+        var filter_date = document.getElementById('transactions-summery-date-filter-value').value
+        sessionStorage.setItem('transactions_summery_filter_date', filter_date)
+
+
+        if (filter_date == ""){
+            filter_date = new Date().toLocaleDateString()
+        }else{
+            document.getElementById('loader').style.display = "block"
+            $.ajax({
+                url: "{% url 'ajax_transactions_summery' %}",
+                data: {
+                    filter_date: filter_date
+                },
+                success: function(responseData) {
+                    document.getElementById('loader').style.display = "none"
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('transactions-summery-sales-profit-value').innerHTML = responseData.summery_details['sales_profit']
+                        document.getElementById('transactions-summery-number-of-sales-value').innerHTML = responseData.summery_details['number_of_sales']
+                        document.getElementById('transactions-summery-sales-value-value').innerHTML = responseData.summery_details['sales_value']
+                        document.getElementById('transactions-summery-expenses-value-value').innerHTML = responseData.summery_details['expenses_value']
+                        document.getElementById('transactions-summery-total-returns-inn-value').innerHTML = responseData.summery_details['total_returns_inn']
+                        document.getElementById('transactions-summery-total-returns-out-value').innerHTML = responseData.summery_details['total_returns_out']
+                        document.getElementById('transactions-summery-received-stock-value-value').innerHTML = responseData.summery_details['received_stock_value']
+                        document.getElementById('transactions-summery-total-profit-value').innerHTML = responseData.summery_details['total_profit']
+
+
+                        document.getElementById('transactions-summery-payments-table-value').innerHTML = responseData.payments_table
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+
+    //BUTTON TRIGERED FUNCTIONS
+
+    function printOutDailyTransactionsSummery(){
+        var sales_profit = document.getElementById('transactions-summery-sales-profit-value').innerHTML
+        var number_of_sales = document.getElementById('transactions-summery-number-of-sales-value').innerHTML
+        var sales_value = document.getElementById('transactions-summery-sales-value-value').innerHTML
+        var expenses_value = document.getElementById('transactions-summery-expenses-value-value').innerHTML
+        var total_returns_inn = document.getElementById('transactions-summery-total-returns-inn-value').innerHTML
+        var total_returns_out = document.getElementById('transactions-summery-total-returns-out-value').innerHTML
+        var received_stock = document.getElementById('transactions-summery-received-stock-value-value').innerHTML
+        var total_profit = document.getElementById('transactions-summery-total-profit-value').innerHTML
+
+        var filter_date = sessionStorage.getItem('transactions_summery_filter_date')
+
+
+        $.ajax({
+            url: "{% url 'print_out_daily_transactions_summery' %}",
+            data: {
+                filter_date: filter_date,
+                sales_profit: sales_profit,
+                number_of_sales: number_of_sales,
+                sales_value: sales_value,
+                expenses_value: expenses_value,
+                total_returns_inn: total_returns_inn,
+                total_returns_out: total_returns_out,
+                received_stock: received_stock,
+                total_profit: total_profit,
+                today_s_date: toDayFormattedDate()
+            },
+            success: function(responseData) {
+                document.getElementById('loader').style.display = "none"
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            }
+        })
+    }
+*/
+    //BUTTON TRIGERED FUNCTIONS
+            
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

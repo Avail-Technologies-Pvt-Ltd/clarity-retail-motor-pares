@@ -1,0 +1,767 @@
+{% extends 'partials/base.html' %}
+{% block title %} Create Quotation {% endblock %}
+
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Create Quotation</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <a href="" title="Add New Customer" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#addCustomerModal" id="payment-modal-button">+ Buyer</a>
+
+                                    
+                                    <a href="{% url 'quotations_page' %}" title="List Quotations" class="btn btn-primary" type="button">List Q</a>
+                                    <!-- <button data-toggle="tooltip" data-placement="left" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+{% include 'partials/modals/accounts/customers_modals.html' %}
+{% load static %}
+{% load humanize %}
+<style>
+    .quote-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 15px;
+        margin-top: auto;
+    }
+
+    .quote-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .quote-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+        font-weight: bold;
+        border-top: 2px solid #333;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+
+    .quote-value {
+        font-weight: bold;
+        color: #333;
+    }
+    .top-part{
+        height: 20% !important;
+    }
+    .mid-part{
+        height: 74% !important;
+    }
+    
+    /* Add these styles for independent scrolling */
+    .scrollable-section {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .scrollable-content {
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(100vh - 200px); /* Adjust based on your layout */
+    }
+    
+    /* Specific heights for each section */
+    #section1 .scrollable-content {
+        max-height: 500px; /* Adjust as needed */
+    }
+    
+    #section2 .scrollable-content {
+        max-height: 500px; /* Adjust as needed */
+    }
+    
+    #section3 .scrollable-content {
+        max-height: 500px; /* Adjust as needed */
+    }
+
+    #section1, #section2, #section3 {
+        height: 500px; /* Fixed height */
+        max-height: 70vh; /* Maximum height */
+    }
+    
+    /* Footer styles for the 3rd section */
+    .quote-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 15px;
+        margin-top: auto;
+    }
+    
+    .quote-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+    
+    .quote-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+        font-weight: bold;
+        border-top: 2px solid #333;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+    
+    .quote-value {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    /* Delete button styles */
+    .delete-item-btn {
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        cursor: pointer;
+        padding: 2px 8px;
+        font-size: 16px;
+    }
+    
+    .delete-item-btn:hover {
+        color: #ff0000;
+    }
+    
+    .table-actions {
+        width: 80px;
+        text-align: center;
+    }
+</style>
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%;">
+        <br>
+        <div class="row" style="height: 100%;">
+            <!-- First Section -->
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <div class="email-statis-inner notika-shadow scrollable-section" id="section1">
+                    <div class="email-ctn-round">
+                        <div class="email-rdn-hd">
+                            <h2>ADD QUOTE ITEMS</h2>
+                        </div>
+                    </div>
+                    <div class="scrollable-content" style="padding: 20px;">
+                        <input type="hidden" id="quotation-id" value="{{ quotation_id }}">
+                        Item
+                        <select data-live-search="true" class="form-control selectpicker item_selector_class" id="item" autofocus>
+                            <option value="0">Select Product</option>
+                        </select>
+                        <br><br>
+
+                        Quantity
+                        <input class="form-control" type="number" id="quote-quantity" value="1" placeholder="Total Units"   title="" data-trigger="hover" data-toggle="popover" data-placement="left" data-content="Enter the number of units or pack size."  data-original-title="Quantity" style="text-align: center;">
+                        <br>
+
+                        Price
+                        <input class="form-control" type="number" id="quote-unit-price" value="1" placeholder="Total Units"   title="" data-trigger="hover" data-toggle="popover" data-placement="left" data-content="Enter the number of units or pack size."  data-original-title="Quantity" style="text-align: center;">
+
+                        <br>
+                        <button class="btn btn-primary" id="add-to-quote-button" style=" width: 100%;">ADD TO QUOTE</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Second Section -->
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                <div class="recent-post-wrapper notika-shadow sm-res-mg-t-30 tb-res-ds-n dk-res-ds scrollable-section" id="section2">
+                    <div class="recent-post-ctn">
+                        <div class="recent-post-title">
+                            <h2>OPTIONS</h2>
+                        </div>
+                    </div>
+                    <div class="recent-post-items scrollable-content" style="padding: 20px;">
+                        <div>
+                            <b>BUYER</b>
+                            <select data-live-search="true" class="form-control selectpicker buyer_selector_class" id="buyer">
+                                <option value="0">Buyer</option>
+                            </select>
+                            <br><br>
+                            <b>CURRENCY</b>
+                            <select data-live-search="true" class="form-control selectpicker currency_selector_class" id="currency">
+                                <option value="0">Payment Method</option>
+                            </select>
+                            <br><br>
+
+                            <b>EXPIRATION DATE</b>
+                            <input type="date" id="expiration" class="form-control">
+                            <br>
+                            <div>
+                                <span class=""><b>FILE DESTINATION</b></span><br>
+                                <label class="form-control">
+                                    <input type="radio" checked name="destination" value="pdf"> Save to PDF
+                                </label><br>
+                                <!-- <label class="form-control">
+                                    <input type="radio" name="destination" value="a4"> A4 Printer
+                                </label><br> -->
+                                <label class="form-control">
+                                    <input type="radio" name="destination" value="pos"> POS Printer
+                                </label><br>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Third Section -->
+            <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12">
+                <div class="recent-items-wp notika-shadow sm-res-mg-t-30 scrollable-section" id="section3">
+                    <div class="rc-it-ltd" style="display: flex; flex-direction: column; height: 100%;">
+                        <div class="recent-items-ctn">
+                            <div class="recent-items-title">
+                                <h2 style="display: flex; justify-content: space-between;">
+                                    <span>Quotation Items</span>
+                                    <span>
+                                        <small>{{ quotation_number }}</small>
+                                    </span>
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="recent-items-inn scrollable-content" style="flex: 1; min-height: 0;">
+                            <table class="table table-inner table-vmiddle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Quantity</th>
+                                        <th style="width: 80px">Price</th>
+                                        <th class="table-actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quote-items-table">
+                                    <!-- Items will be loaded here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="quote-footer">
+                            <div class="quote-summary">
+                                <span>Subtotal:</span>
+                                <span class="quote-value" id="quote-subtotal">$0.00</span>
+                            </div>
+                            <div class="quote-summary">
+                                <span>VAT:</span>
+                                <span class="quote-value" id="quote-vat">$0.00</span>
+                            </div>
+                            <div class="quote-total">
+                                <span>TOTAL:</span>
+                                <span class="quote-value" id="quote-total">$0.00</span>
+                            </div>
+                            <div style="margin-top: 15px; justify-content: space-between; display: flex;">
+                                <button class="btn btn-success" id="generate-quote-button" style="width:32%;">
+                                    <i class="notika-icon notika-print"></i> PRINT
+                                </button>
+                                <button class="btn btn-primary" id="invoice-quote-button" style="width:32%;">
+                                    <i class="notika-icon notika-menus"></i> INVOICE
+                                </button>
+                                <button class="btn btn-danger" id="clear-all-button" style="width:32%;">
+                                    <i class="notika-icon notika-close"></i> CLEAR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+$(document).ready(function() {
+    /*init*/
+    renderQuotation();
+    daysFromNow(14)
+    /*init*/
+    
+    ///////////////////////////////////////
+    //EVENT FUNC
+    ///////////////////////////////////////
+
+
+
+    $('#currency').on('change', renderQuotation);
+    
+    $('#add-to-quote-button').on('click', function() {
+        quotation_id = $('#quotation-id').val();
+        stock_id = $('#item').val();
+        quantity = $('#quote-quantity').val();
+        unit_price = $('#quote-unit-price').val();
+
+        var errors = ""
+
+
+        if(isIntegerGreaterThanOrEqualToOne(stock_id) == false){
+            errors = "Please select a valid product"
+        }else if(isIntegerGreaterThanOrEqualToOne(quantity) == false){
+            errors = "Quantity must be a whole number and greater than 0"
+        }else if(isNumberGreaterThanZero(unit_price) == false){
+            errors = "Unit price must be greater than 0 not " + unit_price
+        }
+
+        if(errors == "") {
+            $.ajax({
+                url: "{% url 'add_quotation_item' %}",
+                method: 'POST',
+                data: {
+                    stock_id: stock_id,
+                    quantity: quantity,
+                    unit_price: unit_price,
+                    quotation_id: quotation_id,
+                },
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function(responseData) {
+                    swal({
+                        title: responseData.title,
+                        text: responseData.message,
+                        type: responseData.icon,
+                        timer: 1500,
+                        buttons: false,
+                    });
+                },
+                complete: function(){
+                    renderQuotation();
+                },
+                error: function(responseData, error){
+                    swal({
+                        title: "Error",
+                        text: "An error occurred while adding item to quote",
+                        type: "error",
+                        timer: 2000,
+                        buttons: false,
+                    });
+                }
+            });
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error",
+            });
+        }
+
+
+    });
+
+    $('#item').on('change', function() {
+        stock_id = $('#item').val();
+        $.ajax({
+            url: "{% url 'get_stock_details' %}",
+            data: {
+                stock_id: stock_id,
+            },
+            success: function(responseData) {
+                $('#quote-unit-price').val(responseData.details['selling_price']);
+            },
+            error: function(responseData, error){
+                console.error("Error getting stock details:", error);
+            }
+        });
+
+    });
+
+    $('#invoice-quote-button').on('click', function() {
+        $.when(voidCart()).then(function() {
+            loadCartWithQuotationItems();
+        });
+    });
+
+    $('#generate-quote-button').on('click', function() {
+        handleQuotationGeneration()
+        /*var destination = $('input[name="destination"]:checked').val();
+        alert(destination)
+        swal({
+            title: "Generate Quotation",
+            text: "Quotation generated successfully!",
+            type: "success",
+            timer: 1500,
+            buttons: false,
+        });*/
+    });
+
+    // Clear all items - NO CONFIRMATION
+    $('#clear-all-button').on('click', function() {
+        var quotationId = $('#quotation-id').val()
+
+        $.ajax({
+            url: "{% url 'clear_quotation_items' %}",
+            method: 'POST',
+            data: {
+                'quotation_id': quotationId,
+            },
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            success: function(responseData) {
+                renderQuotation();
+            },
+            error: function() {
+                console.error("Failed to clear items");
+            }
+        });
+    });
+
+
+    function daysFromNow(days){
+        var new_date = ""
+        $.ajax({
+            url: "{% url 'days_from_now' %}",
+            method: 'GET',
+            data: {
+                days: days,
+            },
+            success: function(responseData) {
+                $("#expiration").val(responseData.new_date)
+            },
+            error: function() {
+                //alert("Failed to return fdate");
+            }
+        });
+    }
+    
+    ///////////////////////////////////////
+    //CALLED FUNCTIONS
+    ///////////////////////////////////////
+
+    function loadCartWithQuotationItems(){
+        var quotation_id = $("#quotation-id").val()
+        $.ajax({
+            url: "{% url 'copy_quotation_to_cart' %}",
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            data: {
+                quotation_id: quotation_id,
+            },
+            success: function(responseData){
+                swal({
+                    title: responseData.title,
+                    text: responseData.message,
+                    type: responseData.icon
+                }).then(() => { 
+                    window.location.href = '{% url "pos" %}'
+                });
+            },
+            complete: function(){
+                //pass
+            }
+        })
+    }
+
+
+    function voidCart(){
+        $.ajax({
+            url: "{% url 'void_cart' %}",
+            data: {},
+            success: function(responseData){
+                /*if (responseData.custome_status == "Error"){
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+
+                }else{
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success",
+                        timer: 1000
+                    });
+                }*/
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "Server error!",
+                    type: "error"
+                });
+            },
+        })
+    }
+
+    function renderQuotation() {
+        // Get selected currency
+        var currencyId = $('#currency').val() || '0';
+        var quotationId = $('#quotation-id').val() || '0';
+        
+        $.ajax({
+            url: "{% url 'get_quotation_data_exclusive' %}",
+            method: 'GET',
+            data: {
+                currency_id: currencyId,
+                quotation_id: quotationId
+            },
+            success: function(data) {
+                // Clear table
+                $('#quote-items-table').empty();
+                
+                // Add items to table
+                if (data.items && data.items.length > 0) {
+                    var counter = 0;
+                    data.items.forEach(function(item, index) {
+                        counter++;
+                        
+                        // Use the SAME PATTERN as your appointments page
+                        $('#quote-items-table').append(`
+                            <tr>
+                                <td>${counter}</td>
+                                <td>(${item.product_code || ''}) ${item.title || ''}<br><small>${item.details || ''}</small></td>
+                                <td>${item.quantity || 0}</td>
+                                <td>${data.currency || '$'}${parseFloat(item.total || 0).toFixed(2)}</td>
+                                <td class="table-actions">
+                                    <button class="delete-item-btn" data-id="${item.id}" title="Delete this item">
+                                        <i class="notika-icon notika-close"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    $('#quote-items-table').append('<tr><td colspan="5" class="text-center">No items</td></tr>');
+                }
+                
+                // Update totals
+                $('#quote-subtotal').text((data.currency || '$') + parseFloat(data.subtotal || 0).toFixed(2));
+                $('#quote-vat').text((data.currency || '$') + parseFloat(data.vat || 0).toFixed(2));
+                $('#quote-total').text((data.currency || '$') + parseFloat(data.total || 0).toFixed(2));
+            },
+            error: function() {
+                console.log('Error loading quotation data');
+            }
+        });
+    }
+
+    ///////////////////////////////////////
+    //LIVE FUNCTIONS
+    ///////////////////////////////////////
+    
+    // Delete individual item - USING THE SAME PATTERN AS YOUR APPOINTMENTS PAGE
+    $(document).on('click', '.delete-item-btn', function(e) {
+        e.preventDefault();
+        // Get the ID using data-id attribute - SAME AS YOUR APPOINTMENTS PAGE
+        var itemId = $(this).data('id');
+        
+        if (itemId) {
+            $.ajax({
+                url: "{% url 'delete_quotation_item' %}",
+                method: 'POST',
+                data: {
+                    item_id: itemId
+                },
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function(responseData) {
+                    // Remove the row immediately for better UX
+                    $(this).closest('tr').remove();
+                    // Also refresh to update totals
+                    renderQuotation();
+                }.bind(this), // Bind 'this' to the success function
+                error: function() {
+                    console.error("Failed to delete item");
+                }
+            });
+        } else {
+            console.error("No item ID found");
+        }
+    });
+    
+
+    $(document).on('keyup', '.buyer_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_customer_options' %}",
+                    data: { search_query: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('buyer')
+                        $("#buyer").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#buyer").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        console.error("Error loading buyer options:", error);
+                    }
+                });
+            }
+        });
+
+
+    $(document).on('keyup', '.currency_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_payment_method_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('currency')
+                        $("#currency").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#currency").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        console.error("Error loading currency options:", error);
+                    }
+                });
+            }
+        });
+
+
+    $(document).on('keyup', '.item_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_live_stock_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('item')
+                        $("#item").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#item").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        console.error("Error loading stock options:", error);
+                    }
+                });
+            }
+        });
+
+
+    ///////////////////////////////////////
+    //LIVE FUNCTIONS
+    ///////////////////////////////////////
+
+
+
+    // Simple version for both PDF and A4
+function handleQuotationGeneration() {
+    var quotationId = $('#quotation-id').val();
+    var buyerId = $('#buyer').val();
+    var currencyId = $('#currency').val();
+    var expirationDate = $('#expiration').val();
+    var destination = $('input[name="destination"]:checked').val();
+    
+    if (!currencyId || currencyId === "0") {
+        swal({
+            title: "Error",
+            text: "Please select a currency",
+            type: "error",
+        })
+        return;
+    }
+    
+    if (!expirationDate) {
+        swal({
+            title: "Error",
+            text: "Please select an expiration date",
+            type: "error",
+        })
+        return;
+    }
+    
+    if (destination === 'pos') {
+        $.ajax({
+            url: "{% url 'print_quotation_in_pos_printer' %}",
+            data: {
+                buyer_id: buyerId,
+                quotation_id: quotationId,
+                currency_id: currencyId,
+                expiration_date: expirationDate,
+            },
+            success: function(responseData) {
+                swal({
+                    title: responseData.title,
+                    text: responseData.message,
+                    type: responseData.type,
+                })
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "Something went wrong! Refresh and try again.",
+                    type: "error",
+                })
+            }
+        });
+    } else {
+        // A4 or PDF - open in new window for preview/print
+        var url = "{% url 'quotation_print' %}?currency_id=" + currencyId + 
+                  "&expiration_date=" + expirationDate + "&buyer_id=" + buyerId + "&quotation_id=" + quotationId;
+        
+        var newWindow = window.open(url, '_blank');
+        
+        if (destination === 'a4') {
+            newWindow.onload = function() {
+                setTimeout(function() {
+                    newWindow.print();
+                }, 1000);
+            };
+            alert("Opening print dialog...");
+        } else {
+            //alert("Quotation opened in new window. Use browser's Print > Save as PDF to create PDF.");
+        }
+    }
+}
+
+});
+
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

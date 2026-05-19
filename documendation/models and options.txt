@@ -1,0 +1,41 @@
+	
+ACCOUNTS
+	Users ['ADD','EDIT','LIST','DELETE']
+	Suppliers ['ADD','EDIT','LIST','DELETE']
+	Manufacturers ['ADD','EDIT','LIST','DELETE']
+
+
+CONFIGURATIONS
+	ClientSettings ['ADD','EDIT','LIST','DELETE']
+	VATCodes ['ADD','EDIT','LIST','DELETE']
+	PaymentMethods ['ADD','EDIT','LIST','DELETE']
+
+SALES
+	Sales ['LIST']
+	SaleTransactions ['LIST']
+	ReturnInns ['ADD','EDIT','LIST','DELETE']
+
+
+EXPENSES
+	ExpensesTypes ['ADD','EDIT','LIST','DELETE']
+	Expenses ['ADD','EDIT','LIST','DELETE']
+	
+
+sSTOCK
+	Products ['ADD','EDIT','LIST','DELETE']
+	Stocks ['ADD','EDIT','LIST','DELETE']
+	Notifications ['LIST','DELETE']
+	Batchs ['EDIT','LIST','DELETE']
+	BatchAdjustments ['ADD','EDIT','LIST','DELETE']
+	BatchAdjustmentReasons ['ADD','EDIT','LIST','DELETE']
+
+
+INVOICES
+	Invoices ['ADD','EDIT','LIST','DELETE']
+	InvoiceItems ['ADD','EDIT','LIST','DELETE']
+	ReturnOuts ['ADD','EDIT','LIST','DELETE']
+	ReturnReasons ['ADD','EDIT','LIST','DELETE']
+
+
+LABLES
+	Lables ['ADD','EDIT','LIST','DELETE']

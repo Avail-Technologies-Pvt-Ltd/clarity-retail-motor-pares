@@ -1,0 +1,646 @@
+{% load static %}
+
+<!-- UPDATE RETURN INN -->
+<div class="modal fade animated bounce" id="returnInnUpdateModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Update Credit Note</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Credit Note Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-credit-note-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Receipt Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-recipt-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-date-bought-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-date-returned-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Amount</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-refund-amount-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Paid Refund</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-paid-refund-value-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Balance</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-balance-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-update-status-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    
+                                </div>
+
+                                <hr style="background: RGB(0 194 146);">
+
+                                <center><h3>Payments</h3></center>
+
+                                <hr>
+
+                                <div style="background: ;">
+                                    <div class="row" style="padding-top: 10px;">
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">Payment Method</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0">
+                                                <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_credit_note_refund_payment_method_selector" id="add-credit-note-refund-payment-method-value" onchange="adjustPaidAmountBasedOnPaymentMethod()" >
+                                                    <option value="0">Expense Type</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start number_element">Paid Amount &nbsp &nbsp</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <div class="form-group ic-cmp-int" style="width:100%;">
+                                                    <div class="nk-int-st">
+                                                        <input type="number" step="any" class="form-control number_element" placeholder="Price" id="credit-note-details-paid-amount-value" value="0.00">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start number_element">Date Paid &nbsp &nbsp</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <div class="form-group ic-cmp-int" style="width:100%;">
+                                                    <div class="nk-int-st">
+                                                        <input type="date" step="any" class="form-control number_element" placeholder="Price" id="credit-note-details-date-paid-value" value="0.00">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                            <div class="col-sm text-start">&nbsp</div>
+                                            <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                <div class="form-group ic-cmp-int" style="width:100%;">
+                                                    <div class="nk-int-st">
+                                                        <button onclick="addRefundPayment()" class="btn btn-success" style="width:100%">ADD PAYMENT</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <table class="table table-hover" id="credit-note-update-refund-money-portions-table">
+                               
+                                </table>
+                            
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <!-- <button class="btn btn-success notika-btn-success" onclick="printCreditNote()">Print</button> -->
+                                    <button class="btn btn-success notika-btn-success" disabled>Print</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // UPDATE RETURN INN -->
+
+
+
+<!-- RETURN INN DETAILS -->
+<div class="modal fade animated bounce" id="returnInnDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Credit Note Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Credit Note Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-credit-note-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Receipt Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-recipt-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-date-bought-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-date-returned-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                        <div class="col-sm text-start">Return Reason</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-reason-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">By</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-created-by-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-status-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Units Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-total-units-bought-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Units Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-total-units-returned-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Amount</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-refund-amount-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Paid</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="credit-note-details-paid-refund-value-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    
+                                </div>
+
+                                <hr style="background: RGB(0 194 146);">
+
+                                <center><h3>Payments</h3></center>
+
+                                <hr>
+
+                                <table class="table table-hover" id="credit-note-details-refund-money-portions-table">
+                               
+                                </table>
+                            
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <!-- <button class="btn btn-success notika-btn-success" onclick="printCreditNote()">Print</button> -->
+                                    <button class="btn btn-success notika-btn-success" disabled>Print</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // RETURN INN DETAILS -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#returnInnUpdateModal').on('hidden.bs.modal', function (){
+            creditNotesInitialLoad()
+        })
+
+        $('#returnInnUpdateModal').on('show.bs.modal', function (){
+            document.getElementById('credit-note-details-date-paid-value').value = toDayFormattedDate()
+        })
+
+
+        $('#returnInnUpdateModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var credit_note_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('credit_note_id_for_update', credit_note_id)
+                $.ajax({ url: "{% url 'get_credit_note_details' %}", data:{ credit_note_id: credit_note_id }, success:
+                function(responseData) {
+                    if(responseData.custome_status == "Error"){ 
+                        alert(responseData.message) 
+                    }else{
+                        document.getElementById('credit-note-update-credit-note-number-value').innerHTML = responseData.details['credit_note_number']
+                        document.getElementById('credit-note-update-recipt-number-value').innerHTML = responseData.details['recipt_number']
+                        document.getElementById('credit-note-update-date-bought-value').innerHTML = responseData.details['date_bought']
+                        document.getElementById('credit-note-update-date-returned-value').innerHTML = responseData.details['date_returned']
+                        
+                        document.getElementById('credit-note-update-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                        document.getElementById('credit-note-update-paid-refund-value-value').innerHTML = responseData.details['paid_refund_value']
+                        document.getElementById('credit-note-update-balance-value').innerHTML = responseData.details['balance']
+                        document.getElementById('credit-note-update-status-value').innerHTML = responseData.details['status']
+
+                        document.getElementById('credit-note-update-refund-money-portions-table').innerHTML = responseData.credit_note_refund_money_portions_table
+                    }
+                },
+                error: function(responseData, error){
+                    alert("An error ocured! " + error) 
+                }
+            });
+            }
+        })
+   
+        $('#returnInnDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var credit_note_id = $(event.relatedTarget).data('object-id')
+                $.ajax({ 
+                    url: "{% url 'get_credit_note_details' %}",
+                    data:{
+                        credit_note_id: credit_note_id
+                    },
+                    success:function(responseData) {
+                        if(responseData.custome_status == "Error"){ 
+                            alert(responseData.message) 
+                        }else{
+                            document.getElementById('credit-note-details-credit-note-number-value').innerHTML = responseData.details['credit_note_number']
+                            document.getElementById('credit-note-details-recipt-number-value').innerHTML = responseData.details['recipt_number']
+                            document.getElementById('credit-note-details-date-bought-value').innerHTML = responseData.details['date_bought']
+                            document.getElementById('credit-note-details-date-returned-value').innerHTML = responseData.details['date_returned']
+
+                            document.getElementById('credit-note-details-reason-value').innerHTML = responseData.details['reason']
+                            document.getElementById('credit-note-details-created-by-value').innerHTML = responseData.details['created_by']
+
+                            document.getElementById('credit-note-details-total-units-bought-value').innerHTML = responseData.details['total_units_bought']
+                            document.getElementById('credit-note-details-total-units-returned-value').innerHTML = responseData.details['total_units_returned']
+                            document.getElementById('credit-note-details-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                            document.getElementById('credit-note-details-paid-refund-value-value').innerHTML = responseData.details['paid_refund_value']
+                            document.getElementById('credit-note-details-status-value').innerHTML = responseData.details['status']
+
+                            document.getElementById('credit-note-details-refund-money-portions-table').innerHTML = responseData.credit_note_refund_money_portions_table
+                        }
+                    },
+                    error: function(responseData, error){
+                        alert("An error ocured! " + error) 
+                    }
+                });
+            }
+        })
+    })
+
+/*BUTTON TRIGGERED FUNCTIONS*/
+    function printCreditNote(){
+        var credit_note_id = sessionStorage.getItem('credit_note_id_for_update')
+        alert(credit_note_id)
+        printCreditNote(credit_note_id)
+    }
+
+
+    function deleteReturnInnRefundMoneyPortion(credit_note_refund_money_portion_id){
+        $.ajax({ 
+            url: "{% url 'delete_credit_note_refund_money_portion' %}",
+            data:{
+                credit_note_refund_money_portion_id: credit_note_refund_money_portion_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){ 
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    swal({
+                    title: "Success",
+                    text: responseData.message,
+                    type: "success"
+                });
+                }
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "An error ocured " + error,
+                    type: "error"
+                });
+            },
+            complete: function(){
+                reloadCreditNoteModal()
+            }
+        })
+    }
+
+
+
+    function reloadCreditNoteModal(){
+        var credit_note_id = sessionStorage.getItem('credit_note_id_for_update')
+        $.ajax({ 
+            url: "{% url 'get_credit_note_details' %}",
+            data:{
+                credit_note_id: credit_note_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){ 
+                    alert(responseData.message) 
+                }else{
+                    document.getElementById('credit-note-details-credit-note-number-value').innerHTML = responseData.details['credit_note_number']
+                    document.getElementById('credit-note-details-recipt-number-value').innerHTML = responseData.details['recipt_number']
+                    document.getElementById('credit-note-details-date-bought-value').innerHTML = responseData.details['date_bought']
+                    document.getElementById('credit-note-details-date-returned-value').innerHTML = responseData.details['date_returned']
+
+                    document.getElementById('credit-note-details-reason-value').innerHTML = responseData.details['reason']
+                    document.getElementById('credit-note-details-created-by-value').innerHTML = responseData.details['created_by']
+
+                    document.getElementById('credit-note-details-total-units-bought-value').innerHTML = responseData.details['total_units_bought']
+                    document.getElementById('credit-note-details-total-units-returned-value').innerHTML = responseData.details['total_units_returned']
+                    document.getElementById('credit-note-details-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                    document.getElementById('credit-note-details-paid-refund-value-value').innerHTML = responseData.details['paid_refund_value']
+                    document.getElementById('credit-note-details-status-value').innerHTML = responseData.details['status']
+
+                    document.getElementById('credit-note-details-refund-money-portions-table').innerHTML = responseData.credit_note_refund_money_portions_table    
+
+                    document.getElementById('credit-note-update-credit-note-number-value').innerHTML = responseData.details['credit_note_number']
+                    document.getElementById('credit-note-update-recipt-number-value').innerHTML = responseData.details['recipt_number']
+                    document.getElementById('credit-note-update-date-bought-value').innerHTML = responseData.details['date_bought']
+                    document.getElementById('credit-note-update-date-returned-value').innerHTML = responseData.details['date_returned']
+                    
+                    document.getElementById('credit-note-update-refund-amount-value').innerHTML = responseData.details['refund_amount']
+                    document.getElementById('credit-note-update-paid-refund-value-value').innerHTML = responseData.details['paid_refund_value']
+                    document.getElementById('credit-note-update-balance-value').innerHTML = responseData.details['balance']
+                    document.getElementById('credit-note-update-status-value').innerHTML = responseData.details['status']
+
+                    document.getElementById('credit-note-update-refund-money-portions-table').innerHTML = responseData.credit_note_refund_money_portions_table
+
+                }
+            },
+            error: function(responseData, error){
+                alert("An error ocured! " + error) 
+            }
+        })
+    }
+
+
+
+    function addRefundPayment(){
+        var payment_method = document.getElementById('add-credit-note-refund-payment-method-value').value
+        var amount = document.getElementById('credit-note-details-paid-amount-value').value
+        var date_paid = document.getElementById('credit-note-details-date-paid-value').value
+        var credit_note_id = sessionStorage.getItem('credit_note_id_for_update')
+        var errors = ""
+        if (isIntegerGreaterThanOrEqualToOne(payment_method) == false){
+            errors = "Please select a valid payment method"
+        }else if(amount == ""){
+            errors = "Please input the amount paid"
+        }else if(date_paid == ""){
+            errors = "Please input a valid payment date"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_credit_note_refund_money_portion' %}",
+                data: {
+                    payment_method: payment_method,
+                    amount: amount,
+                    credit_note_id: credit_note_id,
+                    date_paid: date_paid,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                },
+                complete: function(){
+                    reloadCreditNoteModal()
+                }
+            });
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+
+    function adjustPaidAmountBasedOnPaymentMethod(){
+        var credit_note_id = sessionStorage.getItem('credit_note_id_for_update')
+        $.ajax({
+            url: "{% url 'get_credit_note_details' %}",
+            data: {
+                credit_note_id: credit_note_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    var balance = responseData.details['balance']
+                    var paying_currency_id = document.getElementById('add-credit-note-refund-payment-method-value').value
+                    $.ajax({
+                        url: "{% url 'get_paying_currency_details' %}",
+                        data: {
+                            paying_currency_id: paying_currency_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                var rate = responseData.paying_currency['rate']
+                                document.getElementById('credit-note-details-paid-amount-value').value = (rate * balance).toFixed(2)
+                            }
+                        },
+                        error: function(responseData, error){
+                            //alert("An error ocured! " + error)
+                            swal({
+                                title: "Error",
+                                text: "An error ocured! " + error,
+                                type: "error"
+                            });
+                        }
+                    });
+
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+
+/* // BUTTON TRIGGERED FUNCTIONS*/
+
+
+/*LIVE FUNCTIONS*/
+    $(document).on('keyup', '.add_credit_note_refund_payment_method_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_payment_method_options' %}",
+                    data: { search_query: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('add-credit-note-refund-payment-method-value')
+                        $("#add-credit-note-refund-payment-method-value").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#add-credit-note-refund-payment-method-value").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+/*LIVE FUNCTIONS*/
+
+   
+
+</script>

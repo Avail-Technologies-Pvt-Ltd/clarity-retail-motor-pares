@@ -1,0 +1,1110 @@
+{% load static %}
+
+
+
+<!-- BATCH DETAILS -->
+<div class="modal fade animated bounce" id="batchDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Batch Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                        <div class="col-sm text-start">Product Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Batch Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-batch-number-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Available</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-total-units-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Pack Size</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-pack-size-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Packs Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-total-packs-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Time</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-expiring-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Buying Pack Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-buying-pack-price-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Date</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-expiration-date-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Active</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-status-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Received By</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-received-by-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <hr style="background: RGB(0 194 146);">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date Received</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-date-received-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Brand</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-manufacturer-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Supplier</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-supplier-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Invoice Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="batch-details-invoice-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                                
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // BATCH DETAILS -->
+
+<!-- UPDATE BATCH  -->
+
+<div class="modal fade animated bounce" id="adjustBatchModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Adjust Batch</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="adjust-batch-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12" >
+                                        <div class="col-sm text-start">Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="adjust-batch-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Action</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <select style="width: 100%;" class="form-control" id="adjust-batch-action-value">
+                                                <option value="Subtract">Subtract (-)</option>
+                                                <option value="Add">Add (+)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Adjustment Reason</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <button class="btn btn-success add_object_button" onclick="openBatchAdjustmentReasonsPopup()">
+                                                +
+                                            </button>
+                                            <select data-live-search="true" style="width: 100%;" class="form-control adjust_batch_adjustment_reason_class" id="adjust-batch-adjustment-reason-value">
+                                                
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Affected</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control number_element" id="adjust-batch-total-units-affected-value" value="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" class="form-control"  id="adjust-batch-date-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="createBatchAdjustment()">Save Adjustment</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- // UPDATE BATCH  -->
+
+
+<!-- RETURN-OUT BATCH  -->
+
+<div class="modal fade animated bounce" id="returnOutBatchModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Return Out Batch</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Batch Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-batch-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                        <div class="col-sm text-start">Product Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <div class="widget-tabs-list">
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date Received</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-date-received-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Buying Unit Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-buying-unit-price-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Bought</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-total-units-bought-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Remaining Units</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="return-out-batch-remaining-units-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" class="form-control" id="return-out-batch-date-returned-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Units Returned</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control number_element" id="return-out-batch-total-units-returned-value" value="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Refund Amount</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control number_element" id="return-out-batch-refund-amount-value" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> 
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Return Reason</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <button class="btn btn-success add_object_button" onclick="openReturnReasonsPopup()">
+                                                +
+                                            </button>
+                                            <select data-live-search="true" style="width: 100%;" class="form-control return_out_batch_return_reason_class" id="return-out-batch-return-reason-value">
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Notes:</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="return-out-batch-notes-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> 
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="createReturnOut()">Return Stock</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- // RETURN-OUT BATCH  -->
+
+
+<!-- ACTIVATE DEACTIVATE BATCH  -->
+
+<div class="modal fade animated bounce" id="activateDeactivateBatchModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">AD</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Batch Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="activate-deactivate-batch-batch-number-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="activate-deactivate-batch-product-title-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+                                        <div class="col-sm text-start">Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="activate-deactivate-batch-product-details-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <select style="width: 100%;" class="form-control" id="activate-deactivate-batch-status-value">
+                                                <option value="True">Activate</option>
+                                                <option value="False">Deactivate</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>                               
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="activateDeactivateBatch()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- // ACTIVATE DEACTIVATE BATCH  -->
+
+
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        requestAndLoadBatchAdjustmentReasons()
+        requestAndLoadReturnReasons()
+
+        $('#batchDetailsModal').on('hidden.bs.modal', function (){
+           batchiesinitialLoad()
+        })
+
+        $('#returnOutBatchModal').on('hidden.bs.modal', function (){
+           batchiesinitialLoad()
+        })
+
+        $('#adjustBatchModal').on('hidden.bs.modal', function (){
+           batchiesinitialLoad()
+        })
+
+        $('#activateDeactivateBatchModal').on('hidden.bs.modal', function (){
+           batchiesinitialLoad()
+        })
+
+        $('#activateDeactivateBatchModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var batch_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('batch_id_for_activate_deactivate', batch_id)
+                $.ajax({
+                    url: "{% url 'get_batch_details' %}",
+                    data: {
+                        batch_id: batch_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('activate-deactivate-batch-batch-number-product-title-value').innerHTML = responseData.details['batch_number']
+                            document.getElementById('activate-deactivate-batch-product-title-value').innerHTML = responseData.details['product_title']
+                            document.getElementById('activate-deactivate-batch-product-details-value').innerHTML = responseData.details['product_details']
+                            if (responseData.details['status'] == false){
+                                document.getElementById('activate-deactivate-batch-status-value').value = "False"
+                            }else{
+                                document.getElementById('activate-deactivate-batch-status-value').value = "True"
+                            }
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        }) 
+
+        $('#batchDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var batch_id = $(event.relatedTarget).data('object-id')
+                    //alert(batch_id)
+                    $.ajax({
+                        url: "{% url 'get_batch_details' %}",
+                        data: {
+                            batch_id: batch_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                document.getElementById('batch-details-batch-number-value').innerHTML = responseData.details['batch_number'] 
+                                document.getElementById('batch-details-product-title-value').innerHTML = responseData.details['product_title'] 
+                                document.getElementById('batch-details-product-details-value').innerHTML = responseData.details['product_details'] 
+                                document.getElementById('batch-details-manufacturer-value').innerHTML  = responseData.details['manufacturer']
+                                document.getElementById('batch-details-invoice-number-value').innerHTML = responseData.details['invoice_number'] 
+                                document.getElementById('batch-details-expiring-value').innerHTML  = responseData.details['expiring']
+                                document.getElementById('batch-details-supplier-value').innerHTML  = responseData.details['supplier']
+                                document.getElementById('batch-details-total-packs-value').innerHTML = responseData.details['total_packs'] 
+                                document.getElementById('batch-details-pack-size-value').innerHTML = responseData.details['pack_size'] 
+                                document.getElementById('batch-details-total-units-value').innerHTML = responseData.details['total_units_available'] 
+                                document.getElementById('batch-details-buying-pack-price-value').innerHTML = responseData.details['buying_pack_price']
+                                //document.getElementById('batch-details-vat-value').innerHTML  = responseData.details['vat']
+                                document.getElementById('batch-details-expiration-date-value').innerHTML = responseData.details['expiration_date'] 
+                                document.getElementById('batch-details-status-value').innerHTML  = responseData.details['status']
+                                document.getElementById('batch-details-received-by-value').innerHTML = responseData.details['received_by'] 
+                                document.getElementById('batch-details-date-received-value').innerHTML = responseData.details['date_received'] 
+                            }
+                        },
+                        error: function(responseData, error){
+                            //alert("An error ocured! " + error)
+                            swal({
+                                title: "Error",
+                                text: "An error ocured! " + error,
+                                type: "error"
+                            });
+                        }
+                    });
+            }
+        })  
+
+
+
+        $('#adjustBatchModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var batch_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('batch_id_for_adjustment', batch_id)
+                $.ajax({
+                    url: "{% url 'get_batch_details' %}",
+                    data: {
+                        batch_id: batch_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('adjust-batch-product-title-value').innerHTML = responseData.details['product_title']
+                            document.getElementById('adjust-batch-product-details-value').innerHTML = responseData.details['product_details']
+
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        }) 
+
+
+
+        $('#returnOutBatchModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var batch_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('batch_id_for_returning', batch_id)
+                $.ajax({
+                    url: "{% url 'get_batch_details' %}",
+                    data: {
+                        batch_id: batch_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('return-out-batch-batch-number-value').innerHTML = responseData.details['batch_number']
+                            document.getElementById('return-out-batch-product-title-value').innerHTML = responseData.details['product_title']
+                            document.getElementById('return-out-batch-product-details-value').innerHTML = responseData.details['product_details']
+                            document.getElementById('return-out-batch-date-received-value').innerHTML = responseData.details['date_received']
+                            document.getElementById('return-out-batch-buying-unit-price-value').innerHTML = responseData.details['buying_unit_price']
+                            document.getElementById('return-out-batch-total-units-bought-value').innerHTML = responseData.details['total_units_bought']
+                            document.getElementById('return-out-batch-remaining-units-value').innerHTML = responseData.details['total_units_available']
+
+                            /**/
+
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })            
+    })
+
+
+    /*BUTTON FUNCTIONS ----------------------------------------------------------*/
+    
+    function openBatchAdjustmentReasonsPopup(){
+        newBrowserWindow("{% url 'batch_adjustment_reasons_page' %}")
+    }
+
+        
+    function activateDeactivateBatch(){
+        var batch_id = sessionStorage.getItem('batch_id_for_activate_deactivate')
+        var status = document.getElementById('activate-deactivate-batch-status-value').value
+
+        $.ajax({
+            url: "{% url 'activate_deactivate_batch' %}",
+            data: {
+                batch_id: batch_id,
+                status: status
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                        //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            },
+            error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+    function openReturnReasonsPopup(){
+        newBrowserWindow("{% url 'return_reasons_page' %}")
+    }
+
+    function createReturnOut(){
+        var  date_returned = document.getElementById('return-out-batch-date-returned-value').value
+        var  total_units_returned = document.getElementById('return-out-batch-total-units-returned-value').value
+        var  refund_amount = document.getElementById('return-out-batch-refund-amount-value').value
+        var  return_reason = document.getElementById('return-out-batch-return-reason-value').value
+        var  notes = document.getElementById('return-out-batch-notes-value').value
+
+        var errors = ""
+        if (date_returned == ""){
+            errors = "Please select a valid date"
+        }else if (total_units_returned == ""){
+            errors = "Total_units_returned field can not be blank"
+        }else if (refund_amount == ""){
+            errors = "Refund_amount field can not be blank"
+        }else if (isIntegerGreaterThanOrEqualToOne(return_reason) == false){
+            errors = "Please select a valid reason"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'create_return_out' %}",
+                data: {
+                    batch_id: sessionStorage.getItem('batch_id_for_returning'),
+                    date_returned: date_returned,
+                    total_units_returned: total_units_returned,
+                    refund_amount: refund_amount,
+                    return_reason: return_reason,
+                    notes: notes
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+    function createBatchAdjustment(){
+        //alert('ooooo')
+        var  action = document.getElementById('adjust-batch-action-value').value
+        var  reason = document.getElementById('adjust-batch-adjustment-reason-value').value
+        var  total_units_affected = document.getElementById('adjust-batch-total-units-affected-value').value
+        var  date = document.getElementById('adjust-batch-date-value').value
+
+        var errors = ""
+        if (action == ""){
+            errors = "Action field can not be blank!"
+        }else if (isIntegerGreaterThanOrEqualToOne(reason) == false){
+            errors = "Please select a valid adjustment reason."
+        }else if (isIntegerGreaterThanOrEqualToOne(total_units_affected) == false){
+            errors = "Total units affected field must be an integer grater than 0"
+        }else if (date == ""){
+            errors = "Date field can not be blank!"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'create_batch_adjustment' %}",
+                data: {
+                    batch_id: sessionStorage.getItem('batch_id_for_adjustment'),
+                    action: action,
+                    reason: reason,
+                    total_units_affected: total_units_affected,
+                    date: date
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+
+
+    /*BUTTON FUNCTIONS ----------------------------------------------------------*/
+
+    /*LIVE FUNCTIONS ------------------------------------------------------------*/
+
+
+        function requestAndLoadReturnReasons(){
+            //alert('return reasons')
+            $.ajax({
+                url:"{% url 'load_live_return_reason_options' %}",
+                success: function(responseData){
+                    var selectElement = document.getElementById('return-out-batch-return-reason-value')
+                    $("#return-out-batch-return-reason-value").empty();
+
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    
+                    $("#return-out-batch-return-reason-value").selectpicker('refresh')
+                    //alert("Done...")
+                },
+                error: function(responseData, error){
+                    //alert(responseData)
+                }
+            })
+        }
+
+        $(document).on('keyup', '.return_out_batch_return_reason_class .bs-searchbox input', function(e){
+            if (e.key.length === 1 || e.key === "Backspace") { 
+                var searchQuery = $(this).val();
+                //alert(searchQuery)
+                var mySelect = document.getElementById('return-out-batch-return-reason-value')
+                var selectOption = mySelect.options[mySelect.selectedIndex]
+                
+                var selected_patient_text = selectOption.texty
+                $.ajax({
+                    url: "{% url 'load_live_return_reason_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('return-out-batch-return-reason-value')
+                        $("#return-out-batch-return-reason-value").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#return-out-batch-return-reason-value").selectpicker('refresh')    
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })
+      
+
+
+        function requestAndLoadBatchAdjustmentReasons(){
+        //alert('paying accounts requested')
+            $.ajax({
+                url:"{% url 'load_live_batch_adjustment_reason_options' %}",
+                success: function(responseData){
+                    var selectElement = document.getElementById('adjust-batch-adjustment-reason-value')
+                    $("#adjust-batch-adjustment-reason-value").empty();
+
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    
+                    $("#adjust-batch-adjustment-reason-value").selectpicker('refresh')
+                    //alert("Done...")
+                },
+                error: function(responseData, error){
+                    //alert(responseData)
+                }
+            })
+        }
+
+
+        $(document).on('keyup', '.adjust_batch_adjustment_reason_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+
+                var mySelect = document.getElementById('adjust-batch-adjustment-reason-value')
+                var selectOption = mySelect.options[mySelect.selectedIndex]
+                
+                var selected_patient_text = selectOption.texty
+                $.ajax({
+                    url: "{% url 'load_live_batch_adjustment_reason_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('adjust-batch-adjustment-reason-value')
+                        $("#adjust-batch-adjustment-reason-value").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#adjust-batch-adjustment-reason-value").selectpicker('refresh')    
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })
+      
+    /*LIVE FUNCTIONS ------------------------------------------------------------*/
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,85 @@
+⛔⛔⛔
+	return out payment portions are not recoded i think, user dose not have a portal to spacify them
+		---then fix it in print_out_daily_transactions_summery() under reports views.py
+		---it also dose not have auto fill when paying
+		---download csv in stock table
+
+⚠️⚠️⚠️
+	⚠️use only one add to cart function, now there is ./add_to_cart_from_look_up and ./add_stock_to_cart, factorise/marge the action
+	✅download or db backup
+	⚠️in all lists download button fix
+	⚠️consider the discounts (R and O) in analysis
+	⚠️also change markup when using this url ./on_pos_change_price/ to chenge price 
+	
+
+❔❔❔
+	❔in all lists filters
+
+
+📁📁📁
+	📁fix lables page for creation, display and printing
+	📁"lables_page/"
+
+
+✅✅✅
+	✅think about batch adjustment handling profits and expenses
+	✅return inn refund is not calculated ok. The paid amounts displayed vs the payments portions existing
+	✅add by markup percentage is not accurate
+	✅all calculations in reports must be aganist returned
+	✅edit expense type
+	✅products filter
+	✅auto fill here: http://127.0.0.1:8000/enventory/returns_out_page
+	✅auto fill here: http://127.0.0.1:8000/payments/sales_page
+	✅auto fill here: http://127.0.0.1:8000/enventory/returns_inn_page/
+	✅products details
+	✅products edit
+	✅products delete
+	✅delete payment portions
+	✅on pos alert not enogh stock
+	✅Sales History
+	✅Stock Analysis
+	✅smoothen invoice adding mobdal
+	✅"notifications_page/"
+	✅receipt_money_portions_page/"
+	✅invoice_money_portions/"
+	✅expense_money_portions/"
+	✅Comparative Stock Analysis
+	✅some user compinations's home pages are not working
+	✅edit invoce item
+	✅batch activate/deactivate
+	✅secure fuctions with custom decorator
+	✅Transactions Summery
+	✅adit modal for manufacturer
+	✅details modal for manufacturer
+	✅adit modal for supplier
+	✅details modal for supplier
+	✅adit modal for config
+	✅details modal for config
+	✅add modal for config
+	✅return in sale
+	✅refresh list after closing a modal
+	✅paid is using only the last payment to not all portions in invoices
+	✅buying_price and unit_price are using the same fomula in Batch
+	✅"returns_inn_page/"
+	✅record Sale.buying_unit_price when creating a sale
+	✅return out page not working/ needs spacial attention
+	✅fix receipt here http://127.0.0.1:8000/payments/sales_transactions_page in modal
+	✅account for VAT when creating CartItem
+	✅review temporary invoice item culculations with AI
+	✅update user
+	✅"return_reasons_page/"
+	✅"returns_out_page/"
+	✅"sale_transactions_page/"
+	✅add_batch_adjustments
+	✅add_batch_adjustment_reasons
+	✅add_return_reasons
+	✅add_invoice_money_portions
+	✅add_expense_money_portions
+	✅encrypt the password before saving in user update
+	✅add user
+	✅update user
+	✅login
+	✅batch adjustment reasons
+	✅return reasons
+	✅batch adjustments
+	✅expense types

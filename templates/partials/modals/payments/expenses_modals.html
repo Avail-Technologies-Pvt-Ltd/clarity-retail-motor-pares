@@ -1,0 +1,790 @@
+{% load static %}
+
+{% csrf_token %}
+<style>
+    #details-expense-money-portions-table td:last-child,
+    #details-expense-money-portions-table th:last-child {
+        display: none;
+    }
+</style>
+
+
+<!-- ADD -->
+
+
+
+<div class="modal fade animated bounce" id="addExpenseModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New Expense</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Expense Type</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                            <button class="btn btn-success add_object_button" onclick="openExpenseTypesPopup()">
+                                                +
+                                            </button>
+                                            <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_expense_expense_type_selector" id="add-expense-expense-type-value" name="" onchange="expenseTypeChanged()">
+                                                <option value="0">Expense Type</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control number_element" placeholder="Price" id="add-expense-price-value" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Billed</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" class="form-control" placeholder="Date" id="add-expense-date-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                        <div class="col-sm text-start">Description</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Description" id="add-expense-description-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>                                
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-expense-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addExpense()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+<!-- DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="expenseDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Expense Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="expense-details-title-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Cost</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="expense-details-amount-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="expense-details-date-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Amount Paid</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="expense-details-amount-paid-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="expense-details-status-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Created by</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="expense-details-created-by-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                             
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Payments</h2>
+                            </div>
+                            <hr>
+                            <table class="table table-hover" id="details-expense-money-portions-table">
+                                
+                            </table>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-expense-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- // DETAILS -->
+
+
+
+
+<!-- DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="updateExpenseModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Expense Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-expense-title-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Cost</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-expense-amount-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-expense-date-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Amount Paid</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-expense-amount-paid-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-expense-status-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Created by</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="update-expense-created-by-value">xxxxx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                             
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Make Payment</h2>
+                            </div>
+                            <hr>
+                            <div style="background: ;">
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Payment Method</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_expense_payment_payment_method_selector" id="add-expense-payment-payment-method-value" onchange="adjustPaidAmountBasedOnPaymentMethod()" >
+                                                <option value="0">Expense Type</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start number_element">Paid Amount &nbsp &nbsp</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control number_element" placeholder="Price" id="add-expense-payment-paid-amount-value" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start number_element">Date Paid &nbsp &nbsp</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" step="any" class="form-control number_element" placeholder="Date" id="add-expense-payment-date-paid-value" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">&nbsp</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <button onclick="addExpensePayment()" class="btn btn-success" style="width:100%">ADD PAYMENT</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Payments</h2>
+                            </div>
+                            <hr>
+
+                            <table class="table table-hover" id="update-expense-expense-money-portions-table">
+                                
+                            </table>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-expense-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- // DETAILS -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+    $(document).ready(function() {
+        $('#updateExpenseModal').on('hidden.bs.modal', function (){
+            expensesInitialLoad()
+        })
+
+        $('#updateExpenseModal').on('show.bs.modal', function (){
+            document.getElementById('add-expense-payment-date-paid-value').value = toDayFormattedDate()
+        })
+
+        $('#addExpenseModal').on('hidden.bs.modal', function (){
+            expensesInitialLoad()
+        })
+
+
+        $('#addExpenseModal').on('show.bs.modal', function (event) {
+            document.getElementById('add-expense-date-value').value = toDayFormattedDate()
+        })
+
+
+
+        $('#updateExpenseModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var expense_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('expense_id_for_update', expense_id)
+                $.ajax({
+                    url: "{% url 'get_expense_details' %}",
+                    data: {
+                        expense_id: expense_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('update-expense-title-value').innerHTML = responseData.details['title']
+                            document.getElementById('update-expense-amount-value').innerHTML = responseData.details['amount']
+                            document.getElementById('update-expense-date-value').innerHTML = responseData.details['date']
+                            document.getElementById('update-expense-amount-paid-value').innerHTML = responseData.details['amount_paid']
+                            document.getElementById('update-expense-status-value').innerHTML = responseData.details['status']
+                            document.getElementById('update-expense-created-by-value').innerHTML = responseData.details['created_by']
+
+                            document.getElementById('add-expense-payment-paid-amount-value').value = responseData.details['balance']
+
+                            document.getElementById('update-expense-expense-money-portions-table').innerHTML = responseData.expense_money_portions_table
+                            
+                            sessionStorage.setItem('balance', responseData.details['balance'].toString().split(",").join(""))
+
+                            
+                        }
+                    },
+                    error: function(responseData, error){
+                        alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })  
+
+
+
+        $('#expenseDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var expense_id = $(event.relatedTarget).data('object-id')
+                $.ajax({
+                    url: "{% url 'get_expense_details' %}",
+                    data: {
+                        expense_id: expense_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('expense-details-title-value').innerHTML = responseData.details['title']
+                            document.getElementById('expense-details-amount-value').innerHTML = responseData.details['amount']
+                            document.getElementById('expense-details-date-value').innerHTML = responseData.details['date']
+                            document.getElementById('expense-details-amount-paid-value').innerHTML = responseData.details['amount_paid']
+                            document.getElementById('expense-details-status-value').innerHTML = responseData.details['status']
+                            document.getElementById('expense-details-created-by-value').innerHTML = responseData.details['created_by']
+
+
+                            document.getElementById('details-expense-money-portions-table').innerHTML = responseData.expense_money_portions_table
+                        }
+                    },
+                    error: function(responseData, error){
+                        alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })            
+    })
+
+
+
+/*TRIGGERED FUNCTIONS*/
+
+    function expenseTypeChanged(){
+        var expense_type_id = document.getElementById('add-expense-expense-type-value').value
+        if(!isIntegerGreaterThanOrEqualToOne(expense_type_id)==false){
+            $.ajax({
+                url: "{% url 'get_expense_type_details' %}",
+                data: {
+                    expense_type_id: expense_type_id,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{ 
+                        document.getElementById('add-expense-price-value').value = responseData.details['default_price']
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    }
+
+/*//TRIGGERED FUNCTIONS*/
+
+
+
+/*BUTTON FUNCTION*/
+    function addExpense(){
+        var expense_type = document.getElementById('add-expense-expense-type-value').value
+        var price = document.getElementById('add-expense-price-value').value
+        var date = document.getElementById('add-expense-date-value').value
+        var description = document.getElementById('add-expense-description-value').value
+
+        errors = ""
+
+        if (expense_type == ""){
+            errors = "Expense_type can not be blank"
+        }else if (price == ""){
+            errors = "Price can not be blank"
+        }else if (date == ""){
+            errors = "Date can not be blank"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_expense' %}",
+                data: {
+                    expense_type: expense_type,
+                    price: price,
+                    date: date,
+                    description: description
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+
+    function openExpenseTypesPopup(){
+        newBrowserWindow("{% url 'expense_types_page' %}")
+    }
+
+    function adjustPaidAmountBasedOnPaymentMethod(){
+        var paying_currency_id = document.getElementById('add-expense-payment-payment-method-value').value
+        if (isIntegerGreaterThanOrEqualToOne(paying_currency_id)){
+            $.ajax({
+                url: "{% url 'get_paying_currency_details' %}",
+                data: { paying_currency_id: paying_currency_id },
+                success: function(responseData) {
+                    var rated_price_text = responseData.paying_currency['currency']
+                    var rate = parseFloat(responseData.paying_currency['rate'])
+
+                    
+                    var balance = sessionStorage.getItem('balance').split(",").join("")
+                    
+                    var rated_required_price_value = balance * rate
+
+                    document.getElementById('add-expense-payment-paid-amount-value').value = rated_required_price_value.toFixed(2)
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    }
+
+
+    function deleteExpensePaymentPortion(payment_portion_id) {
+    if (confirm('Delete Payment?\nThis will remove the payment permanently.')) {
+        $.ajax({
+            url: "{% url 'delete_expense_money_portion' %}",
+            data: {
+                payment_portion_id: payment_portion_id,
+            },
+            success: function(responseData) {
+                // Use native alert or your preferred method
+                alert(responseData.title + ': ' + responseData.message);
+                reloadExpenseDetail();
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.statusText || 'An error occurred!';
+                alert('Error: ' + errorMsg);
+                reloadExpenseDetail();
+            }
+        });
+    }
+}
+
+
+    function addExpensePayment(){
+        var payment_method = document.getElementById('add-expense-payment-payment-method-value').value
+        var amount = document.getElementById('add-expense-payment-paid-amount-value').value
+        var date_paid = document.getElementById('add-expense-payment-date-paid-value').value
+        var expense_id = sessionStorage.getItem('expense_id_for_update')
+        var errors = ""
+        if (isIntegerGreaterThanOrEqualToOne(payment_method) == false){
+            errors = "Please select a valid payment method"
+        }else if(amount == ""){
+            errors = "Please input the amount paid"
+        }else if(isNumberEqualToZero(amount) == true){
+            errors = "Amount paid can not be zero (0)"
+        }else if(date_paid == ""){
+            errors = "Please input a valid date"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_expense_money_portion' %}",
+                data: {
+                    payment_method: payment_method,
+                    amount: amount,
+                    expense_id: expense_id,
+                    date_paid: date_paid,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                },
+                complete: function(){
+                    reloadExpenseDetail()
+                }
+            });
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+/*//BUTTON FUNCTION*/
+
+
+/*LIVE FUNCTIONS*/
+$(document).on('keyup', '.add_expense_expense_type_selector .bs-searchbox input', function(e){
+    if (e.key.length === 1 || e.key === "Backspace") { 
+        var searchQuery = $(this).val();
+        //alert("rrrttt")
+        $.ajax({
+            url: "{% url 'load_live_expense_type_options' %}",
+            data: { search_query: searchQuery },
+            success: function(responseData) {
+                var selectElement = document.getElementById('add-expense-expense-type-value')
+                $("#add-expense-expense-type-value").empty();
+                responseData.options.forEach(optionString => {
+                    var newOption = document.createElement("option")
+                    var parsedOption = $(optionString)[0]
+                    newOption.value = parsedOption.value
+                    newOption.text = parsedOption.textContent
+                    selectElement.appendChild(newOption)
+                })
+                $("#add-expense-expense-type-value").selectpicker('refresh')    
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+})
+
+
+
+$(document).on('keyup', '.add_expense_payment_payment_method_selector .bs-searchbox input', function(e){
+    if (e.key.length === 1 || e.key === "Backspace") { 
+        var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_payment_method_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('add-expense-payment-payment-method-value')
+                    $("#add-expense-payment-payment-method-value").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#add-expense-payment-payment-method-value").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+/*LIVE FUNCTIONS*/
+
+/*BUTTON FUNCTIONS*/
+
+    function reloadExpenseDetail(){
+        var expense_id = sessionStorage.getItem('expense_id_for_update')
+        $.ajax({
+            url: "{% url 'get_expense_details' %}",
+            data: {
+                expense_id: expense_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    document.getElementById('update-expense-title-value').innerHTML = responseData.details['title']
+                    document.getElementById('update-expense-amount-value').innerHTML = responseData.details['amount']
+                    document.getElementById('update-expense-date-value').innerHTML = responseData.details['date']
+                    document.getElementById('update-expense-amount-paid-value').innerHTML = responseData.details['amount_paid']
+                    document.getElementById('update-expense-status-value').innerHTML = responseData.details['status']
+                    document.getElementById('update-expense-created-by-value').innerHTML = responseData.details['created_by']
+
+                    document.getElementById('add-expense-payment-paid-amount-value').value = responseData.details['balance']
+
+                    document.getElementById('update-expense-expense-money-portions-table').innerHTML = responseData.expense_money_portions_table
+                    
+                    sessionStorage.setItem('balance', responseData.details['balance'].toString().split(",").join(""))
+
+                    
+                }
+            },
+            error: function(responseData, error){
+                alert("An error ocured! " + error)
+            }
+        });
+    }
+/*//BUTTON FUNCTIONS*/
+
+
+</script>
+

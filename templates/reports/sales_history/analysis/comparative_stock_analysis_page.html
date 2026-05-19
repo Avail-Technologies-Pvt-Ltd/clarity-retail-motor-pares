@@ -1,0 +1,274 @@
+{% extends 'partials/base.html' %}
+{% block title %} Comparative Stock Analysis{% endblock %}
+
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Comparative Stock Analysis</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <!-- <a href="add_patient" data-toggle="tooltip" data-placement="left" title="Add New Patient" class="btn"><i class="notika-icon notika-edit"></i></a>
+                                    <a href="merge_patients" data-toggle="tooltip" data-placement="bottom" title="Add New Patient" class="btn"><i class="notika-icon notika-refresh"></i></a> -->
+                                    <button data-toggle="tooltip" data-placement="bottom" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                    <div class="breadcomb-list">
+                        <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                          <div style="float: left;width: 31%; display: flex;">
+                              <input type="date" class="today form-control" title="From" id="date_from" name="trip-start" value="2018-07-22">&nbsp
+                              <input type="date" class="today form-control" title="Up to" id="date_to" name="trip-start" value="2018-07-22">&nbsp
+                          </div>
+                          <div style="float: left;width: 31%; display: flex;">
+                              <select class="form-control selectpicker" data-live-search="true" id="scale-selector" style="padding: 20px">
+                                  <option value="Daily">Daily</option>
+                                  <option value="Weekely">Weekely</option>
+                                  <option value="Monthly">Monthly</option>
+                                  <option value="Anualy">Anualy</option>
+                                </select>
+                                <select class="form-control selectpicker" data-live-search="true" id="aspect-selector" style="padding: 20px">
+                                    <option value="Profit (Top)">Profit (Top)</option>
+                                    <option value="Total Sales (Top)">Total Sales (Top)</option>
+                                    <option value="Sales Value (Top)">Sales Value (Top)</option>
+                                    <option value="Returns Out (Top)" disabled disabled>Returns Out (Top)</option>
+                                    <option value="Received Stock Value (Top)" disabled>Received Stock Value (Top)</option>
+
+                                    <option value="Profit (Least)" disabled>Profit (Least)</option>
+                                    <option value="Total Sales (Least)" disabled>Total Sales (Least)</option>
+                                    <option value="Sales Value (Least)" disabled>Sales Value (Least)</option>
+                                    <option value="Returns Out (Least)" disabled>Returns Out (Least)</option>
+                                    <option value="Received Stock Value (Least)" disabled>Received Stock Value (Least)</option>
+                                </select>
+                          </div>
+                          <div style="float: right;width: 31%; text-align: right; display: flex;">
+                                <select class="form-control selectpicker" data-live-search="true" id="total-selector">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                              <select class="form-control selectpicker (Least)" data-live-search="true" id="graph-selector">
+                                    <option value="Line">Line</option>
+                                    <option value="Bar">Bar</option>
+                                    <option value="Pie">Pie</option>
+                                </select>
+                          </div>
+                              <div style="float: left;width: 7%; display: flex;">
+                                
+                                <button class="btn btn-primary" title="UPDATE" style="margin-left: 10px;" onclick="updateChart()"><i class="notika-icon notika-right-arrow"></i></button>
+                                  
+                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+        <div class="row" >
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2 id="query-summery">Summery</h2>
+                        <p id="summery-area"></p>
+                    </div>
+                    <div class="sparkline-bar-stats1">9,4,8,6,5,6,4,8,3,5,9,5</div>
+                </div>
+            </div>
+
+        </div>
+        <br>          <!-- // summery boxes -->
+
+        <div class="row">
+            <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
+                <div class="visitor-sv-tm-int">
+                    <div class="contact-hd mg-bt-ant-inner">
+                        <!-- <h2>Transactions Graph (7 days)</h2>
+                        <p>Transactions for 6 days prior the selected date.</p> -->
+                    </div>
+                    <div id="chart-container">
+                        <canvas id="myChart"></canvas>
+                        <!-- <div id="field-controls" style="display:flex;">
+                            <div style="background-color:pink; width: 100%; margin: 2px; border-radius: 5px;">
+                                <input type="checkbox" id="field-profit" checked>
+                                <label for="field-profit">Profit</label>
+                            </div>
+                            <div style="background-color:pink; width: 100%; margin: 2px; border-radius: 5px;">
+                                <input type="checkbox" id="field-expenses_value" checked>
+                                <label for="field-expenses_value">Expenses Value</label>
+                            </div> 
+                            <div style="background-color:pink; width: 100%; margin: 2px; border-radius: 5px;">
+                                <input type="checkbox" id="field-total_sales" checked>
+                                <label for="field-total_sales">Total Sales</label>
+                            </div>
+                            <div style="background-color:pink; width: 100%; margin: 2px; border-radius: 5px;">
+                                <input type="checkbox" id="field-sales_value" checked>
+                                <label for="field-sales_value">Sales Value</label>
+                            </div>
+                            <div style="background-color:pink; width: 100%; margin: 2px; border-radius: 5px;">
+                                <input type="checkbox" id="field-returns_out" checked>
+                                <label for="field-returns_out">Total Returns Out</label>
+                            </div>
+                            <div style="background-color:pink; width: 100%; margin: 2px; border-radius: 5px;">
+                                <input type="checkbox" id="field-received_stock_value" checked>
+                                <label for="field-received_stock_value">Received Stock Value</label>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="{% static '' %}jquery.min.js"></script>
+<script src="{% static '' %}Chart.js"></script>
+
+<script>
+
+$(document).ready(function() {
+    $('.today').val(getToday());
+    updateChart()
+    
+})
+
+const chart = new Chart(document.getElementById('myChart'), {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: []
+  },
+  options: {
+    // ... chart options
+  }
+});
+
+
+
+function updateChart() {
+    document.getElementById('loader').style.display = "none"
+
+    var date_from = document.getElementById('date_from').value
+    var date_to = document.getElementById('date_to').value
+    var scale = document.getElementById('scale-selector').value
+    var aspect = document.getElementById('aspect-selector').value
+    var total = document.getElementById('total-selector').value
+    var graph_type = document.getElementById('graph-selector').value
+
+    document.getElementById('loader').style.display = "block"
+
+    $.ajax({
+        url: "{% url 'ajax_comparative_stock_analysis' %}",
+        data: {
+            date_from: date_from,
+            date_to: date_to,
+            scale: scale,
+            aspect: aspect,
+            total: total,
+            graph_type: graph_type
+        },
+        success: function(data) {
+        	if(data.custome_status == "Error"){
+				document.getElementById('loader').style.display = "none"
+        		swal({
+                    title: "Error",
+                    text: data.message,
+                    type: "error"
+                });
+        	}else{
+				$('#summery-area').html(data.summery_text)
+
+				chart.data.labels = data.labels;
+				chart.data.datasets = data.datasets;
+				chart.update();
+
+				document.getElementById('loader').style.display = "none"
+			}
+        },
+        error: function(responseData, error){
+            swal({
+                title: "Error",
+                text: "Server temporary problem. Refresh the tab and try again.",
+                type: "error"
+            });
+        }
+    });
+}
+
+
+function getToday(){
+    const local = new Date();
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return local.toJSON().slice(0,10);
+}
+
+
+
+/*stock active prescriptions live search*/
+    $(document).on('keyup', '.stock_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") {
+            var searchText = $(this).val()
+            
+            $.ajax({
+                url: "{% url 'ajax_stock_live_search' %}",
+                data: { search_text: searchText },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('stock-selector')
+                    //$("#stock-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#stock-selector").selectpicker('refresh')
+                    //alert('stock ajax ran')
+                },
+                error: function(responseData, error){
+                    alert("Server error, Contact Avail Tech!!!")
+                }
+            })
+        }
+    })
+        
+</script>
+
+{% endblock %}

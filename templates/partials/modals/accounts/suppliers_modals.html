@@ -1,0 +1,642 @@
+{% load static %}
+
+
+
+<!-- ADD -->
+
+
+
+<div class="modal fade animated bounce" id="addSupplierModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New Supplier</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Company Name" id="add-supplier-company-name">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Registration Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Registration Number" id="add-supplier-registration-number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" placeholder="Phone Number" id="add-supplier-phone-number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Email" id="add-supplier-email">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Address" id="add-supplier-address">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="add-supplier-status" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addSupplier()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+<!-- UPDATE -->
+
+
+
+<div class="modal fade animated bounce" id="updateSupplierModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Update Supplier</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Company Name" id="update-supplier-company-name">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Registration Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Registration Number" id="update-supplier-registration-number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" placeholder="Phone Number" id="update-supplier-phone-number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Email" id="update-supplier-email">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Address" id="update-supplier-address">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="update-supplier-status" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="updateSupplier()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // UPDATE -->
+
+
+
+<!-- DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="supplierDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                        <div class="widget-tabs-int">
+                            <b>Company Details</b>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="widget-tabs-list">
+                                <div style="color:gray">Company Name</div>
+                                <b><div id="supplier-details-company-name">xxxx</div></b>
+                                <hr>
+                                <div style="color:gray">Registration Number</div>
+                                <div id="supplier-details-registration-number">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Phone Number</div>
+                                <div id="supplier-details-phone-number">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Email</div>
+                                <div id="supplier-details-email">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Address</div>
+                                <div id="supplier-details-address">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Profile Status</div>
+                                <div id="supplier-details-status">xxxx</div>
+                            </div>
+                            <hr style="background: RGB(0 194 146);">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                        <div class="widget-tabs-int">
+                            <b>Financial Status</b>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="widget-tabs-list">
+                                <div style="color:gray">Invoices Total Cost</div>
+                                <div style="text-align: right;" id="supplier-details-total-cost">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Total Discount</div>
+                                <div style="text-align: right;" id="supplier-details-total-discount">xxx.xx</div>
+                                <hr>
+                                <div style="color:gray">Paid Value</div>
+                                <div style="text-align: right;" id="supplier-details-total-paid">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Balance</div>
+                                <div style="text-align: right;" id="supplier-details-balance">xxxx</div>
+                            </div>
+                            <hr style="background: RGB(0 194 146);">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                        <div class="widget-tabs-int">
+                            <b>Stock Summery</b>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="widget-tabs-list">
+                                <div style="color:gray">Total Invoices Received</div>
+                                <div style="text-align: right;" id="supplier-details-total-invoices">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Total Items Received</div>
+                                <div style="text-align: right;" id="supplier-details-total-items-received">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Total Items Returned</div>
+                                <div style="text-align: right;" id="supplier-details-total-returns-out">xxxx</div>
+                                <hr>
+                                <div style="color:gray">Total Items After Returns</div>
+                                <div style="text-align: right;" id="supplier-details-total-items-after-returns-out">xxxx</div>
+                            </div>
+                            <hr style="background: RGB(0 194 146);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // DETAILS -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+    $(document).ready(function() {    
+        $('#addSupplierModal').on('hidden.bs.modal', function (){
+            suppliersInitialLoad()
+       })
+
+       $('#updateSupplierModal').on('hidden.bs.modal', function (){
+            suppliersInitialLoad()
+       })
+
+       $('#supplierDetailsModal').on('show.bs.modal', function (event){
+            //alert('Clicked')
+            if ($(event.relatedTarget).is('a')){
+                var supplier_id = $(event.relatedTarget).data('object-id')
+                $.ajax({
+                    url: "{% url 'get_supplier_details' %}",
+                    data: {
+                        supplier_id: supplier_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            //company details
+                            document.getElementById('supplier-details-company-name').innerHTML = responseData.details['company_name']
+                            document.getElementById('supplier-details-registration-number').innerHTML = responseData.details['registration_number']
+                            document.getElementById('supplier-details-phone-number').innerHTML = responseData.details['phone_number']
+                            document.getElementById('supplier-details-email').innerHTML = responseData.details['email']
+                            document.getElementById('supplier-details-address').innerHTML = responseData.details['address']
+                            if (responseData.details['status'] == 'True'){
+                                document.getElementById('supplier-details-status').innerHTML = "Active"
+                            }else{
+                                document.getElementById('supplier-details-status').innerHTML = "Disabled"
+                            }
+
+                            //financial data
+                            document.getElementById('supplier-details-total-paid').innerHTML = responseData.details['total_paid'].toFixed(2)
+                            document.getElementById('supplier-details-total-discount').innerHTML = responseData.details['total_discount'].toFixed(2)
+                            document.getElementById('supplier-details-total-cost').innerHTML = responseData.details['total_cost'].toFixed(2)
+                            document.getElementById('supplier-details-balance').innerHTML = responseData.details['balance'].toFixed(2)
+
+                            //stock summery
+                            document.getElementById('supplier-details-total-invoices').innerHTML = responseData.details['total_invoices']
+                            document.getElementById('supplier-details-total-items-received').innerHTML = responseData.details['total_items_received']
+                            document.getElementById('supplier-details-total-returns-out').innerHTML = responseData.details['total_returns_out']
+                            document.getElementById('supplier-details-total-items-after-returns-out').innerHTML = responseData.details['total_items_after_returns_out']
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+       })
+
+       $('#updateSupplierModal').on('show.bs.modal', function (event){
+            //alert('Clicked')
+            if ($(event.relatedTarget).is('a')){
+                var supplier_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('supplier_id_for_update', supplier_id)
+                $.ajax({
+                    url: "{% url 'get_supplier_details' %}",
+                    data: {
+                        supplier_id: supplier_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('update-supplier-company-name').value = responseData.details['company_name']
+                            document.getElementById('update-supplier-registration-number').value = responseData.details['registration_number']
+                            document.getElementById('update-supplier-phone-number').value = responseData.details['phone_number']
+                            document.getElementById('update-supplier-email').value = responseData.details['email']
+                            document.getElementById('update-supplier-address').value = responseData.details['address']
+                            document.getElementById('update-supplier-status').value = responseData.details['status']
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+       })
+    })
+
+
+    function updateSupplier(){
+        var supplier_id = sessionStorage.getItem('supplier_id_for_update')
+        var company_name = document.getElementById('update-supplier-company-name').value
+        var registration_number = document.getElementById('update-supplier-registration-number').value
+        var phone_number = document.getElementById('update-supplier-phone-number').value
+        var email = document.getElementById('update-supplier-email').value
+        var address = document.getElementById('update-supplier-address').value
+        var status = document.getElementById('update-supplier-status').value
+
+        var errors = ""
+
+        if(company_name == ""){
+            errors = "Company_name field can not be blank"
+        }else if(registration_number == ""){
+            registration_number = "N/A"
+        }else if(phone_number == ""){
+            errors = "Phone_number field can not be blank"
+        }else if(email == ""){
+            email = "none@null.com"
+        }else if(address == ""){
+            errors = "Address field can not be blank"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'update_supplier' %}",
+                data: {
+                    supplier_id: supplier_id,
+                    company_name: company_name,
+                    registration_number: registration_number,
+                    phone_number: phone_number,
+                    email: email,
+                    address: address,
+                    status: status
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+
+
+    function addSupplier(){
+
+        var company_name = document.getElementById('add-supplier-company-name').value
+        var registration_number = document.getElementById('add-supplier-registration-number').value
+        var phone_number = document.getElementById('add-supplier-phone-number').value
+        var email = document.getElementById('add-supplier-email').value
+        var address = document.getElementById('add-supplier-address').value
+        var status = document.getElementById('add-supplier-status').value
+
+        var errors = ""
+
+        if(company_name == ""){
+            errors = "Company_name field can not be blank"
+        }else if(registration_number == ""){
+            registration_number = "N/A"
+        }else if(phone_number == ""){
+            errors = "Phone_number field can not be blank"
+        }else if(email == ""){
+            email = "none@null.com"
+        }else if(address == ""){
+            errors = "Address field can not be blank"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_supplier' %}",
+                data: {
+                    company_name: company_name,
+                    registration_number: registration_number,
+                    phone_number: phone_number,
+                    email: email,
+                    address: address,
+                    status: status
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+        
+    }
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,547 @@
+{% load static %}
+
+
+
+<!-- ADD -->
+
+
+
+<div class="modal fade animated bounce" id="updateExpenseTypeModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Update Expense Type</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Title" id="update-expense-type-title">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Default Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control number_element" placeholder="Default Price" id="update-expense-type-default-price" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Automation</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <select class="form-control" id="update-expense-type-reoccurring">
+                                                        <option value="false">Manual Billing</option>
+                                                        <option value="true">Automate Billing</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Intervals</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <select class="form-control" id="update-expense-type-intervals">
+                                                        <option value="NONE">None</option>
+                                                        <option value="DAILY">Daily</option>
+                                                        <option value="WEEKELY">Weekely</option>
+                                                        <option value="MONTHLY">Monthly</option>
+                                                        <option value="ANUALY">Anualy</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                        <div class="col-sm text-start">Description</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Description" id="update-expense-type-description">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="updateExpenseType()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- //   UPDATE -->
+
+<div class="modal fade animated bounce" id="addExpenseTypeModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New Expense Type</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Title" id="add-expense-type-title">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Default Price</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control number_element" placeholder="Default Price" id="add-expense-type-default-price" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Automation</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <select class="form-control" id="add-expense-type-reoccurring">
+                                                        <option value="false">Manual Billing</option>
+                                                        <option value="true">Automate Billing</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Intervals</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <select class="form-control" id="add-expense-type-intervals">
+                                                        <option value="NONE">None</option>
+                                                        <option value="DAILY">Daily</option>
+                                                        <option value="WEEKELY">Weekely</option>
+                                                        <option value="MONTHLY">Monthly</option>
+                                                        <option value="ANUALY">Anualy</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                        <div class="col-sm text-start">Description</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Description" id="add-expense-type-description">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addExpenseType()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#addExpenseTypeModal').on('hidden.bs.modal', function (){
+            expenseTypesInitialLoad()
+        })
+
+    })
+
+    $(document).ready(function() {
+        $('#updateExpenseTypeModal').on('hidden.bs.modal', function (){
+            expenseTypesInitialLoad()
+            
+        })
+
+    })
+
+                        
+    $(document).ready(function() {
+        $('#updateExpenseTypeModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var expense_type_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('expense_type_id_for_update', expense_type_id)
+                
+                $.ajax({
+                    url: "{% url 'get_expense_type_details' %}",
+                    data: {
+                        expense_type_id: expense_type_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('update-expense-type-title').value = responseData.details['title']
+                            document.getElementById('update-expense-type-description').value = responseData.details['description']
+                            document.getElementById('update-expense-type-default-price').value = responseData.details['default_price']
+                            document.getElementById('update-expense-type-intervals').value = responseData.details['intervals']
+                            document.getElementById('update-expense-type-reoccurring').value = responseData.details['reoccurring']
+                        }
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        }) 
+    })
+
+
+    function deleteExpenseType(expense_type_id){
+        $.ajax({
+            url: "{% url 'delete_expense_type' %}",
+            data: {
+                expense_type_id: expense_type_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            },
+            complete: function(){
+                expenseTypesInitialLoad()
+            }
+        });
+    }
+
+
+    function updateExpenseType(){
+        var title = document.getElementById('update-expense-type-title').value
+        var description = document.getElementById('update-expense-type-description').value
+        var default_price = document.getElementById('update-expense-type-default-price').value
+        var intervals = document.getElementById('update-expense-type-intervals').value
+        var reoccurring = document.getElementById('update-expense-type-reoccurring').value
+        var expense_type_id_for_update = sessionStorage.getItem('expense_type_id_for_update')
+
+        var errors = ""
+
+        if(title == ""){
+            errors = "Title field can not be blank"
+        }else if(description == ""){
+            description = " "
+        }else if(default_price == ""){
+            default_price = 0
+        }
+
+        if(reoccurring == "true"){
+            if (intervals == "None"){
+                errors = "You need to select intervals is the billing type is automated"
+            }else if (isNumberGreaterThanZero(default_price)==false){
+                errors = "For automated billing you need to put a default price greater than 0"
+            }
+        }
+
+        if (reoccurring == "true"){
+            reoccurring = "True"
+        } else{
+            reoccurring = "False"
+        }
+        
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'update_expense_type' %}",
+                data: {
+                    expense_type_id: expense_type_id_for_update,
+                    title: title,
+                    description: description,
+                    default_price: default_price,
+                    intervals: intervals,
+                    reoccurring: reoccurring,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+
+
+
+    function addExpenseType(){
+
+        var title = document.getElementById('add-expense-type-title').value
+        var description = document.getElementById('add-expense-type-description').value
+        var default_price = document.getElementById('add-expense-type-default-price').value
+        var reoccurring = document.getElementById('add-expense-type-reoccurring').value
+        var intervals = document.getElementById('add-expense-type-intervals').value
+
+        var errors = ""
+
+        if(title == ""){
+            errors = "Title field can not be blank"
+        }else if(description == ""){
+            description = " "
+        }else if(default_price == ""){
+            default_price = 0
+        }
+        if(reoccurring == "true"){
+            if (intervals == "None"){
+                errors = "You need to select intervals is the billing type is automated"
+            }else if (isNumberGreaterThanZero(default_price)==false){
+                errors = "For automated billing you need to put a default price greater than 0"
+            }
+        }
+
+        if (reoccurring == "true"){
+            reoccurring = "True"
+        } else{
+            reoccurring = "False"
+        }
+
+
+        
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_expense_type' %}",
+                data: {
+                    title: title,
+                    description: description,
+                    default_price: default_price,
+                    reoccurring: reoccurring,
+                    intervals: intervals,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+        
+    }
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

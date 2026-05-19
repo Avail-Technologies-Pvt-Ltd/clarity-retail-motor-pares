@@ -1,0 +1,166 @@
+{% extends 'partials/base.html' %}
+{% block title %} HOME {% endblock %}
+{% block content %}
+{% load static %}
+
+<style>
+
+</style>
+<div class="modal fade" id="largeModal" tabindex="-1" data-bs-backdrop="false" style="background: rgba(0, 0, 0, .5);">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add new supplier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="myForm">
+      <div class="modal-body">
+        <div class="row align-items-top">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body"><h1></h1>
+              <!--------------------------------------------- add to cart form --------------------------------------------->
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <input type="text" class="form-control" id="company-name" placeholder="1">
+                        <label for="company-name">Company Name</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <input type="text" class="form-control" id="registration-number" placeholder="">
+                        <label for="registration-number">Registration Number</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <input type="text" class="form-control" id="email" placeholder="1">
+                        <label for="email">Email</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <input type="text" class="form-control" id="phone-number" placeholder="">
+                        <label for="phone-number">Phone Number</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-8">
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <textarea type="text" class="form-control" id="address" placeholder=""></textarea>
+                        <label for="address">Address</label>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type=""  id="submitButton" class="btn btn-primary">Save</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+  <!-- End Large Modal-->
+
+<main id="main" class="main">
+  <section class="section">
+    <div class="row align-items-top">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">
+              <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#largeModal">ADD NEW SUPPLIER</button>
+            </h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+		<div class="row align-items-top">
+			<div class="col-lg-12">
+				<div class="card">
+		            <div class="card-body">
+		              <h5 class="card-title">Table with hoverable rows</h5>
+
+		              <!-- Table with hoverable rows -->
+		              <table class="table table-hover">
+		                <thead>
+		                  <tr>
+		                    <th scope="col">#</th>
+		                    <th scope="col">Text</th>
+		                    <th scope="col">Created_by</th>
+		                    <th scope="col">Created_at</th>
+		                  </tr>
+		                </thead>
+		                <tbody id="lables-table" >
+		                </tbody>
+		              </table>
+		              <!-- End Table with hoverable rows -->
+		            </div>
+		        </div>
+	          </div>
+			</div>
+		</div>
+	</section>
+
+
+</main><!-- End #main -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+	$.ajax({
+        url: "{% url 'lables' %}",
+        data: {},
+        success: function(responseData){
+        	$('#lables-table').html(responseData.lables)
+            //document.getElementById('table-summery').innerHTML = responseData.table_summery
+            //document.getElementById('loader').style.display = "none"
+            //alert(responseData[1]['id'])
+            //alert("working")
+            
+
+            var lablesTableBody = document.getElementById('lables-table')
+            //alert('found')
+            responseData.forEach(lable => {
+            	var newRow = `
+            		<tr>
+						<th scope="col">${lable['id']}</th>
+						<th scope="col">${lable['text']}</th>
+						<td scope="col">${lable['created_by']}</td>
+						<td scope="col">${lable['created_at']}</td>
+					</tr>
+            	`
+            	lablesTableBody.innerHTML += newRow
+            })
+
+            
+
+			//alert("worked")
+        },
+        error: function(responseData, error){
+            alert("An error ocured! " + error)
+        }
+    });
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

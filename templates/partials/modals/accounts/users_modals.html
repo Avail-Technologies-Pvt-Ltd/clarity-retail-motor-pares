@@ -1,0 +1,700 @@
+{% load static %}
+
+
+
+<!-- UPDATE -->
+
+<div class="modal fade animated bounce" id="updateUserModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>User Update Form (<i id="update-user-user-name-value">Root User Name</i>)</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Fist Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="First Name" id="update-user-first-name-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Last Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Last Name" id="update-user-last-name-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="email" class="form-control" placeholder="email" id="update-user-email-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Roles</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="update-user-roles-value" name="" >
+                                                <option value="">None</option>
+                                                <option value="Sales Rep">Sales Rep</option>
+                                                <option value="Supervisor">Supervisor</option>
+                                                <option value="Data Analyst">Data Analyst</option>
+                                                <option value="Supervisor, Sales Rep">Supervisor, Sales Rep</option>
+                                                <option value="Data Analyst, Sales Rep">Data Analyst, Sales Rep</option>
+                                                <option value="Data Analyst, Supervisor">Data Analyst, Supervisor</option>
+                                                <option value="Data Analyst, Supervisor, Sales Rep">Data Analyst, Supervisor, Sales Rep</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Phone Number" id="update-user-phone-number-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Home Address" id="update-user-address-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Active</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="update-user-status-value" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Old Password</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Only when changing passord" id="update-user-old-password-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">New Password</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Only when changing passord" id="update-user-new-password-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="updateUser()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // UPDATE -->
+
+
+
+<!-- DETAILS -->
+
+<div class="modal fade animated bounce" id="userDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>User Details</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Username</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-username-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">First Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-first-name-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Last Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-last-name-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-phone-number-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-address-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Roles</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-roles-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Active</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-status-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Last Login</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-last-login-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Date Joined</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label id="user-details-date-joined-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // DETAILS -->
+
+
+<!-- ADD -->
+
+<div class="modal fade animated bounce" id="addUserModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New User Form</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Username/Employee ID</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Will be used for login" id="add-user-username-value" autocomplete="off">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Fist Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="First Name" id="add-user-first-name-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Last Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Last Name" id="add-user-last-name-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="email" class="form-control" placeholder="email" id="add-user-email-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Roles</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="add-user-roles-value" name="" >
+                                                <option value="">None</option>
+                                                <option value="Sales Rep">Sales Rep</option>
+                                                <option value="Supervisor">Supervisor</option>
+                                                <option value="Data Analyst">Data Analyst</option>
+                                                <option value="Supervisor, Sales Rep">Supervisor, Sales Rep</option>
+                                                <option value="Data Analyst, Sales Rep">Data Analyst, Sales Rep</option>
+                                                <option value="Data Analyst, Supervisor">Data Analyst, Supervisor</option>
+                                                <option value="Data Analyst, Supervisor, Sales Rep">Data Analyst, Supervisor, Sales Rep</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Phone Number" id="add-user-phone-number-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Home Address" id="add-user-address-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Password</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="password" class="form-control " id="add-user-password-value" autocomplete="new-password">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Password 1</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="password" class="form-control" id="add-user-password1-value" autocomplete="new-password">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger">Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addUser()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#addUserModal').on('hidden.bs.modal', function (){
+        usersInitialLoad()
+    })
+
+    $('#updateUserModal').on('hidden.bs.modal', function (){
+        usersInitialLoad()
+    })
+
+
+    $('#updateUserModal').on('show.bs.modal', function (event) {
+        //alert('Clicked')
+        if ($(event.relatedTarget).is('a')){
+            var user_id = $(event.relatedTarget).data('object-id')
+            //alert(user_id)
+            sessionStorage.setItem('user_id_for_updating', user_id)
+            $.ajax({
+                url: "{% url 'get_user_details' %}",
+                data: {
+                    user_id: user_id
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('update-user-user-name-value').innerHTML = responseData.details['username']
+
+                        document.getElementById('update-user-first-name-value').value = responseData.details['first_name']
+                        document.getElementById('update-user-last-name-value').value = responseData.details['last_name']
+                        document.getElementById('update-user-email-value').value = responseData.details['email']
+                        document.getElementById('update-user-roles-value').value = responseData.details['roles']
+                        document.getElementById('update-user-phone-number-value').value = responseData.details['phone_number']
+                        document.getElementById('update-user-address-value').value = responseData.details['address']
+                        document.getElementById('update-user-status-value').value = responseData.details['status']
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })  
+
+
+
+
+    $('#userDetailsModal').on('show.bs.modal', function (event) {
+        //alert('Clicked')
+        if ($(event.relatedTarget).is('a')){
+            var user_id = $(event.relatedTarget).data('object-id')
+            //alert(user_id)
+            sessionStorage.setItem('user_id_for_updating', user_id)
+            $.ajax({
+                url: "{% url 'get_user_details' %}",
+                data: {
+                    user_id: user_id
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('user-details-username-value').innerHTML = responseData.details['username']
+                        document.getElementById('user-details-first-name-value').innerHTML = responseData.details['first_name']
+                        document.getElementById('user-details-last-name-value').innerHTML = responseData.details['last_name']
+                        document.getElementById('user-details-phone-number-value').innerHTML = responseData.details['phone_number']
+                        document.getElementById('user-details-address-value').innerHTML = responseData.details['address']
+                        document.getElementById('user-details-roles-value').innerHTML = responseData.details['roles']
+                        document.getElementById('user-details-status-value').innerHTML = responseData.details['status']
+                        document.getElementById('user-details-last-login-value').innerHTML = responseData.details['last_login']
+                        document.getElementById('user-details-date-joined-value').innerHTML = responseData.details['date_joined']
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })  
+})
+
+
+/*BUTTON USER*/
+
+function addUser(){
+    var username = document.getElementById('add-user-username-value').value
+    var first_name = document.getElementById('add-user-first-name-value').value
+    var last_name = document.getElementById('add-user-last-name-value').value
+    var email = document.getElementById('add-user-email-value').value
+    var roles = document.getElementById('add-user-roles-value').value
+    var phone_number = document.getElementById('add-user-phone-number-value').value
+    var address = document.getElementById('add-user-address-value').value
+    var password = document.getElementById('add-user-password-value').value
+    var password1 = document.getElementById('add-user-password1-value').value
+
+    var errors = ""
+
+    if (username == ""){
+        errors = "Username field can not be blank"
+    }else if (first_name == ""){
+        errors = "Fist Name field can not be blank"
+    }else if (last_name == ""){
+        errors = "Last_name field can not be blank"
+    }else if (roles == ""){
+        errors = "Roles field can not be blank"
+    }else if (phone_number == ""){
+        errors = "Phone_number field can not be blank"
+    }
+
+    if (password == ""){
+        errors = "Password fied can not be blank"
+    }else{
+        if (password == password1){
+
+        }else{
+            errors = "Password and Password1 did not match!"
+        }
+    }
+
+
+    if (errors == ""){
+        $.ajax({
+            url: "{% url 'add_user' %}",
+            data: {
+                username: username,
+                first_name: first_name,
+                last_name: last_name,
+                email: email,
+                roles: roles,
+                phone_number: phone_number,
+                address: address,
+                password: password,
+                password1: password1
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+
+    }else{
+        //alert(errors)
+        swal({
+            title: "Error",
+            text: errors,
+            type: "error"
+        });
+    }
+    
+}
+
+
+
+
+
+function updateUser(){
+    var first_name = document.getElementById('update-user-first-name-value').value
+    var last_name = document.getElementById('update-user-last-name-value').value
+    var email = document.getElementById('update-user-email-value').value
+    var roles = document.getElementById('update-user-roles-value').value
+    var phone_number = document.getElementById('update-user-phone-number-value').value
+    var address = document.getElementById('update-user-address-value').value
+    var status = document.getElementById('update-user-status-value').value
+    var old_password = document.getElementById('update-user-old-password-value').value
+    var new_password = document.getElementById('update-user-new-password-value').value
+
+    var errors = ""
+
+    if (first_name == ""){
+        errors = "First_name field can not be blank"
+    }else if (last_name == ""){
+        errors = "Last_name field can not be blank"
+    }else if (roles == ""){
+        errors = "Roles field can not be blank"
+    }else if (phone_number == ""){
+        errors = "Phone_number field can not be blank"
+    }
+
+    if (errors == ""){
+        $.ajax({
+            url: "{% url 'update_user' %}",
+            data: {
+                user_id: sessionStorage.getItem('user_id_for_updating'),
+                first_name: first_name,
+                last_name: last_name,
+                email: email,
+                roles: roles,
+                phone_number: phone_number,
+                address: address,
+                status: status,
+                old_password: old_password,
+                new_password: new_password
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+
+    }else{
+        //alert(errors)
+        swal({
+            title: "Error",
+            text: errors,
+            type: "error"
+        });
+    }
+    
+}
+
+/*BUTTON USER*/
+
+</script>

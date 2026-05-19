@@ -1,0 +1,9 @@
+# folders
+venv/
+updates/
+tmp/
+tests/
+
+
+# data
+*.sqlite3

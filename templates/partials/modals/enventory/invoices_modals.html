@@ -1,0 +1,1686 @@
+<!-- ADD INVOICE MODAL -->
+{% load static %}
+<script src="{% static '' %}jquery.min.js"></script>
+<style>
+    .footer_buttons {
+        display: flex;
+        justify-content: space-between;
+    }
+
+        /* new styles*/
+
+    ::-webkit-scrollbar {
+        width:2px;
+        height:8px;
+        border-radius:50%
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color:black
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color:grey
+    }
+
+
+
+    .wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        grid-auto-rows: minmax(100px, auto);
+
+        height: 550px;
+
+        margin: 2px;
+
+        border: 2px;
+        border-color: black;
+
+
+    }
+
+   
+    .info{
+        background-color: RGB(0 194 146);
+        padding: 10px;
+        text-align: right;
+
+        font-family: monospace;
+        font-size: 15px;
+    }
+    label{
+        width: 15%;
+        margin: 2px;
+    }
+    .short_input{
+        width: 15%;
+        height:35px;
+        margin: 2px;
+
+        text-align: right;
+    }
+
+    .min_table_row_title{
+        text-align: right;
+    }
+    .min_table_row_value{
+        text-align: right;
+        color: white;
+        font-size: 20px;
+    }
+
+    .currency_styling{
+        width: 100%;
+    }
+
+    .currency_lable_styling{
+        width: 100%;
+    }
+
+    .table-container {
+        height: 15rem;  /* Set your desired table height */
+        overflow-y: auto;
+    }
+
+    .table-container thead {
+        position: sticky;
+        top: 0;
+        background-color: #fff;  /* Optional: Set background color for header */
+        z-index: 1;
+    }
+</style>
+
+<div class="modal fade animated bounce" id="receiveInvoiceModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Receive Invoice</h2>
+                                <!--  <p>Add quick, dynamic tab functionality to transition through panes of local content, even via dropdown menus.</p> -->
+                            </div>
+                            <div class="widget-tabs-list">
+                                <ul class="nav nav-tabs tab-nav-center">
+                                    <li class="active"><a data-toggle="tab" href="#add-invoice" onclick="addInvoiceButtonClicked()">Add Invoice</a></li>
+                                    <li><a id="add-invoice-item-tab-button" data-toggle="tab" href="#add-invoice-item" onclick="addInvoiceItemButtonClicked()">Add Invoice Item</a></li>
+                                    <li><a data-toggle="tab" href="#invoice-payment" onclick="invoicePaymentButtonClicked()">Invoice Payment</a></li>
+                                    <li><a data-toggle="tab" href="#invoice-preview" onclick="invoicePreviewButtonClicked()">Invoice Preview</a></li>
+                                </ul>
+                                <div class="tab-content tab-custom-st">
+
+
+
+
+
+
+                                    <!-- add invoice  --------------------------------------------------------------------------------->
+
+
+
+
+
+                                    <div id="add-invoice" class="tab-pane fade in active">
+                                        <div class="tab-ctn">
+
+                                            <hr style="background: RGB(0 194 146);">
+
+                                            <div class="row" style="padding-top: 10px;">
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Supplier</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                                        <button class="btn btn-success add_object_button" onclick="openSuppliersPopup()">
+                                                            +
+                                                        </button>
+                                                        <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker supplier_selector_class" id="supplier-selector" name="" >
+                                                            <option value="0">Select Supplier</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Invoice Number</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="text" class="form-control" placeholder="Invoice Number" id="invoice-number">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Date Received</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="date" class="form-control" placeholder="Date Received" id="date-received">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr style="background: RGB(0 194 146);">
+                                            
+                                            <div class="row" style="padding-top: 10px">
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Invoice Discount</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                                        <div class="form-group ic-cmp-int"  style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="number" step="any" class="form-control number_element"  placeholder="Invoice Discount" value="0.00" id="invoice-discount">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+
+
+                                    <!-- //add invoice -------------------------------------------------------------------------------->
+
+
+
+
+
+                                    <!-- add invoice item ----------------------------------------------------------------------------->
+
+
+
+
+
+                                    <div id="add-invoice-item" class="tab-pane fade">
+                                        <div class="tab-ctn">
+                                            <hr style="background: RGB(0 194 146);">
+
+                                            <div class="row" style="padding-top: 35px;">
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Stock/Product</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                                        <button class="btn btn-success add_object_button" title="Add new Product" onclick="openProductsPopup()">
+                                                            +
+                                                        </button>
+                                                        <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_invoice_item_stock_selector_class" id="add-invoice-item-stock-selector" name="" >
+                                                            <option value="0">Select Stock</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Manufacturer/Brand</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                                        <button class="btn btn-success add_object_button" title="Add new Manufacturer/Brand" onclick="openManufacturerPopup()">
+                                                            +
+                                                        </button>
+                                                        <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_invoice_item_manufacturer_selector_class" id="add-invoice-item-manufacturer-selector" name="" >
+                                                            <option value="0">Select Manufacturer/Brand</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Selling Price</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                                        <select style="width: 50%;" class="form-control" id="add-invoice-item-selling-price-type-selector" name="" >
+                                                            <option selected value="SELLING PRICE">Selling Price</option>
+                                                            <option value="EXISTING PRICE">Use Existing Price</option>
+                                                            <option value="MARKUP PERCENTAGE">Markup Pecentage</option>
+                                                        </select>
+                                                        <div class="form-group ic-cmp-int" style="width:50%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="number" step="any" class="form-control" placeholder="Value" id="add-invoice-item-selling-price-number" style="text-align: right;">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr style="background: RGB(0 194 146);">
+
+                                            <div class="row" style="padding-top: 35px;">
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Expiration Date</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="date" class="form-control" placeholder="Date Received" id="add-invoice-item-expiration-date">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Total Packs</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="number" class="form-control number_element" placeholder="Number of Packs" id="add-invoice-item-total-packs">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Pack Size</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="number" class="form-control number_element" placeholder="Number of Units in a pack" id="add-invoice-item-pack-size">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr style="background: RGB(0 194 146);">
+
+                                            <div class="row" style="padding-top: 35px;">
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Buying Pack Price</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="number" class="form-control number_element" placeholder="Price Per Pack" id="add-invoice-item-buying-pack-price">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Batch Number</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="text" class="form-control number_element" placeholder="Batch Number" id="add-invoice-item-batch-number">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                                    <div class="col-sm text-start">Discount</div>
+                                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                                        <select style="width: 50%;" class="form-control" id="add-invoice-item-discount-type" name="" >
+                                                            <option selected value="DISCOUNT PRICE">Discount Price</option>
+                                                            <option value="DISCOUNT PERCENTAGE">Discount Pecentage</option>
+                                                        </select>
+                                                        <div class="form-group ic-cmp-int" style="width:50%;">
+                                                            <div class="nk-int-st">
+                                                                <input type="number" class="form-control number_element" placeholder="Line Discount" id="add-invoice-item-discount-number" value="0.00">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+
+
+                                    <!-- //add invoice item ----------------------------------------------------------------------------->
+
+
+
+
+
+
+                                    <!-- invoice preview -------------------------------------------------------------------------------->
+
+
+
+
+
+
+                                    <div id="invoice-payment" class="tab-pane fade">
+                                        <div class="tab-ctn">
+                                       
+                                        <hr style="background: RGB(0 194 146);">
+                                        
+
+                                                <div class="row">
+                                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                        <div class="inbox-left-sd">
+                                                            <div class="compose-ml">
+                                                                <div class="btn">INVOICE COST: <span id="add-invoice-payment-total-invoice-cost-value-1">XXX.XX</span></div>
+                                                            </div>
+                                                            <div class="inbox-status">
+                                                                <select data-live-search="true" class=" selectpicker add_invoice_payment_payment_method_selector_class" id="add-invoice-payment-payment-method" onchange="paymentMethodChanged()">
+                                                                </select>
+                                                                <br> 
+                                                                <br> 
+                                                                <label class="currency_lable_styling">PAID</label> 
+                                                                <input id="add-invoice-payment-paid-amount-input" class="currency_styling short_input" type="number" value="0.00" oninput="calculateBalanceBasedOnPaid()" step="any" required> <br>
+                                                                <br> 
+                                                                <label class="currency_lable_styling" id="add-invoice-payment-balance-text">BALANCE</label> 
+                                                                <input id="add-invoice-payment-balance-input" class="currency_styling short_input" type="number" value="0.00" step="any" readonly> <br>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="button-container d-flex flex-column align-items-center">
+                                                              <button onclick="addInvoicePayment()" class="btn btn-primary" style="width: 49%; text-align: center; padding-left: 0px; padding-right: 0px;">ADD PAYMENT</button>
+
+                                                              <button onclick="voidInvoicePayment()" class="btn btn-danger" style="width: 49%">VOID</button>
+                                                              <br>
+                                                              <br>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                                                        <div class="view-mail-list sm-res-mg-t-30">
+                                                            <div class="table-container">
+                                                                <table class="table table-striped">
+                                                                    <thead >
+                                                                        <tr style=" width: auto; background-color: RGB(0 194 146);">
+                                                                            <th>CURRENCE</th>
+                                                                            <th style="text-align:right;">AMOUNT</th>
+                                                                            <th style="text-align:right;">RATE</th>
+                                                                            <th style="text-align:right;">RATED AMOUNT</th>
+                                                                            <th style="text-align:right;">🗑️</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody id="add-invoice-portion-payment-potions-table">
+                                                                        
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            
+                                                            <div style="text-align: right; background: RGB(0 194 146); padding: 1rem;">
+                                                                <span>TOTAL INVOICE COST:</span>
+                                                                <span id='add-invoice-payment-total-invoice-cost-value-2' style="width: 100px; display: inline-block;">786898.89</span><br>
+                                                                <span>PAID VALUE:</span>
+                                                                <span id='add-invoice-payment-paid-value-text' style="width: 100px; display: inline-block;">786898.89</span><br>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                
+                                              
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                                <!-- //invoice preview ------------------------------------------------------------------------------->
+
+
+
+                                <div id="invoice-preview" class="tab-pane fade">
+                                        <div class="tab-ctn">
+                                        <hr style="background: RGB(0 194 146);">
+                                        <div class="invoice-wrap">
+
+                                            <div class="invoice-hds-pro">
+                                                <div class="row">
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="invoice-cmp-ds ivc-frm">
+                                                            <div class="invoice-frm">
+                                                                <span>Invoice from</span>
+                                                            </div>
+                                                            <div class="comp-tl">
+                                                                <h2 id="invoice-preview-from-company-name-text">XXXXX XXXXX XXXXX</h2>
+                                                                <p id="invoice-preview-from-address-text">XXXXX xxxxx xxxxxxxxxx xxx</p>
+                                                            </div>
+                                                            <div class="cmp-ph-em">
+                                                                <span id="invoice-preview-from-phone-number-text">XXXXXXXXXXXXXX</span>
+                                                                <span id="invoice-preview-from-email-text">xxxxxxxxxxxxxxxx@xxxxx.xxx</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="invoice-cmp-ds ivc-to">
+                                                            <div class="invoice-to">
+                                                                <span>Invoice to</span>
+                                                            </div>
+                                                            <div class="comp-tl">
+                                                                <h2 id="invoice-preview-to-company-name-text">XXXXX XXXXX XXXXX</h2>
+                                                                <p id="invoice-preview-to-address-text">XXXXX xxxxx xxxxxxxxxx xxx</p>
+                                                            </div>
+                                                            <div class="cmp-ph-em">
+                                                                <span id="invoice-preview-to-phone-number-text">XXXXXXXXXXXXXX</span>
+                                                                <span id="invoice-preview-to-email-text">xxxxxxxxxxxxxxxx@xxxxx.xxx</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                    <div class="invoice-hs">
+                                                        <span>Invoice#</span>
+                                                        <h2 id="invoice-preview-invoice-number-text">None</h2>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                    <div class="invoice-hs date-inv sm-res-mg-t-30 tb-res-mg-t-30 tb-res-mg-t-0">
+                                                        <span>Date</span>
+                                                        <h2 id="invoice-preview-date-received-text">None</h2>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                    <div class="invoice-hs wt-inv sm-res-mg-t-30 tb-res-mg-t-30 tb-res-mg-t-0">
+                                                        <span>Discount</span>
+                                                        <h2 id="invoice-preview-total-discount-text">0.00</h2>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                    <div class="invoice-hs gdt-inv sm-res-mg-t-30 tb-res-mg-t-30 tb-res-mg-t-0">
+                                                        <span>Total Cost</span>
+                                                        <h2 id="invoice-preview-invoice-total-cost-text">0.00</h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                    <div class="invoice-sp">
+                                                        <table class="table table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>#</th>
+                                                                    <th>🗑️</th>
+                                                                    <th>⚒️</th>
+                                                                    <th>Item Title</th>
+                                                                    <th>Pack Size</th>
+                                                                    <th>Pack Price</th>
+                                                                    <th>Number of Packs</th>
+                                                                    <th>Total Price</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="invoice-preview-table">
+                                                                
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4 col-lg-3 col-xl-2 d-flex flex-column align-items-end">
+                                                    <table class="table table-sm table-borderless">
+                                                        <tbody>
+                                                            <tr>
+                                                                <th scope="row">Subtotal:</th>
+                                                                <td class="text-right" id="invoice-preview-min-table-subtotal-text">0.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Discount:</th>
+                                                                <td class="text-right" id="invoice-preview-min-table-total-discount-text">0.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">VAT:</th>
+                                                                <td class="text-right" id="invoice-preview-min-table-VAT-text">0.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th scope="row">Total:</th>
+                                                                <td class="text-right" id="invoice-preview-min-table-total-cost-text">0.00</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>  
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                      </div>
+
+                      <hr style="background: RGB(0 194 146);">
+
+                      <div class="btn-list">
+                        <div class="footer_buttons" id="add-invoice-footer-buttons">
+                            <button class="btn btn-danger notika-btn-danger" disabled>Delete</button>
+                            <button class="btn btn-success notika-btn-success" onclick="addTemporaryInvoice()">Save</button>
+                        </div>
+
+                        <div class="footer_buttons" id="add-invoice-item-footer-buttons" style="display: none;">
+                            <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                            <button id="add-temporary-invoice-item-button" class="btn btn-success notika-btn-success" onclick="addTemporaryInvoiceItem()">Save</button>
+                        </div>
+
+                        <div class="footer_buttons" id="invoice-payment-footer-buttons" style="display: none;">
+                            <button class="btn btn-danger notika-btn-danger" disabled><< Back</button>
+                            <button class="btn btn-success notika-btn-success" disabled>Next >></button>
+                        </div>
+
+                        <div class="footer_buttons" id="invoice-preview-footer-buttons" style="display: none;">
+                            <button class="btn btn-danger notika-btn-danger" disabled>Delete</button>
+                            <button class="btn btn-success notika-btn-success" onclick="addTemporaryInvoiceToStock()" >Add To Stock</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!--  ADD TEMPORARY INVOICE JS--------------------------------------------------------------------------------------------->
+<script>
+
+    $(document).ready(function(){
+        window.onload = loadAllData()
+
+
+        //ON MODAL OPENING
+        $('#receiveInvoiceModal').on('show.bs.modal', function (event) {
+            loadAllData()
+            
+        })
+
+        //ON MODAL CLOSING
+        $('#receiveInvoiceModal').on('hidden.bs.modal', function (){
+           initialLoad()
+        })
+
+        $('#updateInvoiceModal').on('hidden.bs.modal', function (){
+           initialLoad()
+        })
+
+    })
+
+    async function loadAllData() {
+        requestAndLoadPaymentMethods()
+
+        // creatables
+        loadCurrentTemporaryInvoiceDetails()
+        loadTemporaryInvoicePreview()
+        requestAndLoadInvoicePaymentPortionsData()
+    };
+
+
+
+
+    function addInvoiceButtonClicked(){
+        document.getElementById('add-invoice-footer-buttons').style.display = "flex"
+        document.getElementById('add-invoice-item-footer-buttons').style.display = "none"
+        document.getElementById('invoice-payment-footer-buttons').style.display = "none"
+        document.getElementById('invoice-preview-footer-buttons').style.display = "none"
+    }
+
+    function addInvoiceItemButtonClicked(){
+        document.getElementById('add-invoice-footer-buttons').style.display = "none"
+        document.getElementById('add-invoice-item-footer-buttons').style.display = "flex"
+        document.getElementById('invoice-payment-footer-buttons').style.display = "none"
+        document.getElementById('invoice-preview-footer-buttons').style.display = "none"
+        clearFields()
+    }
+
+    function invoicePaymentButtonClicked(){
+        document.getElementById('add-invoice-footer-buttons').style.display = "none"
+        document.getElementById('add-invoice-item-footer-buttons').style.display = "none"
+        document.getElementById('invoice-payment-footer-buttons').style.display = "flex"
+        document.getElementById('invoice-preview-footer-buttons').style.display = "none"
+    }
+
+    function invoicePreviewButtonClicked(){
+        document.getElementById('add-invoice-footer-buttons').style.display = "none"
+        document.getElementById('add-invoice-item-footer-buttons').style.display = "none"
+        document.getElementById('invoice-payment-footer-buttons').style.display = "none"
+        document.getElementById('invoice-preview-footer-buttons').style.display = "flex"
+    }
+
+
+    /*AUTO FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+    //loadCurrentTemporaryInvoiceDetails()
+    function loadCurrentTemporaryInvoiceDetails(){
+        //alert("...rrrrrrrrrrrrrrrrrrrrrr")
+        $.ajax({
+            url: "{% url 'load_current_temporary_invoice' %}",
+            data: {},
+            success: function(responseData) {
+                var available = responseData.current_temporary_invoice_details['available']
+                var date_received = responseData.current_temporary_invoice_details['date_received']
+
+
+                //alert("AV = " + available)
+                //alert("DT = " + date_received)
+                if (available == "True"){
+                    var supplier_text = responseData.current_temporary_invoice_details['supplier_text']
+                    var supplier_id = responseData.current_temporary_invoice_details['supplier_id']
+                    var invoice_number = responseData.current_temporary_invoice_details['invoice_number']
+                    var date_received = responseData.current_temporary_invoice_details['date_received']
+                    var invoice_discount = responseData.current_temporary_invoice_details['invoice_discount']
+
+                    //
+                    var supplierSelector = document.getElementById('supplier-selector')
+                    //alert(supplier_id)
+                    var old_option = "<option selected value='" + supplier_id + "' selected>" + supplier_text + "</option>"
+
+
+                    $(supplierSelector).prepend(old_option)
+                    $("#supplier-selector").selectpicker('refresh')   
+
+
+                    document.getElementById('invoice-number').value = invoice_number
+                    document.getElementById('date-received').value = date_received
+                    document.getElementById('invoice-discount').value = invoice_discount
+                    //alert(date_received)
+
+                }else{
+                    document.getElementById('date-received').value = date_received
+                    //alert(date_received)
+                }
+
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+
+
+    //loadTemporaryInvoicePreview()
+    function loadTemporaryInvoicePreview(){
+        $.ajax({
+            url: "{% url 'load_temporary_invoice_preview_data' %}",
+            data: {},
+            success: function(responseData) {
+                var temporary_invoice_available = responseData.temporary_invoice_details['temporary_invoice_available']
+                var temporary_invoice_items_available = responseData.temporary_invoice_details['temporary_invoice_items_available']
+
+                if(temporary_invoice_available == "True"){
+                    from_company_name = responseData.temporary_invoice_details['from_company_name']
+                    from_address = responseData.temporary_invoice_details['from_address']
+                    from_tel = responseData.temporary_invoice_details['from_tel']
+                    from_email = responseData.temporary_invoice_details['from_email']
+                    to_company_name = responseData.temporary_invoice_details['to_company_name']
+                    to_address = responseData.temporary_invoice_details['to_address']
+                    to_tel = responseData.temporary_invoice_details['to_tel']
+                    to_email = responseData.temporary_invoice_details['to_email']
+                    invoice_number = responseData.temporary_invoice_details['invoice_number']
+                    date_received = responseData.temporary_invoice_details['date_received']
+                    discount = responseData.temporary_invoice_details['discount']
+
+                    document.getElementById('invoice-preview-from-company-name-text').innerHTML = from_company_name
+                    document.getElementById('invoice-preview-from-address-text').innerHTML = from_address
+                    document.getElementById('invoice-preview-from-phone-number-text').innerHTML = from_tel
+                    document.getElementById('invoice-preview-from-email-text').innerHTML = from_email
+                    document.getElementById('invoice-preview-to-company-name-text').innerHTML = to_company_name
+                    document.getElementById('invoice-preview-to-address-text').innerHTML = to_address
+                    document.getElementById('invoice-preview-to-phone-number-text').innerHTML = to_tel
+                    document.getElementById('invoice-preview-to-email-text').innerHTML = to_email
+                    document.getElementById('invoice-preview-invoice-number-text').innerHTML = invoice_number
+                    document.getElementById('invoice-preview-date-received-text').innerHTML = date_received
+                    document.getElementById('invoice-preview-total-discount-text').innerHTML = discount
+
+                    //alert("Invoce available")
+
+                    if(temporary_invoice_items_available == "True"){
+
+                        //alert("Invoce items available")
+                        
+                        subtotal = responseData.temporary_invoice_details['subtotal']
+                        VAT = responseData.temporary_invoice_details['VAT']
+                        total_cost = responseData.temporary_invoice_details['total_cost']
+
+                        //document.getElementById('invoice-preview-subtotal-text').innerHTML = subtotal
+                        document.getElementById('invoice-preview-min-table-subtotal-text').innerHTML = subtotal
+
+                        document.getElementById('invoice-preview-total-discount-text').innerHTML = discount
+                        document.getElementById('invoice-preview-min-table-total-discount-text').innerHTML = discount
+
+                        document.getElementById('invoice-preview-min-table-VAT-text').innerHTML = VAT
+
+                        document.getElementById('invoice-preview-min-table-total-cost-text').innerHTML = total_cost
+                        document.getElementById('invoice-preview-invoice-total-cost-text').innerHTML = total_cost
+
+                        //alert('displayed')\\\\
+                    }else{
+                        //cleare the totals from DOM
+                        document.getElementById('invoice-preview-min-table-subtotal-text').innerHTML = '0.00'
+
+                        document.getElementById('invoice-preview-total-discount-text').innerHTML = '0.00'
+                        document.getElementById('invoice-preview-min-table-total-discount-text').innerHTML = '0.00'
+
+                        document.getElementById('invoice-preview-min-table-VAT-text').innerHTML = '0.00'
+
+                        document.getElementById('invoice-preview-min-table-total-cost-text').innerHTML = '0.00'
+                        document.getElementById('invoice-preview-invoice-total-cost-text').innerHTML = '0.00'
+                    }
+
+                        var tableContainer = document.getElementById('invoice-preview-table')
+                        tableContainer.innerHTML = ""
+                        var counter = 0
+                        responseData.temporary_invoice_items_rows.forEach(row => {
+                            counter ++
+                            const tableRow = `
+                                <tr>
+                                    <td>`+ counter +`</td>
+                                    <td> <button title="Delete Item"class="btn btn-danger" onclick="deleteTemporaryInvoiceItem(` + row[0] + `)">🗑️</button></td>
+                                    <td> <button title="Update Item"class="btn btn-warning" onclick="prepareForTemporaryInvoiceItemEdit(` + row[0] + `)">⚒️</button></td>
+                                    <td>` + row[1]+ `</td>
+                                    <td style="text-align: center">` + row[2]+ `</td>
+                                    <td style="text-align: right">` + row[3]+ `</td>
+                                    <td style="text-align: center">` + row[4]+ `</td>
+                                    <td style="text-align: right">` + row[5]+ `</td>
+                                </tr>
+                            `
+                            tableContainer.innerHTML += tableRow
+                        })
+                }else{
+                    var tableContainer = document.getElementById('invoice-preview-table')
+                    tableContainer.innerHTML = ""
+                    var counter = 0
+                    responseData.temporary_invoice_items_rows.forEach(row => {
+                        counter ++
+                        const tableRow = `
+                            <tr>
+                                <td colspan="8" style="text-align:center; ">The invoice is empty</td>
+                            </tr>
+                        `
+                        tableContainer.innerHTML += tableRow
+                    })
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+    /*AUTO FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+
+
+    /*LIVE FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    /*stock*/
+    $(document).on('keyup', '.add_invoice_payment_payment_method_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_payment_method_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('add-invoice-payment-payment-method')
+                        $("#add-invoice-payment-payment-method").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#add-invoice-payment-payment-method").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+
+    $(document).on('keyup', '.supplier_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_suppliers_options' %}",
+                data: { search_text: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('supplier-selector')
+                    $("#supplier-selector").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#supplier-selector").selectpicker('refresh')    
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })
+    /*LIVE FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+
+    /*TRIGERED FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+
+    function requestAndLoadInvoicePaymentPortionsData(){
+        //alert("pymt port req")
+        $.ajax({
+            url:"{% url 'load_invoice_payment_portions_data'%}",
+            success: function(responseData){
+                //alert('success')
+                var tableContainer = document.getElementById('add-invoice-portion-payment-potions-table')
+                tableContainer.innerHTML = ""
+                responseData.invoice_money_portions_table_rows.forEach(row => {
+                    const tableRow = `<tr>
+                            <td style="width:30%;">` + row[1] + `</td>
+                            <td style="text-align:right;">` + row[2] + `</td>
+                            <td style="text-align:right;">` + row[3] + `</td>
+                            <td style="text-align:right;">` + row[4] + `</td>
+                            <td style="text-align:right;"><button class="btn btn-danger" onclick="deleteInvoiceMoneyPortion(` + row[0] + `)">🗑️</button></td>
+                        </tr>`
+                    tableContainer.innerHTML += tableRow
+                })
+
+                document.getElementById('add-invoice-payment-paid-value-text').innerHTML = responseData.totals['total_invoice_paid_value']
+                document.getElementById('add-invoice-payment-total-invoice-cost-value-1').innerHTML = responseData.totals['total_invoice_cost']
+                document.getElementById('add-invoice-payment-total-invoice-cost-value-2').innerHTML = responseData.totals['total_invoice_cost']
+                /*document.getElementById('paid-value-text').innerHTML = responseData.totals['paid_value']
+                document.getElementById('change-or-remaining-lable').innerHTML = responseData.totals['change_or_remaining_text'] +":"
+                document.getElementById('change-or-remaining-text').innerHTML = responseData.totals['change_or_remaining_value']
+
+
+                if(responseData.totals['change_or_remaining_value'] > 0){
+                    //
+                }else{
+                    if (responseData.totals['total_receipt_price'] == 0){
+
+                    }else{
+                        document.getElementById('check-out-button').style.display = 'block'
+                    }
+                }*/
+
+           
+
+            
+        },
+        error: function(responseData, error){
+            ////alert(responseData)
+        }
+        })
+    }
+
+
+
+    function calculateBalanceBasedOnPaid(){
+        var total_invoice_cost = parseFloat(document.getElementById('add-invoice-payment-total-invoice-cost-value-2').innerHTML)
+        var paid_value = parseFloat(document.getElementById('add-invoice-payment-paid-value-text').innerHTML)
+
+
+        rated_needed_value = sessionStorage.getItem('rated_needed_value')
+
+        var paid = document.getElementById('add-invoice-payment-paid-amount-input').value
+        var paid_value = document.getElementById('add-invoice-payment-paid-value-text').innerHTML
+
+
+        var balance = rated_needed_value - Number(paid)
+
+        document.getElementById('add-invoice-payment-balance-input').value = balance.toFixed(2)
+
+        /*if (balance < 0){
+            document.getElementById('add-invoice-payment-balance-text').innerHTML = "CHANGE"
+            //document.getElementById('add-invoice-payment-balance-input').value = Math.abs(balance).toFixed(2)
+        }else{
+
+        }*/
+    }
+
+
+    function paymentMethodChanged(){
+        var paying_currency_id = document.getElementById('add-invoice-payment-payment-method').value
+        if (isIntegerGreaterThanOrEqualToOne(paying_currency_id)){
+            $.ajax({
+                url: "{% url 'get_paying_currency_details' %}",
+                data: { paying_currency_id: paying_currency_id },
+                success: function(responseData) {
+                    var rated_price_text = responseData.paying_currency['currency']
+                    var rate = parseFloat(responseData.paying_currency['rate'])
+
+                    var total_invoice_cost = parseFloat(document.getElementById('add-invoice-payment-total-invoice-cost-value-2').innerHTML.split(",").join(""))
+                    //parseFloat(textValue.split(",").join(""));
+                    //alert(total_invoice_cost)
+                    var paid_value = parseFloat(document.getElementById('add-invoice-payment-paid-value-text').innerHTML.split(",").join(""))
+                    //alert(paid_value)
+                    //alert(rate)
+                    //alert(Number(total_invoice_cost) - Number(paid_value))
+
+
+
+                    var rated_required_price_value = (total_invoice_cost - paid_value) * rate
+                    //alert(rated_required_price_value)
+
+
+                    var balance = (total_invoice_cost - paid_value) * rate
+                    sessionStorage.setItem('rated_needed_value', balance)
+                    if (balance < 0){
+                        document.getElementById('add-invoice-payment-balance-text').innerHTML = "CHANGE"
+                        document.getElementById('add-invoice-payment-balance-input').value = Math.abs(balance).toFixed(2)
+                    }else{
+                        document.getElementById('add-invoice-payment-balance-input').value = balance
+                    }
+
+
+                    //var rated_required_price_value = (Number(document.getElementById('add-invoice-payment-paid-value-text').innerHTML))*Number(rate)
+
+
+                    //alert('rated_required_price_value: ' + rated_required_price_value + "Rate: " + rate + "total_invoice_cost:" + total_invoice_cost + "paid_value:" + paid_value)
+
+                    //document.getElementById('add-invoice-paid-').value = '0.00'
+                    document.getElementById('add-invoice-payment-paid-amount-input').value = rated_required_price_value
+                    //document.getElementById('change-amount-input').value = '0.00'
+                    //document.getElementById('change-given-amount-input').value = '0.00'
+                },
+                error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                }
+            });
+        }
+    }
+
+
+    function requestAndLoadPaymentMethods(){
+            //alert("requesting payment_methods")
+            $.ajax({
+                url:"{% url 'load_payment_method_options' %}",
+                success: function(responseData){
+                    var selectElement = document.getElementById('add-invoice-payment-payment-method')
+                    $("#add-invoice-payment-payment-method").empty();
+
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+
+                    $("#add-invoice-payment-payment-method").selectpicker('refresh')
+//alert("Done")
+                },
+                error: function(responseData, error){
+//alert(responseData)
+                }
+            })
+//alert("Done...")
+        } 
+    /*//TRIGERED FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+
+
+
+
+
+    /*BUTTON FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+    function updateTemporaryInvoiceItem(){
+        var temporary_invoice_item_id = sessionStorage.getItem('temporary_invoice_item_id_for_updating')
+        stock_ = document.getElementById('add-invoice-item-stock-selector').value
+        manufacturer = document.getElementById('add-invoice-item-manufacturer-selector').value
+        selling_price_type = document.getElementById('add-invoice-item-selling-price-type-selector').value
+        selling_price_number = document.getElementById('add-invoice-item-selling-price-number').value
+        total_packs = document.getElementById('add-invoice-item-total-packs').value
+        pack_size = document.getElementById('add-invoice-item-pack-size').value
+        buying_pack_price = document.getElementById('add-invoice-item-buying-pack-price').value
+        expiration_date = document.getElementById('add-invoice-item-expiration-date').value
+        discount_type = document.getElementById('add-invoice-item-discount-type').value
+        discount_number = document.getElementById('add-invoice-item-discount-number').value
+        batch_number = document.getElementById('add-invoice-item-batch-number').value
+
+        //validation
+        var errors = ""
+        if (isIntegerGreaterThanOrEqualToOne(stock_) == false){
+            errors = ('Invalid input on Stock_ field')
+        }else if (isIntegerGreaterThanOrEqualToOne(manufacturer) == false){
+            errors = ('Invalid input on Manufacturer field')
+        }else if (selling_price_type == ""){
+            errors = ('Invalid input on Selling_price_type field')
+        }else if (selling_price_number == ""){
+            if (selling_price_type == "EXISTING PRICE"){
+                selling_price_number = '0'
+            }else{
+                errors = ('Invalid input on Selling_price_number field')  
+            }
+        }else if (total_packs == ""){
+            errors = ('Invalid input on Total_packs field')
+        }else if (pack_size == ""){
+            errors = ('Invalid input on Pack_size field')
+        }else if (buying_pack_price == ""){
+            errors = ('Invalid input on Buying_pack_price field')
+        }else if (discount_type == ""){
+            errors = ('Invalid input on Discount_type field')
+        }else if (discount_number == ""){
+            discount_number = '0'
+        }else if (batch_number == ""){
+            errors = ('Invalid input on Batch_number field')
+        }
+
+        if ((expiration_date + "") == ""){
+            expiration_date = '2999-09-02'
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'update_temporary_invoice_item' %}",
+                data: {
+                    temporary_invoice_item_id: temporary_invoice_item_id,
+                    stock_: stock_,
+                    manufacturer: manufacturer,
+                    selling_price_type: selling_price_type,
+                    selling_price_number: selling_price_number,
+                    total_packs: total_packs,
+                    pack_size: pack_size,
+                    buying_pack_price: buying_pack_price,
+                    expiration_date: expiration_date,
+                    discount_type: discount_type,
+                    discount_number: discount_number,
+                    batch_number: batch_number
+                },
+                success: function(responseData){
+                    if (responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                    loadCurrentTemporaryInvoiceDetails()
+                    loadTemporaryInvoicePreview()
+                    requestAndLoadInvoicePaymentPortionsData()
+                },
+                error: function(responseData, error){
+                    //alert("Server Error")
+                    swal({
+                        title: "Error",
+                        text: "Server error!",
+                        type: "error"
+                    });
+                }
+            })
+        }else{
+            //alert(error)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+
+
+
+    function clearFields(){
+        document.getElementById('add-invoice-item-stock-selector').value = ''
+        document.getElementById('add-invoice-item-manufacturer-selector').value = ''
+        //document.getElementById('add-invoice-item-selling-price-type-selector').value = ''
+        document.getElementById('add-invoice-item-selling-price-number').value = ''
+        document.getElementById('add-invoice-item-total-packs').value = ''
+        document.getElementById('add-invoice-item-pack-size').value = ''
+        document.getElementById('add-invoice-item-buying-pack-price').value = ''
+        document.getElementById('add-invoice-item-expiration-date').value = ''
+        //document.getElementById('add-invoice-item-discount-type').value = ''
+        document.getElementById('add-invoice-item-discount-number').value = "0.00"
+        document.getElementById('add-invoice-item-batch-number').value = ''
+
+        document.getElementById('add-temporary-invoice-item-button').innerText = 'Save'
+
+
+    }
+
+    function openManufacturerPopup(){
+        newBrowserWindow("{% url 'manufacturers_page' %}")
+    }
+
+    function openProductsPopup(){
+        newBrowserWindow("{% url 'products_page' %}")
+    }
+
+    function openSuppliersPopup(){
+        newBrowserWindow("{% url 'suppliers_page' %}")
+    }
+
+
+
+    function addInvoicePayment(){
+        var payment_method_id = document.getElementById('add-invoice-payment-payment-method').value
+        var paid = document.getElementById('add-invoice-payment-paid-amount-input').value
+
+        var errors = ""
+        if (isIntegerGreaterThanOrEqualToOne(payment_method_id)==false){
+            errors = "Please select a valid payment method"
+        }else if(paid == ""){
+            errors = "Paid field can not be blank"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url:"{% url 'add_invoice_payment_portion' %}",
+                data: {
+                    payment_method_id: payment_method_id,
+                    paid: paid
+                },
+                success: function(responseData){
+                    //alert("Done...")
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+
+                    }else{
+                        swal({
+                            title: "Sussess",
+                            text: responseData.message,
+                            type: "success",
+                            timer: 1000
+                        });
+                    }
+                    loadCurrentTemporaryInvoiceDetails()
+                    loadTemporaryInvoicePreview()
+                    requestAndLoadInvoicePaymentPortionsData()
+                },
+                error: function(responseData, error){
+                            //alert(responseData) 
+                    swal({
+                        title: "Error",
+                        text: "Server error " + error,
+                        type: "error"
+                    });      
+                }
+            })
+            
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+
+
+
+    function addTemporaryInvoiceToStock(){
+        $.ajax({
+            url: "{% url 'add_temporary_invoice_to_stock' %}",
+            data: {},
+            success: function(responseData){
+                if (responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+                loadCurrentTemporaryInvoiceDetails()
+                loadTemporaryInvoicePreview()
+                requestAndLoadInvoicePaymentPortionsData()
+            },
+            error: function(responseData, error){
+                //alert("Server Error")
+                swal({
+                    title: "Error",
+                    text: "Server error!",
+                    type: "error"
+                });
+            }
+        })
+
+        
+
+    }
+
+    
+    function addTemporaryInvoice(){
+        supplier = document.getElementById('supplier-selector').value
+        invoice_number = document.getElementById('invoice-number').value
+        discount = document.getElementById('invoice-discount').value
+        date = document.getElementById('date-received').value
+
+        //alert(date)
+
+        var error = ""
+        if (isIntegerGreaterThanOrEqualToOne(supplier) == false){
+            error = "Please select a valid Supplier."
+        }else if (invoice_number == ""){
+            error = "Invoice Number field can not be blank"
+        }else if (discount == ""){
+            discount = "0"
+        }else if (date == ""){
+            error = "Date field can not be blank"
+        }
+
+        if (error == ""){
+            $.ajax({
+                url: "{% url 'add_temporary_invoice' %}",
+                data: {
+                    supplier: supplier,
+                    invoice_number: invoice_number,
+                    discount: discount,
+                    date: date
+                },
+                success: function(responseData){
+                    if (responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                    loadCurrentTemporaryInvoiceDetails()
+                    loadTemporaryInvoicePreview()
+                    requestAndLoadInvoicePaymentPortionsData()
+                },
+                error: function(responseData, error){
+                    //alert("Server Error")
+                    swal({
+                        title: "Error",
+                        text: "Server error!",
+                        type: "error"
+                    });
+                }
+            })
+        }else{
+            //alert(error)
+            swal({
+                title: "Error",
+                text: error,
+                type: "error"
+            });
+        }
+
+        
+    }
+
+    /*BUTTON FUNCTIONS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;*/
+
+
+//  ADD TEMPORARY INVOICE JS---------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //ADD INVOICE ITEM JS---------------------------------------------------------------------------------------------
+
+
+
+
+    /*LIVE FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    $(document).on('keyup', '.add_invoice_item_stock_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            //alert("rrrttt")
+            $.ajax({
+                url: "{% url 'load_live_stock_options' %}",
+                data: { search: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('add-invoice-item-stock-selector')
+                    $("#add-invoice-item-stock-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#add-invoice-item-stock-selector").selectpicker('refresh')    
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })
+
+
+    $(document).on('keyup', '.add_invoice_item_manufacturer_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            //alert("rrrttt")
+            $.ajax({
+                url: "{% url 'load_live_manufacturers_options' %}",
+                data: { search_text: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('add-invoice-item-manufacturer-selector')
+                    $("#add-invoice-item-manufacturer-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#add-invoice-item-manufacturer-selector").selectpicker('refresh')    
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })
+
+    /*LIVE FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+    /*BUTTON FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    function prepareForTemporaryInvoiceItemEdit(temporary_invoice_item_id){
+        sessionStorage.setItem('temporary_invoice_item_id_for_updating', temporary_invoice_item_id)
+        var button = document.getElementById('add-invoice-item-tab-button')
+        button.click()
+        $.ajax({
+            url: "{% url 'get_temporary_invoice_item_details' %}",
+            data: {
+                temporary_invoice_item_id: temporary_invoice_item_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert("Error" + responseData.message)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }else{
+                    //refill with
+                    /*stock_id
+                    stock_text
+                    manufacturer_id
+                    manufacturer_text*/
+
+                    /*stock*/
+                    const myStockSelect = document.getElementById('add-invoice-item-stock-selector');
+                    const stock_option1 = document.createElement('option')
+                    stock_option1.value = responseData.details['stock_id']
+                    stock_option1.innerHTML = responseData.details['stock_text']
+                    stock_option1.selected = true;
+                    myStockSelect.appendChild(stock_option1);
+                    $(myStockSelect).trigger('change');
+
+                    /*manufacturer*/
+                    const myManufacturerSelect = document.getElementById('add-invoice-item-manufacturer-selector');
+                    const manufacturer_option1 = document.createElement('option')
+                    manufacturer_option1.value = responseData.details['manufacturer_id']
+                    manufacturer_option1.innerHTML = responseData.details['manufacturer_text']
+                    manufacturer_option1.selected = true;
+                    myManufacturerSelect.appendChild(manufacturer_option1);
+                    $(myManufacturerSelect).trigger('change');
+
+                    //add-invoice-item-stock-selector
+                    //add-invoice-item-manufacturer-selector
+
+                    /*document.getElementById('add-invoice-item-stock-selector').value = responseData.details['stock_']
+                    document.getElementById('add-invoice-item-manufacturer-selector').value = responseData.details['manufacturer']*/
+                    document.getElementById('add-invoice-item-selling-price-type-selector').value = responseData.details['selling_price_type']
+                    document.getElementById('add-invoice-item-selling-price-number').value = responseData.details['selling_price_number']
+                    document.getElementById('add-invoice-item-total-packs').value = responseData.details['total_packs']
+                    document.getElementById('add-invoice-item-pack-size').value = responseData.details['pack_size']
+                    document.getElementById('add-invoice-item-buying-pack-price').value = responseData.details['buying_pack_price']
+                    document.getElementById('add-invoice-item-expiration-date').value = responseData.details['expiration_date']
+                    document.getElementById('add-invoice-item-discount-type').value = responseData.details['discount_type']
+                    document.getElementById('add-invoice-item-discount-number').value = responseData.details['discount_number']
+                    document.getElementById('add-invoice-item-batch-number').value = responseData.details['batch_number']
+
+                    document.getElementById('add-temporary-invoice-item-button').innerText = 'Update'
+
+                }
+                requestAndLoadInvoicePaymentPortionsData()
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+    function deleteInvoiceMoneyPortion(invoice_money_portion_id){
+        $.ajax({
+            url: "{% url 'delete_invoice_money_portion' %}",
+            data: {
+                invoice_money_portion_id: invoice_money_portion_id
+            },
+            success: function(responseData) {
+                swal({
+                    title: responseData.title,
+                    text: responseData.message,
+                    type: responseData.type,
+                });
+                
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "An error ocured! ",
+                    type: "error"
+                });
+            },
+            complete: function(){
+                requestAndLoadInvoicePaymentPortionsData()
+            }
+        });
+    }
+
+    function deleteTemporaryInvoiceItem(temporary_invoice_item_id){
+        $.ajax({
+            url: "{% url 'delete_temporary_invoice_item' %}",
+            data: {
+                temporary_invoice_item_id: temporary_invoice_item_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert("Error" + responseData.message)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            },
+            complete: function() {
+                loadTemporaryInvoicePreview(); // Always run after complete
+            }
+        });
+    }
+
+    function addTemporaryInvoiceItem(){
+        if (document.getElementById('add-temporary-invoice-item-button').innerText == "Update"){
+            updateTemporaryInvoiceItem()
+        }else{
+            stock_ = document.getElementById('add-invoice-item-stock-selector').value
+            manufacturer = document.getElementById('add-invoice-item-manufacturer-selector').value
+            selling_price_type = document.getElementById('add-invoice-item-selling-price-type-selector').value
+            selling_price_number = document.getElementById('add-invoice-item-selling-price-number').value
+            total_packs = document.getElementById('add-invoice-item-total-packs').value
+            pack_size = document.getElementById('add-invoice-item-pack-size').value
+            buying_pack_price = document.getElementById('add-invoice-item-buying-pack-price').value
+            expiration_date = document.getElementById('add-invoice-item-expiration-date').value
+            discount_type = document.getElementById('add-invoice-item-discount-type').value
+            discount_number = document.getElementById('add-invoice-item-discount-number').value
+            batch_number = document.getElementById('add-invoice-item-batch-number').value
+
+            //validation
+            var errors = ""
+            if (isIntegerGreaterThanOrEqualToOne(stock_) == false){
+                errors = ('Invalid input on Stock_ field')
+            }else if (isIntegerGreaterThanOrEqualToOne(manufacturer) == false){
+                errors = ('Invalid input on Manufacturer field')
+            }else if (selling_price_type == ""){
+                errors = ('Invalid input on Selling_price_type field')
+            }else if (selling_price_number == ""){
+                if (selling_price_type == "EXISTING PRICE"){
+                    selling_price_number = '0'
+                }else{
+                    errors = ('Invalid input on Selling_price_number field')  
+                }
+            }else if (total_packs == ""){
+                errors = ('Invalid input on Total_packs field')
+            }else if (pack_size == ""){
+                errors = ('Invalid input on Pack_size field')
+            }else if (buying_pack_price == ""){
+                errors = ('Invalid input on Buying_pack_price field')
+            }else if (discount_type == ""){
+                errors = ('Invalid input on Discount_type field')
+            }else if (discount_number == ""){
+                discount_number = '0'
+            }else if (batch_number == ""){
+                errors = ('Invalid input on Batch_number field')
+            }
+
+            if ((expiration_date + "") == ""){
+                expiration_date = '2999-09-02'
+            }
+
+
+            
+            if (errors == ""){
+                $.ajax({
+                    url: "{% url 'add_temporary_invoice_item' %}",
+                    data: {
+                        stock_: stock_,
+                        manufacturer: manufacturer,
+                        selling_price_type: selling_price_type,
+                        selling_price_number: selling_price_number,
+                        total_packs: total_packs,
+                        pack_size: pack_size,
+                        buying_pack_price: buying_pack_price,
+                        expiration_date: expiration_date,
+                        discount_type: discount_type,
+                        discount_number: discount_number,
+                        batch_number: batch_number
+                    },
+                    success: function(responseData){
+                        if (responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            //alert(responseData.message)
+                            swal({
+                                title: "Success",
+                                text: responseData.message,
+                                type: "success"
+                            });
+                        }
+                        loadCurrentTemporaryInvoiceDetails()
+                        loadTemporaryInvoicePreview()
+                        requestAndLoadInvoicePaymentPortionsData()
+                    },
+                    error: function(responseData, error){
+                        //alert("Server Error")
+                        swal({
+                            title: "Error",
+                            text: "Server error!",
+                            type: "error"
+                        });
+                    }
+                })
+            }else{
+                //alert(error)
+                swal({
+                    title: "Error",
+                    text: errors,
+                    type: "error"
+                });
+            }
+        }
+        
+    }
+    /*//BUTTON FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+</script>
+<!--  //ADD INVOICE ITEM JS--------------------------------------------------------------------------------------------->
+
+
+<!-- // ADD INVOICE MODAL -->
+
+
+
+
+

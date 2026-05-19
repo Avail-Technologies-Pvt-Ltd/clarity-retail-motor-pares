@@ -1,0 +1,178 @@
+{% load static %}
+
+<!-- ADD -->
+
+<div class="modal fade animated bounce" id="addStockAdjustmentModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New Batch Adjustment Reason</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Shortcut</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Shortcut" id="add-batch-adjustment-reason-shortcut-value" autocomplete="off">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Details</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Details" id="add-batch-adjustment-reason-details-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addBatchAdjustmentReason()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#addStockAdjustmentModal').on('hidden.bs.modal', function (){
+            batchAdjustmentReasonsInitialLoad() 
+        })
+    })
+    
+
+
+/*BUTTON USER*/
+function deleteBatchAdjustmentReason(batch_adjustment_reason_id){
+    $.ajax({
+        url: "{% url 'delete_batch_adjustment_reason' %}",
+        data: {
+            batch_adjustment_reason_id: batch_adjustment_reason_id
+        },
+        success: function(responseData) {
+            if(responseData.custome_status == "Error"){
+                alert(responseData.message)
+                /*swal({
+                    title: "Error",
+                    text: responseData.message,
+                    type: "error"
+                });*/
+            }else{
+                alert(responseData.message)
+                /*swal({
+                    title: "Success",
+                    text: responseData.message,
+                    type: "success"
+                });*/
+            }
+        },
+        error: function(responseData, error){
+            //alert("An error ocured! " + error)
+            swal({
+                title: "Error",
+                text: "An error ocured! " + error,
+                type: "error"
+            });
+        },
+        complete: function(){
+            batchAdjustmentReasonInitialLoad()
+        }
+    });
+}
+
+function addBatchAdjustmentReason(){
+    var shortcut = document.getElementById('add-batch-adjustment-reason-shortcut-value').value
+    var details = document.getElementById('add-batch-adjustment-reason-details-value').value
+
+    var errors = ""
+
+    if (shortcut == ""){
+        errors = "Shortcut field can not be blank"
+    }
+
+
+    if (errors == ""){
+        $.ajax({
+            url: "{% url 'add_batch_adjustment_reason' %}",
+            data: {
+                shortcut: shortcut,
+                details: details
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    //alert(responseData.message)
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });
+                }
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+
+    }else{
+        //alert(errors)
+        swal({
+            title: "Error",
+            text: errors,
+            type: "error"
+        });
+    }
+    
+}
+
+
+/*BUTTON USER*/
+
+</script>

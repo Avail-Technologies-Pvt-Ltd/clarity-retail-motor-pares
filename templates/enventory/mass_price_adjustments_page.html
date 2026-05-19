@@ -1,0 +1,623 @@
+{% extends 'partials/base.html' %}
+{% block title %} Price Adjustment {% endblock %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Stock Prices Table</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <!-- <a href="" title="Receive Stock" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#adjustStockModal" id="payment-modal-button"><i class="notika-icon notika-edit"></i></a> -->
+                                    <button data-toggle="tooltip" data-placement="bottom" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block filter %}
+<div class="breadcomb-area" style="">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                <div class="breadcomb-list">
+                    <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                        <div style="float: left;width: 50%; ">
+                            <span id="search-type"></span>
+                            <span id="page-detail"></span>
+                            <small id="table-summery"></small>
+                        </div>
+                        <div style="float: right;width: 50%; text-align: right;">
+                            <div>
+                                <span style="padding: 5px;display: none;">
+                                    <select class="" data-live-search="true" style="width: 30%;" id='search-selector'>
+                                        <option value="all">All</option>
+                                        <option value="Product Code">Product Code</option>
+                                        <option value="Category">Category</option>
+                                        <option value="Description">Description</option>
+                                        <option value="Form">Form</option>
+                                        <option value="VAT">VAT</option>
+                                    </select>
+                                
+                                    <input class="" type="" name="" style="width: %;" placeholder="Search" id='live-search-input' oninput="searchInputValueChanged()">
+                                </span>
+                           
+                                <a href="" title="Filter Sales" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#stocksFilterModal" id="simple-sales-filter-modal-button">Filters</a>
+
+                                <button title="Previous Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="previousPage()"><i class="notika-icon notika-left-arrow"></i></button>
+
+                                <span style="background-color:skyblue; padding: 5px; border-radius: 5%;" id="page-lable">1</span>
+
+                                <button title="Next Page" id="openModal" data-toggle="tooltip" data-placement="bottom" onclick="nextPage()"><i class="notika-icon notika-right-arrow"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stock Price Management - Single Row with Flex -->
+                    <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #dee2e6;">
+                        <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                            <select id="price-direction" class="form-control" style="flex: 1;" 
+                                title="Select how to apply the value">
+                                <option value="0">Action</option>
+                                <option value="neutral">Set Selling Price</option>
+                                <option value="increase">Increase Selling Price</option>
+                                <option value="decrease">Decrease Selling Price</option>
+                            </select>
+
+                            TO/BY
+                            <input type="number" id="price-value" class="form-control" placeholder="By (value)" style="flex: 0.5;" 
+                                title="Enter the value to use in the calculation">
+                            
+                            <select id="price-type" class="form-control" style="flex: 1;" 
+                                title="Select the adjustment type">
+                                <option value="0">Value Type</option>
+                                <option value="percentage">As A Percentage (%)</option>
+                                <option value="fixed">As A Fixed Amount ($)</option>
+                            </select>
+
+                            <select id="price-base" class="form-control" style="flex: 1;" 
+                                title="Select the base price to use in the calculation">
+                                <option value="0">Select the base</option>
+                                <option value="selling">Of Current Selling Price</option>
+                                <option value="buying">Of Buying Price</option>
+                            </select>
+                            
+                            <select id="price-coverage" class="form-control" style="flex: 1;" 
+                                title="Select which items to apply changes to">
+                                <option value="0">Select Coverage</option>
+                                <option value="visible">Only On Visible Page</option>
+                                <option value="all">On All Stock Items</option>
+                            </select>
+                            
+                            <button class="btn btn-success" id="apply-changes-button" style="flex: 0.5;" 
+                                title="Preview changes before saving">
+                                Apply
+                            </button>
+
+                            <button class="btn btn-info" id="update-stock-button" style="flex: 0.5;" 
+                                title="Save changes to database">
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include 'partials/modals/enventory/stocks_modals.html' %}
+<!--   FILTERS  -->
+<div class="modal fade animated bounce" id="stocksFilterModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Stock Filter</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <form class="widget-tabs-list" method="post" style="padding-top:10px; padding-bottom: 10px;">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                        <div class="form-example-int form-example-st">
+                                            <div class="form-group">
+                                                <label>Product Code</label>
+                                                <div class="nk-int-st">
+                                                    <input class="form-control input-sm" id="stock-filter-form-product-code-value" type="text" name="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                        <div class="form-example-int form-example-st">
+                                            <div class="form-group">
+                                                <label>Product Title</label>
+                                                <div class="nk-int-st">
+                                                    <input class="form-control input-sm" id="stock-filter-form-product-title-value" type="text">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" onclick="resetStockFilters()">Reset</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="loadStockFilterQuery()">Load</button>                  
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- //FILTERS  -->
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 89%; overflow-y: scroll;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <!-- products table -->
+        <table  class="table table-hover " style="background-color: lightgray;" id="products-table">
+            
+        </table>
+    </div>
+</div>
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+
+$(document).ready(function() {
+
+    stocksInitialLoad()
+    
+    // ==================== VALIDATION FUNCTION ====================
+function validatePriceInputs(price_direction, price_value, price_type, price_base, price_coverage) {
+    var error = ""
+    
+    if(price_coverage == "0"){
+        error = "Please select valid coverage (Visible Page or All Stock)"
+    } else if(price_direction == "0"){
+        error = "Please select a valid action"
+    } else if(!price_value || price_value == ""){
+        error = "Please enter a value"
+    } else if(isNaN(price_value)){
+        error = "Value must be a number"
+    } else if(parseFloat(price_value) <= 0){
+        error = "Value must be greater than 0"
+    } else if(price_type == "0"){
+        error = "Please select a valid value type (Percentage or Fixed Amount)"
+    } else if(price_base == "0"){
+        error = "Please select a valid base price (Selling Price or Buying Price)"
+    }
+    
+    return error
+}
+
+// ==================== CALCULATION FUNCTION ====================
+function calculateNewPrice(current_price, buying_price, direction, value, type, base) {
+    var base_price = (base == "selling") ? current_price : buying_price
+    var new_price = current_price
+    
+    if(type == "percentage"){
+        var percentage_value = (value / 100) * base_price
+        if(direction == "increase"){
+            new_price = current_price + percentage_value
+        } else if(direction == "decrease"){
+            new_price = current_price - percentage_value
+        } else if(direction == "neutral"){
+            new_price = value
+        }
+    } else if(type == "fixed"){
+        if(direction == "increase"){
+            new_price = current_price + value
+        } else if(direction == "decrease"){
+            new_price = current_price - value
+        } else if(direction == "neutral"){
+            new_price = value
+        }
+    }
+    
+    return new_price > 0 ? new_price : 0
+}
+
+// ==================== CONFIRMATION MESSAGE FUNCTION ====================
+function getConfirmationMessage(price_direction, price_value, price_type, price_base, price_coverage, item_count) {
+    var direction_text = {
+        "increase": "increase",
+        "decrease": "decrease",
+        "neutral": "set"
+    }
+    
+    var type_symbol = {
+        "percentage": "%",
+        "fixed": "$"
+    }
+    
+    var base_text = {
+        "selling": "selling price",
+        "buying": "buying price"
+    }
+    
+    var coverage_text = {
+        "visible": "the " + item_count + " items on the visible page",
+        "all": "ALL stock items in the database"
+    }
+    
+    var direction = direction_text[price_direction]
+    var type_sym = type_symbol[price_type]
+    var base_desc = base_text[price_base]
+    var coverage_desc = coverage_text[price_coverage]
+    
+    if(price_type == "percentage"){
+        if(price_direction == "increase"){
+            return `Are you sure you want to increase the ${base_desc} of ${coverage_desc} by ${price_value}%?`
+        } else if(price_direction == "decrease"){
+            return `Are you sure you want to decrease the ${base_desc} of ${coverage_desc} by ${price_value}%?`
+        } else if(price_direction == "neutral"){
+            return `Are you sure you want to set the ${base_desc} of ${coverage_desc} to ${price_value}% of the current price?`
+        }
+    } else if(price_type == "fixed"){
+        if(price_direction == "increase"){
+            return `Are you sure you want to increase the ${base_desc} of ${coverage_desc} by ${type_sym}${price_value}?`
+        } else if(price_direction == "decrease"){
+            return `Are you sure you want to decrease the ${base_desc} of ${coverage_desc} by ${type_sym}${price_value}?`
+        } else if(price_direction == "neutral"){
+            return `Are you sure you want to set the ${base_desc} of ${coverage_desc} to ${type_sym}${price_value}?`
+        }
+    }
+    
+    return "Are you sure you want to update prices?"
+}
+
+// ==================== APPLY BUTTON FUNCTION ====================
+function applyPriceChanges() {
+    var price_direction = $("#price-direction").val()
+    var price_value = $("#price-value").val()
+    var price_type = $("#price-type").val()
+    var price_base = $("#price-base").val()
+    var price_coverage = $("#price-coverage").val()
+    
+    var error = validatePriceInputs(price_direction, price_value, price_type, price_base, price_coverage)
+    
+    if(error == ""){
+        var price_value_num = parseFloat(price_value)
+        
+        $("#products-table tbody tr").each(function() {
+            var $row = $(this)
+            var current_price = parseFloat($row.find("td:eq(3)").text().replace(/,/g, ''))
+            var buying_price = parseFloat($row.find("td:eq(2)").text().replace(/,/g, ''))
+            
+            var new_price = calculateNewPrice(
+                current_price, 
+                buying_price, 
+                price_direction, 
+                price_value_num, 
+                price_type, 
+                price_base
+            )
+            
+            $row.find("td:last input").val(new_price.toFixed(2))
+        })
+        
+        swal("Success", "Price changes applied to visible page!", "success")
+    } else {
+        swal("Validation Error", error, "error")
+    }
+}
+
+// ==================== UPDATE BUTTON FUNCTION ====================
+function updateStockPrices() {
+    var price_direction = $("#price-direction").val()
+    var price_value = $("#price-value").val()
+    var price_type = $("#price-type").val()
+    var price_base = $("#price-base").val()
+    var price_coverage = $("#price-coverage").val()
+    
+    if(price_coverage == "0"){
+        swal("Validation Error", "Please select valid coverage (Visible Page or All Stock)", "error")
+        return false
+    }
+    
+    if(price_coverage == "visible"){
+        var updated_prices = []
+        
+        $("#products-table tbody tr").each(function() {
+            var $row = $(this)
+            var stock_id = $row.data("stock-id")
+            var new_price = $row.find("td:last input").val()
+            
+            if(stock_id && new_price){
+                updated_prices.push({
+                    stock_id: stock_id,
+                    new_price: parseFloat(new_price)
+                })
+            }
+        })
+        
+        if(updated_prices.length == 0){
+            swal("Error", "No data found to update", "error")
+            return false
+        }
+        
+        var item_count = updated_prices.length
+        var confirmMessage = getConfirmationMessage(price_direction, price_value, price_type, price_base, price_coverage, item_count)
+        
+        var userConfirmed = confirm(confirmMessage)
+        
+        if(userConfirmed){
+            $.ajax({
+                url: "{% url 'update_visible_stock_prices' %}",
+                type: "POST",
+                data: {
+                    updated_prices: JSON.stringify(updated_prices),
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                },
+                success: function(response) {
+                    if(response.success){
+                        swal("Success", response.message, "success")
+                        setTimeout(function() {
+                            location.reload()
+                        }, 1500)
+                    } else {
+                        swal("Error", response.message || "Failed to update prices", "error")
+                    }
+                },
+                error: function() {
+                    swal("Error", "An error occurred while updating prices", "error")
+                }
+            })
+        }
+        
+    } else if(price_coverage == "all"){
+        var error = validatePriceInputs(price_direction, price_value, price_type, price_base, price_coverage)
+        
+        if(error == ""){
+            var item_count = "ALL"
+            var confirmMessage = getConfirmationMessage(price_direction, price_value, price_type, price_base, price_coverage, item_count)
+            
+            var userConfirmed = confirm(confirmMessage)
+            
+            if(userConfirmed){
+                $.ajax({
+                    url: "{% url 'update_all_stock_prices' %}",
+                    type: "POST",
+                    data: {
+                        price_direction: price_direction,
+                        price_value: parseFloat(price_value),
+                        price_type: price_type,
+                        price_base: price_base,
+                        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                    },
+                    success: function(response) {
+                        if(response.success){
+                            swal("Success", response.message, "success")
+                            setTimeout(function() {
+                                location.reload()
+                            }, 1500)
+                        } else {
+                            swal("Error", response.message || "Failed to update all stock prices", "error")
+                        }
+                    },
+                    error: function() {
+                        swal("Error", "An error occurred while updating all stock prices", "error")
+                    }
+                })
+            }
+        } else {
+            swal("Validation Error", error, "error")
+        }
+    }
+}
+
+// ==================== EVENT LISTENERS ====================
+$(document).ready(function() {
+    $("#apply-changes-button").on("click", function(e) {
+        e.preventDefault()
+        applyPriceChanges()
+    })
+    
+    $("#update-stock-button").on("click", function(e) {
+        e.preventDefault()
+        updateStockPrices()
+    })
+})
+})
+
+
+
+
+
+
+//GLOBAL VARIABLES
+var page = 1
+
+
+
+function requestData(request_type){
+    //alert(request_type)
+    var searchQuery = document.getElementById('live-search-input').value
+    var search_field = document.getElementById('search-selector').value
+
+    
+
+
+    //if request type 
+    if (request_type == "INITIAL-LOAD"){
+        document.getElementById('search-type').innerHTML = "INITIAL-LOAD"
+
+    }else if (request_type == "LIVE-SEARCH"){
+        document.getElementById('search-type').innerHTML = "LIVE-SEARCH"
+
+    }else if (request_type == "FORM-FILTER"){
+        document.getElementById('search-type').innerHTML = "FORM-FILTER"
+
+        var product_code = document.getElementById('stock-filter-form-product-code-value').value
+        var product_title = document.getElementById('stock-filter-form-product-title-value').value
+
+        /*var product_code = document.getElementById('product-code').value
+        var product_title = document.getElementById('product-title').value
+        var product_category = document.getElementById('product-category').value
+        var product_form = document.getElementById('product-form').value
+        var product_status = document.getElementById('product-status').value*/
+
+
+        // sessionStorage.setItem('stored_product_code', product_code)
+        // sessionStorage.setItem('stored_product_title', product_title)
+        // sessionStorage.setItem('stored_product_category', product_category)
+        // sessionStorage.setItem('stored_product_form', product_form)
+        // sessionStorage.setItem('stored_product_status', product_status)
+
+
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+        // var product_code = document.getElementById('product_code').value
+
+        //alert(product_status + "::::::::::::::::::::")
+        document.getElementById('stocksFilterModal').style.display = "none"
+    }
+
+
+    //alert(searchQuery)
+    //alert("page number: " + page)
+    document.getElementById('loader').style.display = "block"
+    //alert(product_code + "(((((((((((((((((((((((((((()))):")
+
+    $.ajax({
+        url: "{% url 'ajax_stock_prices_live_search' %}",
+        data: {
+            search_key: searchQuery,
+            search_field: search_field,
+            request_type: request_type,
+            page: page,
+
+            //filter form
+            product_code: product_code,
+            product_title: product_title,
+         },
+        success: function(responseData) {
+            $('#products-table').html(responseData.table)
+            document.getElementById('table-summery').innerHTML = responseData.table_summery
+            document.getElementById('loader').style.display = "none"
+            //alert(responseData.data)
+            document.getElementById('page-detail').innerHTML = "[" + responseData.data + "]"
+
+            //page numbers
+            var a = responseData.data
+            var before = true
+            var current_page_number = ""
+            var total_pages = ""
+            for (l=0; l<=a.length; l++){
+                if (a[l]=="o"){
+                    before = false
+                }
+                if (Number(a[l]) || a[l]=="0"){
+                    if (before == true){
+                        current_page_number = current_page_number + a[l]
+                    }else{
+                        total_pages = total_pages + a[l]
+                    }
+                }
+            }
+            document.getElementById('page-lable').innerHTML = current_page_number
+           
+
+
+        },
+        error: function(responseData, error){
+            //alert("An error ocured! " + error)
+        }
+    });
+}
+
+
+function searchInputValueChanged(){
+    //request type is "LIVE-SEARCH"
+    requestData("LIVE-SEARCH")
+}
+
+function nextPage(){
+    //alert("NEXT-PAGE CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) + 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    //alert(':::::NXT PG' + request_type)
+    requestData(request_type)
+}
+
+function previousPage(){
+    //alert("previousPage CLIKED")
+    var current_page = document.getElementById('page-lable').innerHTML
+    page = Number(current_page) - 1
+    //document.getElementById('page-lable').innerHTML = page
+
+    var request_type = document.getElementById('search-type').innerHTML
+    requestData(request_type)
+}
+
+
+function stocksInitialLoad(){
+    //request type is "NEXT-PAGE"
+    //alert("INITIAL-LOAD")
+    requestData("INITIAL-LOAD")
+}
+
+/*BUTTON TRIGERED FUNCTION*/
+
+    function resetStockFilters(){
+        document.getElementById('stock-filter-form-product-code-value').value = ""
+        document.getElementById('stock-filter-form-product-title-value').value = ""
+    }
+
+    function loadStockFilterQuery(){
+        $('#stocksFilterModal').modal('hide');
+        requestData("FORM-FILTER")
+    }
+/*//BUTTON TRIGERED FUNCTION*/
+
+</script>
+
+{% include 'partials/footer.html' %}
+{% endblock %}

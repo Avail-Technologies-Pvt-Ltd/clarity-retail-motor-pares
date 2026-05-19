@@ -1,0 +1,575 @@
+<!-- ADD INVOICE MODAL -->
+{% load static %}
+
+<!-- INCOICE DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="invoiceDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <h2>Invoice: <span id="invoice-details-invoice-number-value">XXXXXX</span></h2>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Invoice Details</h2>
+                            </div>
+                            <hr>
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Supplier</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-supplier-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Date</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-date-value" style="width: 100%;">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Paid</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-paid-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-status-value">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Subtotal</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-subtotal-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Discount</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-discount-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">VAT</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-vat-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Total Cost</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="invoice-details-total-cost-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                         
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="tab-hd">
+                                <h2 id="test">Products</h2>
+                            </div>
+                            <hr>
+                            <table style="width: 100%;" class="table table-hover" id="invoice-details-products-table-value">
+                                
+                            </table>
+
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Payments</h2>
+                            </div>
+                            <hr>
+                            <table style="width: 100%;" class="table table-hover" id="invoice-details-payments-table-value">
+                                
+                            </table>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="btn-list">
+                                <div class="footer_buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save...</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // INCOICE DETAILS -->
+
+
+<!-- UPDATE INCOICE -->
+
+
+
+<div class="modal fade animated bounce" id="updateInvoiceModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <h2>Update Invoice</h2>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Invoice Details</h2>
+                            </div>
+                            <hr>
+
+                            <div class="widget-tabs-list">
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Invoice Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="update-invoice-invoice-number-value" style="width: 100%;">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Supplier</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="update-invoice-supplier-value" style="width: 100%;">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Total Cost</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="update-invoice-total-cost-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Amount Paid</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="update-invoice-amount-paid-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="update-invoice-status-value"  style="width: 100%;">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Balance</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="update-invoice-balance-value" class="number_element">xxxx.xx</label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>                         
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="tab-hd">
+                                <h1 id="test" style="text-align: center;">Record Payment</h1>
+                            </div>
+                            <hr>
+                            <div style="background: ;">
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">Payment Method</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_invoice_payment_payment_method_selector" id="add-invoice-payment-payment-method-value" onchange="adjustPaidAmountBasedOnPaymentMethod()" >
+                                                <option value="0">Expense Type</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start number_element">Paid Amount &nbsp &nbsp</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" step="any" class="form-control number_element" placeholder="Price" id="add-invoice-payment-paid-amount-value" value="0.00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start number_element">Date Paid &nbsp &nbsp</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="date" step="any" class="form-control number_element" placeholder="Date" id="add-invoice-payment-date-paid-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" >
+                                        <div class="col-sm text-start">&nbsp</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <button onclick="secondAddInvoicePayment()" class="btn btn-success" style="width:100%">ADD PAYMENT</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="tab-hd">
+                                <h2 id="test">Payments</h2>
+                            </div>
+                            <hr>
+                            <table style="width: 100%;" class="table table-hover" id="update-invoice-payments-table-value">
+                                
+                            </table>
+                            <hr style="background: RGB(0 194 146);">
+                            <div class="btn-list">
+                                <div class="footer_buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save...</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // UPDATE INCOICE -->
+
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+        document.getElementById('add-invoice-payment-date-paid-value').value = toDayFormattedDate()
+
+
+        $('#updateInvoiceModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var invoice_id = $(event.relatedTarget).data('object-id')
+                sessionStorage.setItem('invoice_id_for_update', invoice_id)
+                $.ajax({
+                    url: "{% url 'get_invoice_details' %}",
+                    data: {
+                        invoice_id: invoice_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('update-invoice-invoice-number-value').innerHTML = responseData.details['invoice_number']
+                            document.getElementById('update-invoice-supplier-value').innerHTML = responseData.details['supplier']
+                            document.getElementById('update-invoice-total-cost-value').innerHTML = responseData.details['total_cost']
+                            document.getElementById('update-invoice-amount-paid-value').innerHTML = responseData.details['paid']
+                            document.getElementById('update-invoice-status-value').innerHTML = responseData.details['status']
+                            document.getElementById('update-invoice-balance-value').innerHTML = responseData.details['balance']
+
+                            document.getElementById('update-invoice-payments-table-value').innerHTML = responseData.payments_table
+
+                            document.getElementById('add-invoice-payment-paid-amount-value').value = responseData.details['balance'].split(",").join("")
+                           
+
+                        }
+                    },
+                    error: function(responseData, error){
+                        alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+
+
+        $('#invoiceDetailsModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var invoice_id = $(event.relatedTarget).data('object-id')
+                //alert(invoice_id)
+                $.ajax({
+                    url: "{% url 'get_invoice_details' %}",
+                    data: {
+                        invoice_id: invoice_id
+                    },
+                    success: function(responseData) {
+                        if(responseData.custome_status == "Error"){
+                            //alert(responseData.message)
+                            swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                        }else{
+                            document.getElementById('invoice-details-invoice-number-value').innerHTML = responseData.details['invoice_number']
+                            document.getElementById('invoice-details-supplier-value').innerHTML = responseData.details['supplier']
+                            document.getElementById('invoice-details-date-value').innerHTML = responseData.details['date']
+                            document.getElementById('invoice-details-paid-value').innerHTML = responseData.details['paid']
+                            document.getElementById('invoice-details-status-value').innerHTML = responseData.details['status']
+                            document.getElementById('invoice-details-subtotal-value').innerHTML = responseData.details['subtotal']
+                            document.getElementById('invoice-details-discount-value').innerHTML = responseData.details['discount']
+                            document.getElementById('invoice-details-vat-value').innerHTML = responseData.details['vat']
+                            document.getElementById('invoice-details-total-cost-value').innerHTML = responseData.details['total_cost']
+
+                            document.getElementById('invoice-details-products-table-value').innerHTML = responseData.products_table
+
+                            document.getElementById('invoice-details-payments-table-value').innerHTML = responseData.payments_table
+
+                        }
+                    },
+                    error: function(responseData, error){
+                        alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+
+    })
+
+
+
+    /* BUTTON FUNCTIONS*/
+
+    function invoiceMoneyPortion(invoice_money_portion_id){
+        $.ajax({ 
+            url: "{% url 'delete_invoice_money_portion' %}",
+            data:{
+                invoice_money_portion_id: invoice_money_portion_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){ 
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    swal({
+                    title: "Success",
+                    text: responseData.message,
+                    type: "success"
+                });
+                }
+            },
+            error: function(responseData, error){
+                swal({
+                    title: "Error",
+                    text: "An error ocured " + error,
+                    type: "error"
+                });
+            },
+            complete: function(){
+                reloadInvoiceDetailOnUpdate()
+            }
+        })
+    }
+
+
+    
+    function reloadInvoiceDetailOnUpdate(){
+        var invoice_id = sessionStorage.getItem('invoice_id_for_update')
+        $.ajax({
+            url: "{% url 'get_invoice_details' %}",
+            data: {
+                invoice_id: invoice_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{
+                    document.getElementById('update-invoice-invoice-number-value').innerHTML = responseData.details['invoice_number']
+                    document.getElementById('update-invoice-supplier-value').innerHTML = responseData.details['supplier']
+                    document.getElementById('update-invoice-total-cost-value').innerHTML = responseData.details['total_cost']
+                    document.getElementById('update-invoice-amount-paid-value').innerHTML = responseData.details['paid']
+                    document.getElementById('update-invoice-status-value').innerHTML = responseData.details['status']
+                    document.getElementById('update-invoice-balance-value').innerHTML = responseData.details['balance']
+
+                    document.getElementById('update-invoice-payments-table-value').innerHTML = responseData.payments_table
+
+                    document.getElementById('add-invoice-payment-paid-amount-value').value = responseData.details['balance'].split(",").join("")
+                }
+            },
+            error: function(responseData, error){
+                alert("An error ocured! " + error)
+            }
+        });
+    }
+
+    function adjustPaidAmountBasedOnPaymentMethod(){
+        var paying_currency_id = document.getElementById('add-invoice-payment-payment-method-value').value
+        if (isIntegerGreaterThanOrEqualToOne(paying_currency_id)){
+            $.ajax({
+                url: "{% url 'get_paying_currency_details' %}",
+                data: { paying_currency_id: paying_currency_id },
+                success: function(responseData) {
+                    var rated_price_text = responseData.paying_currency['currency']
+                    var rate = parseFloat(responseData.paying_currency['rate'])
+
+                    
+                    var balance = parseFloat(document.getElementById('update-invoice-balance-value').innerHTML.split(",").join(""))
+                    
+
+                    var rated_required_price_value = balance * rate
+
+                    document.getElementById('add-invoice-payment-paid-amount-value').value = rated_required_price_value.toFixed(2)
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                }
+            });
+        }
+    }
+
+
+    function secondAddInvoicePayment(){
+        var payment_method = document.getElementById('add-invoice-payment-payment-method-value').value
+        var amount = document.getElementById('add-invoice-payment-paid-amount-value').value
+        var date_paid = document.getElementById('add-invoice-payment-date-paid-value').value
+        var invoice_id = sessionStorage.getItem('invoice_id_for_update')
+        var errors = ""
+        if (isIntegerGreaterThanOrEqualToOne(payment_method) == false){
+            errors = "Please select a valid payment method"
+        }else if(amount == ""){
+            errors = "Please input the amount paid"
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_invoice_money_portion_for_existing_invoice' %}",
+                data: {
+                    payment_method: payment_method,
+                    amount: amount,
+                    invoice_id: invoice_id,
+                    date_paid: date_paid,
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                },
+                complete: function(){
+                    reloadInvoiceDetailOnUpdate()
+                }
+            });
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+
+    }
+
+    /* BUTTON FUNCTIONS*/
+
+    /*LIVE FUNCTIONS*/
+ 
+    $(document).on('keyup', '.add_invoice_payment_payment_method_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+                $.ajax({
+                    url: "{% url 'load_payment_method_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('add-invoice-payment-payment-method-value')
+                        $("#add-invoice-payment-payment-method-value").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#add-invoice-payment-payment-method-value").selectpicker('refresh')   
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                    }
+                });
+            }
+        })
+
+    /*LIVE FUNCTIONS*/
+
+
+
+</script>
+
+
+
+
+
+

@@ -1,0 +1,193 @@
+{% load static %}
+
+
+
+<!-- DETAILS -->
+<div class="modal fade animated bounce" id="viewNotificationModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="view-mail-list sm-res-mg-t-30">
+                        <div class="view-mail-hd">
+                            <div class="view-mail-hrd">
+                                <h2>Notification view</h2>
+                            </div>
+                        </div>
+                        <div class="mail-ads mail-vw-ph">
+                            <p><b>Type:</b> <a href="#" id="notification-type-value"></a></p>
+                            <p class="first-ph"><b>Subject: </b><span id="notification-header-value"></span></p>
+                            <p class="last-ph"><b>Date:</b> <span id="notification-date-value"></span></p>
+                        </div>
+                        <div class="view-mail-atn">
+                            <p id="notification-detail-value"></p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+        $('#viewNotificationModal').on('hidden.bs.modal', function (){
+            notificationsInitialLoad()
+        })
+
+        $('#viewNotificationModal').on('show.bs.modal', function (event) {
+            if ($(event.relatedTarget).is('a')){
+                var notification_id = $(event.relatedTarget).data('object-id')
+                    //alert(notification_id)
+                    $.ajax({
+                        url: "{% url 'get_notification_details' %}",
+                        data: {
+                            notification_id: notification_id
+                        },
+                        success: function(responseData) {
+                            if(responseData.custome_status == "Error"){
+                                //alert(responseData.message)
+                                swal({
+                                    title: "Error",
+                                    text: responseData.message,
+                                    type: "error"
+                                });
+                            }else{
+                                document.getElementById('notification-type-value').innerHTML = responseData.details['notification_type'] 
+                                document.getElementById('notification-header-value').innerHTML = responseData.details['notification_header'] 
+                                document.getElementById('notification-date-value').innerHTML = responseData.details['notification_date'] 
+                                document.getElementById('notification-detail-value').innerHTML = responseData.details['notification_detail']
+                            }
+                        },
+                        error: function(responseData, error){
+                            //alert("An error ocured! " + error)
+                            swal({
+                                title: "Error",
+                                text: "An error ocured! " + error,
+                                type: "error"
+                            });
+                        }
+                    });
+            }
+        })
+    })
+
+    /*BUTTON FUNCTIONS*/
+    function deleteNotification(notification_id){
+        $.ajax({
+            url: "{% url 'delete_notification' %}",
+            data: {
+                notification_id: notification_id
+            },
+            success: function(responseData) {
+                if(responseData.custome_status == "Error"){
+                    //alert(responseData.message)
+                    swal({
+                        title: "Error",
+                        text: responseData.message,
+                        type: "error"
+                    });
+                }else{/*
+                    swal({
+                        title: "Success",
+                        text: responseData.message,
+                        type: "success"
+                    });*/
+                    notificationsInitialLoad()
+                }
+
+            },
+            error: function(responseData, error){
+                //alert("An error ocured! " + error)
+                swal({
+                    title: "Error",
+                    text: "An error ocured! " + error,
+                    type: "error"
+                });
+            }
+        });
+    }
+
+    /* //BUTTON FUNCTIONS*/
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

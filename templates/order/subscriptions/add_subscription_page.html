@@ -1,0 +1,186 @@
+<head>
+	<title>Subscription Page</title>
+	<style>
+		::-webkit-scrollbar {
+			width:5px;
+			height:8px;
+			border-radius:50%
+		}
+
+		::-webkit-scrollbar-thumb {
+			background-color:black
+		}
+
+		::-webkit-scrollbar-thumb:hover {
+			background-color:grey
+		}
+
+		body{
+			background-color: ;
+			padding: 0px;
+			margin: 0px;
+			border: 0px;
+
+			width: 100%;
+			
+
+			display: flex;
+			justify-content: space-between;
+		}
+
+		.main-side{
+			padding: 2%;
+			width: 100%;
+			overflow-y: scroll;
+		}
+		
+		.left-side{
+			background-color: gray;
+			color: white;
+		}
+
+		.center{
+
+
+		}
+
+		.right-side{
+			background-color: whitesmoke;
+		}
+
+		form{
+			width: 100%;
+			background-color: ;
+		}
+
+		.input-text{
+			font-size: 20px;
+		}
+
+		.form-element{
+			padding: 4%;
+
+			margin-top: 4%;
+			width: 100%;
+		}
+
+		table{
+			font-size: 16px;
+
+			width: 100%;
+		}
+		.close-button{
+			width: fit-content;
+			background-color: red;
+			text-align: center;
+			border-radius: 2px;
+			padding: 5px;
+			vertical-align: center;
+
+			color: white;
+			text-decoration: none;
+		}
+
+
+
+
+	</style>
+</head>
+
+<body>
+	<div class="main-side left-side">
+		<div>
+			<a class="close-button" href="{% url 'home' %}"> CLOSE</a>
+			<form action="{% url 'add_subscription_page' %}" method="POST">
+				{% csrf_token %}
+				<input class="form-element input-text" type="text" name="key" placeholder="{{ recent_state }}">
+				<button class="form-element" type="submit">SEND</button>
+			</form>
+		</div>
+			<hr>
+
+		<div>
+			<center><h3>Subscription Status</h3></center>
+			<table>
+				<!-- <tr>
+					<td>Time Left</td>
+					<td>{{ subscription_status.time_left }}</td>
+				</tr> -->
+				<tr>
+					<td>Expiration Date</td>
+					<td>{{ subscription_status.expiration_date }}</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="text-align: center;">Last Subscription</td>
+				</tr>
+				<tr>
+					<td>Subscription Date</td>
+					<td>{{ subscription_status.date }}</td>
+				</tr>
+				<tr>
+					<td>Active Date</td>
+					<td>{{ subscription_status.active_date }}</td>
+				</tr>
+				<tr>
+					<td>Duration</td>
+					<td>{{ subscription_status.duration }}</td>
+				</tr>
+			</table>
+			<hr>
+			<center><h3>Help</h3></center>
+			<table>
+				<tr>
+					<td>WhatsApp</td>
+					<td>{{ contact.whatsapp }}</td>
+				</tr>
+				<tr>
+					<td>Call</td>
+					<td>{{ contact.call }}</td>
+				</tr>
+				<tr>
+					<td>Web Site</td>
+					<td>{{ contact.website }}</td>
+				</tr>
+				<tr>
+					<td>Email</td>
+					<td>{{ contact.email }}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="main-side center">
+		<center><h3>Subscription History</h3></center>
+		<table>
+			{% for payment in old_payments %}
+				<tr>
+					<td colspan="3">
+						<hr>
+					</td>
+				</tr>
+				<tr>
+					<td rowspan="3">{{ payment.created_at|date:'Y-m-d' }}</td>
+					<td>Duration</td>
+					<td>{{ payment.duration }}</td>
+				</tr>
+				<tr>
+					<td>From</td>
+					<td>{{ payment.date_from|date:'Y-m-d' }}</td>
+				</tr>
+				<tr>
+					<td>To</td>
+					<td>{{ payment.date_to|date:'Y-m-d' }}</td>
+				</tr>
+				
+			{% endfor %}
+		</table>
+	</div>
+
+	<div class="main-side right-side">
+		<div><h3>Payment Instructions</h3></div>
+		<p>{{ payment_instructions|safe }}</p>
+		<hr>
+		<div><h3>About this App</h3></div>
+		<p>{{ about_app|safe }}</p>
+	</div>
+</body>

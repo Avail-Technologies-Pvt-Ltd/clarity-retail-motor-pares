@@ -1,0 +1,802 @@
+{% load static %}
+
+
+
+<!-- ADD -->
+
+
+
+<div class="modal fade animated bounce" id="addConfigurationModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New Configuration</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Configuration Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Any Name" id="add-configuration-configuration-title-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Registration</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Registration Number" id="add-configuration-company-registration-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="add-configuration-company-name-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="add-configuration-phone-number-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="add-configuration-address-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="add-configuration-email-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Warning Days</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" id="add-configuration-expiration-warning-days-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Active</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="add-configuration-status-value" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                        <div class="col-sm text-start">Terms and Conditions</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <textarea type="text" rows="5" class="form-control " id="add-configuration-terms-and-conditions-value"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addConfiguration()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
+
+
+<!-- UPDATE -->
+
+
+
+<div class="modal fade animated bounce" id="updateConfigurationModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Update Configuration: <b id="update-configuration-configuration-id-value"></b></h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Configuration Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Any Name" id="update-configuration-configuration-title-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Registration</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" placeholder="Registration Number" id="update-configuration-company-registration-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="update-configuration-company-name-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="update-configuration-phone-number-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="update-configuration-address-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control" id="update-configuration-email-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Warning Days</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="number" class="form-control" id="update-configuration-expiration-warning-days-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Active</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select style="width: 100%;" class="form-control" id="update-configuration-status-value" name="" >
+                                                <option value="True">Active</option>
+                                                <option value="False">Deactivated</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                        <div class="col-sm text-start">Terms and Conditions:</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <textarea type="text" rows="5" class="form-control " id="update-configuration-terms-and-conditions-value"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="updateConfiguration()">Update</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // UPDATE -->
+
+
+
+<!-- DETAILS -->
+
+
+
+<div class="modal fade animated bounce" id="configurationDetailsModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Configuration Details: <b id="configuration-details-configuration-id-value"></b></h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Configuration Title</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label placeholder="Any Name" id="configuration-details-configuration-title-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Registration</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label placeholder="Registration Number" id="configuration-details-company-registration-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Company Name</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label id="configuration-details-company-name-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Phone Number</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label id="configuration-details-phone-number-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                        <div class="col-sm text-start">Address</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label id="configuration-details-address-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Email</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label id="configuration-details-email-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Expiration Warning Days</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label id="configuration-details-expiration-warning-days-value"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Active</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <label style="width: 100%;" id="configuration-details-status-value"></label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                        <div class="col-sm text-start">Terms and Conditions:</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                
+                                                    <label rows="5" id="configuration-details-terms-and-conditions-value"></label>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Update</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // DETAILS -->
+
+
+
+<!-- JS -->
+<script src="{% static '' %}jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#addConfigurationModal').on('hidden.bs.modal', function (){
+            configurationsInitialLoad()
+        })
+
+        $('#updateConfigurationModal').on('hidden.bs.modal', function (){
+            configurationsInitialLoad()
+        })
+
+        $('#configurationDetailsModal').on('show.bs.modal', function (event) {
+        //alert('Clicked')
+        if ($(event.relatedTarget).is('a')){
+            var configuration_id = $(event.relatedTarget).data('object-id')
+            $.ajax({
+                url: "{% url 'get_configuration_details' %}",
+                data: {
+                    configuration_id: configuration_id
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('configuration-details-configuration-id-value').innerHTML = responseData.details['configuration_id']
+
+                        document.getElementById('configuration-details-configuration-title-value').innerHTML = responseData.details['configuration_title']
+                        document.getElementById('configuration-details-company-registration-value').innerHTML = responseData.details['company_registration']
+                        document.getElementById('configuration-details-company-name-value').innerHTML = responseData.details['company_name']
+                        document.getElementById('configuration-details-phone-number-value').innerHTML = responseData.details['phone_number']
+                        document.getElementById('configuration-details-address-value').innerHTML = responseData.details['address']
+                        document.getElementById('configuration-details-email-value').innerHTML = responseData.details['email']
+                        document.getElementById('configuration-details-expiration-warning-days-value').innerHTML = responseData.details['expiration_warning_days']
+                        document.getElementById('configuration-details-status-value').innerHTML = responseData.details['status']
+                        document.getElementById('configuration-details-terms-and-conditions-value').innerHTML = responseData.details['terms_and_conditions']
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })
+
+
+
+        $('#updateConfigurationModal').on('show.bs.modal', function (event) {
+        //alert('Clicked')
+        if ($(event.relatedTarget).is('a')){
+            var configuration_id = $(event.relatedTarget).data('object-id')
+            //alert(configuration_id)
+            sessionStorage.setItem('configuration_id_for_editing', configuration_id)
+            $.ajax({
+                url: "{% url 'get_configuration_details' %}",
+                data: {
+                    configuration_id: configuration_id
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        document.getElementById('update-configuration-configuration-id-value').innerHTML = responseData.details['configuration_id']
+
+                        document.getElementById('update-configuration-configuration-title-value').value = responseData.details['configuration_title']
+                        document.getElementById('update-configuration-company-registration-value').value = responseData.details['company_registration']
+                        document.getElementById('update-configuration-company-name-value').value = responseData.details['company_name']
+                        document.getElementById('update-configuration-phone-number-value').value = responseData.details['phone_number']
+                        document.getElementById('update-configuration-address-value').value = responseData.details['address']
+                        document.getElementById('update-configuration-email-value').value = responseData.details['email']
+                        document.getElementById('update-configuration-expiration-warning-days-value').value = responseData.details['expiration_warning_days']
+                        document.getElementById('update-configuration-status-value').value = responseData.details['status']
+                        document.getElementById('update-configuration-terms-and-conditions-value').value = responseData.details['terms_and_conditions']
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })  
+    })
+
+    function updateConfiguration(){
+        var configuration_id = sessionStorage.getItem('configuration_id_for_editing')
+        var configuration_title = document.getElementById('update-configuration-configuration-title-value').value
+        var company_registration = document.getElementById('update-configuration-company-registration-value').value
+        var company_name = document.getElementById('update-configuration-company-name-value').value
+        var phone_number = document.getElementById('update-configuration-phone-number-value').value
+        var address = document.getElementById('update-configuration-address-value').value
+        var email = document.getElementById('update-configuration-email-value').value
+        var expiration_warning_days = document.getElementById('update-configuration-expiration-warning-days-value').value
+        var status = document.getElementById('update-configuration-status-value').value
+        var terms_and_conditions = document.getElementById('update-configuration-terms-and-conditions-value').value
+
+        var errors = ""
+
+        if (configuration_title == ""){
+            errors = "Configuration title field can not be blank"
+        }else if (company_registration == ""){
+
+        }else if (company_name == ""){
+            errors = "Company_name field can not be blank"
+        }else if (phone_number == ""){
+            errors = "Phone_number field can not be blank"
+        }else if (address == ""){
+
+        }else if (email == ""){
+
+        }else if (isIntegerGreaterThanOrEqualToOne(expiration_warning_days) == false){
+            errors = "Expiration warning days must be a whole number greater than 0"
+        }else if (terms_and_conditions == ""){
+
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'update_configuration' %}",
+                data: {
+                    configuration_id: configuration_id,
+                    configuration_title: configuration_title,
+                    company_registration: company_registration,
+                    company_name: company_name,
+                    phone_number: phone_number,
+                    address: address,
+                    email: email,
+                    expiration_warning_days: expiration_warning_days,
+                    status: status,
+                    terms_and_conditions: terms_and_conditions
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }    
+    }
+
+
+
+
+    function addConfiguration(){
+
+        var configuration_title = document.getElementById('add-configuration-configuration-title-value').value
+        var company_registration = document.getElementById('add-configuration-company-registration-value').value
+        var company_name = document.getElementById('add-configuration-company-name-value').value
+        var phone_number = document.getElementById('add-configuration-phone-number-value').value
+        var address = document.getElementById('add-configuration-address-value').value
+        var email = document.getElementById('add-configuration-email-value').value
+        var expiration_warning_days = document.getElementById('add-configuration-expiration-warning-days-value').value
+        var status = document.getElementById('add-configuration-status-value').value
+        var terms_and_conditions = document.getElementById('add-configuration-terms-and-conditions-value').value
+
+        var errors = ""
+
+        if (configuration_title == ""){
+            errors = "Configuration title field can not be blank"
+        }else if (company_registration == ""){
+
+        }else if (company_name == ""){
+            errors = "Company_name field can not be blank"
+        }else if (phone_number == ""){
+            errors = "Phone_number field can not be blank"
+        }else if (address == ""){
+
+        }else if (email == ""){
+
+        }else if (isIntegerGreaterThanOrEqualToOne(expiration_warning_days) == false){
+            errors = "Expiration warning days must be a whole number greater than 0"
+        }else if (terms_and_conditions == ""){
+
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_configuration' %}",
+                data: {
+                    configuration_title: configuration_title,
+                    company_registration: company_registration,
+                    company_name: company_name,
+                    phone_number: phone_number,
+                    address: address,
+                    email: email,
+                    expiration_warning_days: expiration_warning_days,
+                    status: status,
+                    terms_and_conditions: terms_and_conditions
+                },
+                success: function(responseData) {
+                    if(responseData.custome_status == "Error"){
+                        //alert(responseData.message)
+                        swal({
+                                title: "Error",
+                                text: responseData.message,
+                                type: "error"
+                            });
+                    }else{
+                        //alert(responseData.message)
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+
+        }else{
+            //alert(errors)
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

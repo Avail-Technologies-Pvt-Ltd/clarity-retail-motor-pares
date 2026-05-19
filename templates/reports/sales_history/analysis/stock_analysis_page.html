@@ -1,0 +1,370 @@
+{% extends 'partials/base.html' %}
+{% block title %} Stock Analysis{% endblock %}
+
+
+{% block info %}
+<div class="breadcomb-area" style="padding-top: 10px; padding-bottom: 10px; margin: 0px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="breadcomb-list">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <div class="breadcomb-wp">
+                                    <a onclick="history.back()" class="breadcomb-icon">
+                                        <i class="notika-icon notika-left-arrow"></i>
+                                    </a>
+                                    <div class="breadcomb-ctn">
+                                        <h2>Stock Analysis</h2>
+                                        <p>Welcome to Clarity</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
+                                <div class="breadcomb-report">
+                                    <!-- <a href="add_patient" data-toggle="tooltip" data-placement="left" title="Add New Patient" class="btn"><i class="notika-icon notika-edit"></i></a>
+                                    <a href="merge_patients" data-toggle="tooltip" data-placement="bottom" title="Add New Patient" class="btn"><i class="notika-icon notika-refresh"></i></a> -->
+                                    <button data-toggle="tooltip" data-placement="bottom" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter %}
+<div class="breadcomb-area" style="">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="background-color: ;">
+                    <div class="breadcomb-list">
+                        <div class="row d-flex justify-space-between align-right " style="justify-content: space-between; display: flex;">
+                          <div style="float: left;width: 50%; display: flex;">
+                              <input type="date" class="today form-control" title="From" id="date_from" name="trip-start" value="2018-07-22">&nbsp
+                              <input type="date" class="today form-control" title="Up to" id="date_to" name="trip-start" value="2018-07-22">
+                          </div>
+                          <div style="float: right;width: 45%; text-align: right;">
+                              <div style="display: flex;">&nbsp
+                                <select class="form-control selectpicker" data-live-search="true" id="scale" style="padding: 20px">
+                                  <option value="Daily">Daily</option>
+                                  <option value="Weekely">Weekely</option>
+                                  <option value="Monthly">Monthly</option>
+                                  <option value="Anualy">Anualy</option>
+                                </select>&nbsp &nbsp &nbsp &nbsp
+                                <select class="form-control selectpicker stock_selector_class" data-live-search="true" id="stock-selector">
+                                  <option>Select Stock</option>
+                                </select>
+                                  
+                              </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                              <button class="btn btn-primary" title="UPDATE" style="margin-left: 10px;" onclick="updateChart()"><i class="notika-icon notika-right-arrow"></i></button>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+
+<div class="notika-status-area" style="height: 100%; background-color:  ;">
+    <div class="container" style="background-color: ; height: 100%; overflow-y: scroll;">
+    	<br><br>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$ <span class="" id="total-profit">xxxx.xx</span></h2>
+                        <p>Sales Profit</p>
+                    </div>
+                    <div class="sparkline-bar-stats1">9,4,8,6,5,6,4,8,3,5,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30 dk-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span class="" id="total-sales">xxxx.xx</span></h2>
+                        <p>Total Sales</p>
+                    </div>
+                    <div class="sparkline-bar-stats3">4,2,8,2,5,6,3,8,3,5,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30 dk-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$ <span class="" id="sales-value">xxxx.xx</span></h2>
+                        <p>Sales Value</p>
+                    </div>
+                    <div class="sparkline-bar-stats4">2,4,8,4,5,7,4,7,3,5,7,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30 dk-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span class="" id="total-units-received">xxxx.xx</span></h2>
+                        <p>Total Received Units</p>
+                    </div>
+                    <div class="sparkline-bar-stats4">2,4,8,4,5,7,4,7,3,5,7,5</div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+        	<div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30 dk-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2>$ <span class="" id="received-stock-value">xxxx.xx</span></h2>
+                        <p>Received Stock Value</p>
+                    </div>
+                    <div class="sparkline-bar-stats3">4,2,8,2,5,6,3,8,3,5,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span class="" id="total-returns-inn">xxxx.xx</span></h2>
+                        <p>Returns Inn</p>
+                    </div>
+                    <div class="sparkline-bar-stats1">9,4,8,6,5,6,4,8,3,5,9,5</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
+                <div class="wb-traffic-inner notika-shadow sm-res-mg-t-30 tb-res-mg-t-30">
+                    <div class="website-traffic-ctn">
+                        <h2><span class="" id="total-returns-out">xxxx.xx</span></h2>
+                        <p>Returns Out</p>
+                    </div>
+                    <div class="sparkline-bar-stats2">1,4,8,3,5,6,4,8,3,3,9,5</div>
+                </div>
+            </div>
+        </div>
+        <br>
+         <!-- // summery boxes -->
+
+
+        <div class="row">
+            <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
+                <div class="visitor-sv-tm-int">
+                    <div class="contact-hd mg-bt-ant-inner">
+                        <!-- <h2>Transactions Graph (7 days)</h2>
+                        <p>Transactions for 6 days prior the selected date.</p> -->
+                    </div>
+                    <div id="chart-container">
+                      <canvas id="myChart">
+                      	
+                      </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static '' %}jquery.min.js"></script>
+<script src="{% static '' %}Chart.js"></script>
+</script>
+<script>
+
+$(document).ready(function() {
+    $('.today').val(getToday());
+    //updateChart()
+    
+})
+
+const chart = new Chart(document.getElementById('myChart'), {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: []
+  },
+  options: {
+    // ... chart options
+  }
+});
+
+const checkboxes = document.querySelectorAll('#field-controls input[type="checkbox"]');
+checkboxes.forEach(checkbox => {
+  checkbox.addEventListener('change', () => {
+    updateChart();
+  });
+});
+
+
+function updateChart() {
+    document.getElementById('loader').style.display = "block"
+
+    var date_from = document.getElementById('date_from').value
+    var date_to = document.getElementById('date_to').value
+    var scale = document.getElementById('scale').value
+    var stock_id = document.getElementById('stock-selector').value
+
+    if(!isIntegerGreaterThanOrEqualToOne(stock_id)==false){
+	    $.ajax({
+	        url: "{% url 'ajax_stock_analysis' %}",
+	        data: {
+	            date_from: date_from,
+	            date_to: date_to,
+	            scale: scale,
+	            stock_id: stock_id
+	        },
+	        success: function(data) {
+				//details
+				document.getElementById('total-profit').innerHTML = data.details["total_sales_profit"]
+				document.getElementById('total-sales').innerHTML = data.details["total_sales"]
+				document.getElementById('sales-value').innerHTML = data.details["total_sales_value"]
+				document.getElementById('received-stock-value').innerHTML = data.details["received_stock_value"]
+				document.getElementById('total-units-received').innerHTML = data.details["received_stock_units"]
+				document.getElementById('total-returns-inn').innerHTML = data.details["total_returns_inn"]
+				document.getElementById('total-returns-out').innerHTML = data.details["total_returns_out"]
+
+				var speedCanvas = document.getElementById("myChart");
+
+				Chart.defaults.global.defaultFontFamily = "";
+				Chart.defaults.global.defaultFontSize = 12;
+				
+				var sales_profit_dataset = {
+				    label: "Sales Profit",
+				    data: data.details['sales_profit_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'green'
+				};
+
+				var total_sale_dataset = {
+				    label: "Total Sales",
+				    data: data.details['total_sale_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'blue'
+				};
+
+				var total_sales_value_dataset = {
+				    label: "Total Sales Value",
+				    data: data.details['total_sales_value_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'lime'
+				};
+
+				var total_returns_inn_dataset = {
+				    label: "Returns Inn",
+				    data: data.details['total_returns_inn_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'pink'
+				};
+
+				var total_returns_out_dataset = {
+				    label: "Returns Out",
+				    data: data.details['total_returns_out_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'purple'
+				};
+
+				var received_stock_value_dataset = {
+				    label: "Received Stock Value",
+				    data: data.details['received_stock_value_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'maroon'
+				};
+
+				var received_stock_units_dataset = {
+				    label: "Total Received Units",
+				    data: data.details['received_stock_units_list'],
+				    lineTension: 0,
+				    fill: false,
+				    borderColor: 'black'
+				};
+
+
+				var speedData = {
+					labels: data.details['dates_list'],
+					datasets: [sales_profit_dataset, total_sale_dataset, total_sales_value_dataset,total_returns_inn_dataset, total_returns_out_dataset, received_stock_value_dataset, received_stock_units_dataset]
+				};
+
+				var chartOptions = {
+					legend: {
+				    	display: true,
+				    	position: 'top',
+				    	labels: {
+				      		boxWidth: 20,
+				      		fontColor: 'black'
+				    	}
+				  	}
+				};
+
+				var lineChart = new Chart(speedCanvas, {
+					type: 'line',
+					data: speedData,
+					options: chartOptions
+				});
+
+				document.getElementById('loader').style.display = "none"
+	        }
+	    });
+	}else{
+		swal({
+            title: "Error",
+            text: "Please select the product to analyse",
+            type: "error"
+        });
+        document.getElementById('loader').style.display = "none"
+	}
+}
+
+
+function getToday(){
+    const local = new Date();
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return local.toJSON().slice(0,10);
+  }
+
+
+
+/*stock active prescriptions live search*/
+    $(document).on('keyup', '.stock_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") {
+            var searchText = $(this).val()
+            
+            $.ajax({
+                url: "{% url 'load_live_stock_options' %}",
+                data: { search: searchText },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('stock-selector')
+                    $("#stock-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#stock-selector").selectpicker('refresh')
+                    //alert('stock ajax ran')
+                },
+                error: function(responseData, error){
+                    alert("Server error, Contact Avail Tech!!!")
+                }
+            })
+        }
+    })
+        
+</script>
+
+
+{% include 'partials/footer.html' %}
+{% endblock %}
