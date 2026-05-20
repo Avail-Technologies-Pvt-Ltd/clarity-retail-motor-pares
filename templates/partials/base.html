@@ -376,6 +376,11 @@
             return formattedDate
         }
 
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+
         ///open new window
         function newBrowserWindow(url){
           var myWindow = window.open(url,"","width=1000, height=600");

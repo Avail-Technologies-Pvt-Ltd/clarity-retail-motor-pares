@@ -404,7 +404,6 @@ class Invoice(models.Model):
 
 class InvoiceItem(models.Model):
 	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
-	# product = models.ForeignKey(Product, on_delete=models.CASCADE)
 	stock = models.ForeignKey(Stock, on_delete=models.CASCADE, blank=True, null=True)
 	manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
 	vat_price = models.DecimalField(max_digits=22, decimal_places=4)

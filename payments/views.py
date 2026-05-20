@@ -25,7 +25,7 @@ locale.setlocale(locale.LC_ALL, '')
 
 from django.db import transaction
 from django.db.models import CharField, Q, F, Value as V
-from django.db.models.functions import Concat, LPad
+from django.db.models.functions import Concat, LPad, Cast
 
 import csv
 
@@ -1273,7 +1273,8 @@ def ajax_sales_live_search(request):
         else:
             pass
 
-
+    configuration = ClientSetting.objects.filter(deleted=False, status=True).first()
+    prefix = configuration.invoice_number_prefix if configuration else ''
 
     if request_type == "FORM-FILTER":
         date_from = request.GET.get('date_from')
@@ -1284,8 +1285,16 @@ def ajax_sales_live_search(request):
         sales = Sale.objects.filter(deleted=False).order_by('created_at').reverse()
         if receipt_number != "":
             sales = sales.annotate(
-                full_receipt_number= Concat('ultimate_recipt_number', output_field=CharField())).filter(full_receipt_number__icontains=receipt_number)
-       
+                full_receipt_number=Concat(
+                    V(prefix),
+                    LPad(
+                        Cast(F('sale_transaction__recipt_number'), output_field=CharField()),
+                        6,
+                        V('0')
+                    ),
+                    output_field=CharField()
+                )
+            ).filter(full_receipt_number__icontains=receipt_number)
         if date_from != "":
             sales = sales.filter(created_at__date__gte=date_from)
         if date_to != "":

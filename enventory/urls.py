@@ -9,6 +9,7 @@ urlpatterns = [
     #   options
     path('load_stock_options', views.load_stock_options, name='load_stock_options'),
     path('load_live_stock_options', views.load_live_stock_options, name='load_live_stock_options'),
+    path('load_live_product_options', views.load_live_product_options, name='load_live_product_options'),
     path('load_live_batch_adjustment_reason_options', views.load_live_batch_adjustment_reason_options, name='load_live_batch_adjustment_reason_options'),
     path('load_live_return_reason_options', views.load_live_return_reason_options, name='load_live_return_reason_options'),
     
@@ -77,6 +78,7 @@ urlpatterns = [
     path('activate_deactivate_batch', views.activate_deactivate_batch, name='activate_deactivate_batch'),
     path('update_product', views.update_product, name='update_product'),
     path('on_pos_change_price', views.on_pos_change_price, name='on_pos_change_price'),
+    path('merge_products', views.merge_products, name='merge_products'),
 
     #   print
     path('print_out_credit_note', views.print_out_credit_note, name='print_out_credit_note'),

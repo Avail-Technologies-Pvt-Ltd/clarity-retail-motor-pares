@@ -4,6 +4,8 @@ from django.shortcuts import render
 from .models import *
 from payments.models import *
 from accounts.models import ClientSetting
+from knowledge_base.models import Compatibility
+from pos.models import CartItem, QuotationItem
 
 import json
 
@@ -604,6 +606,126 @@ def get_reorder_suggestion_list(request):
 
     return JsonResponse({"custome_status": "", "table": table})
 
+
+
+@login_required
+@role_validator(['Data Analyst','Supervisor'])
+@transaction.atomic
+def merge_products(request):
+    source_product_id = request.POST.get('source_product_id')
+    destiny_product_id = request.POST.get('destiny_product_id')
+    title = request.POST.get('title')
+    product_code = request.POST.get('product_code')
+    details = request.POST.get('details')
+
+    # Add validation for missing products with specific error messages
+    try:
+        source_product = Product.objects.get(id=int(source_product_id))
+    except (Product.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({
+            'title': "Error", 
+            'text': f"Source product not found", 
+            'type': "error"
+        })
+    
+    try:
+        destiny_product = Product.objects.get(id=int(destiny_product_id))
+    except (Product.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({
+            'title': "Error", 
+            'text': f"Destination product not found", 
+            'type': "error"
+        })
+
+    existing_product = Product.objects.filter(
+        Q(product_code=product_code) |
+        Q(title=title, details=details)
+    ).exclude(id=int(destiny_product_id))
+
+    if existing_product.exists():
+        conflict = existing_product.first()
+        if conflict.title == title:
+            variable = "title"
+        elif conflict.product_code == product_code:
+            variable = "product code"
+        
+        return JsonResponse({
+            'title': "Error", 
+            'text': f"A product with the same {variable} already exists", 
+            'type': "error"
+        })
+
+    destiny_stock = Stock.objects.filter(product=destiny_product).first()
+
+    # Properly setting all three fields
+    destiny_product.title = title
+    destiny_product.details = details
+    destiny_product.product_code = product_code
+    destiny_product.save()
+
+    if destiny_stock:
+        source_product_stock = Stock.objects.filter(product=source_product)
+
+        for stock_to_be_deleted in source_product_stock:
+            # dependances
+            batchs = Batch.objects.filter(stock=stock_to_be_deleted)
+            for batch in batchs:
+                batch.stock = destiny_stock
+                batch.save()
+
+            invoiceitems = InvoiceItem.objects.filter(stock=stock_to_be_deleted)
+            for invoiceitem in invoiceitems:
+                invoiceitem.stock = destiny_stock
+                invoiceitem.save()
+
+            temporaryinvoiceitems = TemporaryInvoiceItem.objects.filter(stock=stock_to_be_deleted)
+            for temporaryinvoiceitem in temporaryinvoiceitems:
+                temporaryinvoiceitem.stock = destiny_stock
+                temporaryinvoiceitem.save()
+
+            returninns = ReturnInn.objects.filter(stock=stock_to_be_deleted)
+            for returninn in returninns:
+                returninn.stock = destiny_stock
+                returninn.save()
+
+            compatibilitys = Compatibility.objects.filter(car_part=stock_to_be_deleted)
+            for compatibility in compatibilitys:
+                # Check if this car_model already has compatibility with destiny stock
+                if Compatibility.objects.filter(
+                    car_part=destiny_stock, 
+                    car_model=compatibility.car_model
+                ).exists():
+                    # Already exists, just delete the current one
+                    compatibility.delete()
+                else:
+                    # Doesn't exist, transfer it
+                    compatibility.car_part = destiny_stock
+                    compatibility.save()
+
+            sales = Sale.objects.filter(stock=stock_to_be_deleted)
+            for sale in sales:
+                sale.stock = destiny_stock
+                sale.save()
+
+            cartitems = CartItem.objects.filter(stock=stock_to_be_deleted)
+            for cartitem in cartitems:
+                cartitem.stock = destiny_stock
+                cartitem.save()
+
+            quotationitems = QuotationItem.objects.filter(stock=stock_to_be_deleted)
+            for quotationitem in quotationitems:
+                quotationitem.stock = destiny_stock
+                quotationitem.save()
+
+            stock_to_be_deleted.delete()
+
+        source_product.delete()
+    else:
+        # Handle case when destiny has no stock
+        # just delete source without transferring
+        source_product.delete()
+
+    return JsonResponse({'title':"Merged", 'text':"Products merged successfully", 'type':"success"})
 
 
 
@@ -3202,6 +3324,24 @@ def load_live_batch_adjustment_reason_options(request):
 
 
 @login_required
+def load_live_product_options(request):
+    search_query = request.GET.get('search',"")
+
+    products = Product.objects.filter(
+        Q(title__icontains=search_query) |
+        Q(product_code__icontains=search_query) |
+        Q(details__icontains=search_query),
+        deleted=False,
+        status=True
+    )[:6]       
+    product_options = [
+        f"<option value='{product.id}'>({ product.product_code }){ product.title } { product.details } </option>" for product in products
+    ]
+
+    return JsonResponse({'options': product_options})
+
+
+@login_required
 def load_live_stock_options(request):
     # search key
     # try:
@@ -3249,22 +3389,79 @@ def load_stock_options(request):
 # NONE SERIALISED URLS
 # ------------------------------------------------------------------------
 
-#   delete
+# #   delete
 @login_required
 @role_validator(['Supervisor'])
+@transaction.atomic
 def delete_product(request):
     try:
         product_id = request.GET.get('product_id')
+        force = request.GET.get('force', 'false').lower() == 'true'
+        
+        if not product_id:
+            return JsonResponse({'type': "error", 'title': "Error", 'message': "Product ID required"}, status=400)
+        
         product = Product.objects.get(id=int(product_id))
+        stocks = Stock.objects.filter(product=product)
+        
+        if not force:
+            # Check for dependencies
+            for stock in stocks:
+                if (Batch.objects.filter(stock=stock).exists() or
+                    InvoiceItem.objects.filter(stock=stock).exists() or
+                    TemporaryInvoiceItem.objects.filter(stock=stock).exists() or
+                    ReturnInn.objects.filter(stock=stock).exists() or
+                    Compatibility.objects.filter(car_part=stock).exists() or
+                    Sale.objects.filter(stock=stock).exists() or
+                    CartItem.objects.filter(stock=stock).exists() or
+                    QuotationItem.objects.filter(stock=stock).exists()):
+                    
+                    # Count total dependencies
+                    total_deps = 0
+                    for s in stocks:
+                        total_deps += Batch.objects.filter(stock=s).count()
+                        total_deps += InvoiceItem.objects.filter(stock=s).count()
+                        total_deps += TemporaryInvoiceItem.objects.filter(stock=s).count()
+                        total_deps += ReturnInn.objects.filter(stock=s).count()
+                        total_deps += Compatibility.objects.filter(car_part=s).count()
+                        total_deps += Sale.objects.filter(stock=s).count()
+                        total_deps += CartItem.objects.filter(stock=s).count()
+                        total_deps += QuotationItem.objects.filter(stock=s).count()
+                    
+                    return JsonResponse({
+                        'type': "warning",
+                        'title': "Cannot Delete",
+                        'message': f"This product has {total_deps} dependent record(s). Use force delete to remove everything.",
+                        'has_dependencies': True,
+                        'product_id': product_id
+                    })
+        
+        # Delete dependencies if force is True
+        if force:
+            for stock in stocks:
+                Batch.objects.filter(stock=stock).delete()
+                InvoiceItem.objects.filter(stock=stock).delete()
+                TemporaryInvoiceItem.objects.filter(stock=stock).delete()
+                ReturnInn.objects.filter(stock=stock).delete()
+                Compatibility.objects.filter(car_part=stock).delete()
+                Sale.objects.filter(stock=stock).delete()
+                CartItem.objects.filter(stock=stock).delete()
+                QuotationItem.objects.filter(stock=stock).delete()
+        
+        # Delete stocks and product
+        stocks.delete()
         product.delete()
-        return JsonResponse({'type':"success",'title':"Deleted", 'message':"Product deleted succesefully!"})
+        
+        return JsonResponse({
+            'type': "success",
+            'title': "Deleted", 
+            'message': "Product deleted successfully!" if not force else "Product and all related records deleted successfully!"
+        })
+        
+    except Product.DoesNotExist:
+        return JsonResponse({'type': "error", 'title': "Error", 'message': f"Product ID '{product_id}' not found"}, status=404)
     except Exception as e:
-        if str(e) == "FOREIGN KEY constraint failed":
-            return JsonResponse({'type':"error",'title':"Not Deleted", 'message':f"You can not delete this product. A number of records are depending on it!"})
-
-        else:
-            return JsonResponse({'type':"error",'title':"Error", 'message':f"{e}"})
-
+        return JsonResponse({'type': "error", 'title': "Error", 'message': str(e)}, status=500)
 
 @login_required
 @role_validator(['Supervisor'])
