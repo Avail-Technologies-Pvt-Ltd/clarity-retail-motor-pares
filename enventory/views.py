@@ -640,7 +640,7 @@ def merge_products(request):
     existing_product = Product.objects.filter(
         Q(product_code=product_code) |
         Q(title=title, details=details)
-    ).exclude(id=int(destiny_product_id))
+    ).exclude(id__in=[int(destiny_product_id), int(source_product_id)])
 
     if existing_product.exists():
         conflict = existing_product.first()
