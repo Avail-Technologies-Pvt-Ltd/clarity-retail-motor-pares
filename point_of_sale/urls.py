@@ -19,4 +19,5 @@ urlpatterns = [
 
     path('order/', include('order.urls')),
     path('knowledge_base/', include('knowledge_base.urls')),
+    path('fiscalisation/', include('fiscalisation.urls')),
 ]

@@ -1,3 +1,4 @@
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from django.db import models
@@ -6,9 +7,11 @@ from django.utils.timezone import localdate
 
 
 
+
 '''
 CLASSES HERE:
 	User
+	Branch
 	Supplier
 	ClientSetting
 	Manufacturer
@@ -41,7 +44,54 @@ class User(AbstractUser):
 
 
 
+class Branch(models.Model):
+	# Contact Information
+	manager = models.CharField(max_length=20, blank=True, null=True)
+	phone = models.CharField(max_length=20, blank=True, null=True)
+	email = models.EmailField(blank=True, null=True)
+	
+	# Address
+	branch_name = models.CharField(max_length=100)
+	address = models.CharField(max_length=255, blank=True)
+	city = models.CharField(max_length=100, blank=True)
+	country = models.CharField(max_length=50, default='ZW')
+	type = models.CharField(max_length=50, default='STORE')
+	
+	# Status
+	is_active = models.BooleanField(default=True)
+	
+	# Sync
+	branch_id = models.CharField(max_length=100, default='', blank=True, null=True) #uuid from central server
+	branch_verification_key = models.CharField(max_length=300, default="")
+	branch_name = models.CharField(max_length=100, blank=True, null=True)
+	sync_url = models.CharField(max_length=300, default="")
+	last_sync_time = models.CharField(max_length=300, default="")
+	last_sync_user = models.CharField(max_length=300, default="")
+	
+	# Timestamps
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	@property
+	def code(self):
+		type_prefix = self.type[:3].upper() if self.type else "XX"
+		return f"{type_prefix}-{str(self.id).zfill(4)}"
+			
+	
+	def __str__(self):
+		return f"{self.name} ({self.id})"
+
+
+
 class Supplier(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	company_name = models.CharField(max_length=30)
 	registration_number = models.CharField(max_length=100, blank=True, null=True, default='')
 	phone_number = models.CharField(max_length=50, blank=True, null=True, default='')
@@ -103,6 +153,14 @@ class ClientSetting(models.Model):
 
 
 class Manufacturer(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	company_name = models.CharField(max_length=30)
 	registration_number = models.CharField(max_length=100, default='')
 	phone_number = models.CharField(max_length=50, blank=True, null=True, default='')
@@ -119,6 +177,14 @@ class Manufacturer(models.Model):
 
 
 class CustomerAccount(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	company_name = models.CharField(max_length=30)
 	phone_number = models.CharField(max_length=50, blank=True, null=True, default='')
 	email = models.CharField(max_length=50, blank=True, null=True, default='')

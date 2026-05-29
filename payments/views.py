@@ -560,29 +560,34 @@ def add_return_out_refund_money_portion(request):
 @login_required
 @role_validator(['Supervisor'])
 def add_expense_money_portion(request):
-    expense_id = request.GET.get('expense_id')
-    expense = Expense.objects.get(id=int(expense_id))
+    try:
+        expense_id = request.GET.get('expense_id')
+        expense = Expense.objects.get(id=int(expense_id))
 
-    payment_method = request.GET.get('payment_method')
-    payment_method = PaymentMethod.objects.get(id=payment_method)
-    amount = request.GET.get('amount')
-    date_paid = request.GET.get('date_paid')
+        payment_method = request.GET.get('payment_method')
+        payment_method = PaymentMethod.objects.get(id=payment_method)
+        amount = request.GET.get('amount')
+        date_paid = request.GET.get('date_paid')
 
-    # new_expense_money_portion = ExpenseMoneyPortion()
-    new_expense_money_portion = Payment()
-    new_expense_money_portion.payment_for = "EXPENSE"
-    new_expense_money_portion.payment_for_id = expense.id
-    new_expense_money_portion.payment_method = payment_method
-    new_expense_money_portion.rate = payment_method.rate
-    new_expense_money_portion.amount_paid = amount
-    new_expense_money_portion.date = date_paid
-    new_expense_money_portion.created_by = request.user
-    new_expense_money_portion.loose_status = False
+        new_expense_money_portion = Payment()
+        new_expense_money_portion.payment_for = "EXPENSE"
+        new_expense_money_portion.payment_for_id = expense.id
+        new_expense_money_portion.payment_method = payment_method
+        new_expense_money_portion.rate = payment_method.rate
+        new_expense_money_portion.amount_paid = amount
+        new_expense_money_portion.date = date_paid
+        new_expense_money_portion.created_by = request.user
+        new_expense_money_portion.loose_status = False
 
-    new_expense_money_portion.save()
+        new_expense_money_portion.save()
 
-    return JsonResponse({'custome_status':"", 'message':"Payment recorded successfully!"})
-
+        return JsonResponse({'custom_status': "", 'message': "Payment recorded successfully!"})
+    
+    except (Expense.DoesNotExist, PaymentMethod.DoesNotExist) as e:
+        return JsonResponse({'custom_status': "error", 'message': f'Record not found: {str(e)}'}, status=404)
+    
+    except Exception as e:
+        return JsonResponse({'custom_status': "error", 'message': f'Error: {str(e)}'}, status=500)
 
 
 @login_required

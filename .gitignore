@@ -4,6 +4,8 @@ updates/
 tmp/
 tests/
 
+certs/
+
 
 # data
 *.sqlite3

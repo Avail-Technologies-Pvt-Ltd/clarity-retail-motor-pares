@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'enventory',
     'payments',
     'pos',
+    'fiscalisation',
     'order',
     'knowledge_base',
     'django_filters',
@@ -116,3 +117,35 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
+
+
+
+# ZIMRA Configuration - Direct values
+ZIMRA_DEVICE_ID = '10626'
+ZIMRA_SERIAL_NO = '9029D38C011B'
+ZIMRA_ACTIVATION_KEY = '00398834'
+ZIMRA_TEST_MODE = True
+
+# Certificate paths
+ZIMRA_CERT_PATH = os.path.join(BASE_DIR, 'certs', 'certificate.crt')
+ZIMRA_KEY_PATH = os.path.join(BASE_DIR, 'certs', 'decrypted_key.key')
+ZIMRA_FOLDER_NAME = os.path.join(BASE_DIR, 'certs')
+
+
+# ZIMRA Configuration
+ZIMRA_DEVICE_ID = os.environ.get('ZIMRA_DEVICE_ID', '10626')
+ZIMRA_SERIAL_NO = os.environ.get('ZIMRA_SERIAL_NO', '9029D38C011B')
+ZIMRA_ACTIVATION_KEY = os.environ.get('ZIMRA_ACTIVATION_KEY', '00398834')
+ZIMRA_TEST_MODE = os.environ.get('ZIMRA_TEST_MODE', 'True').lower() == 'true'
+ZIMRA_MODEL_NAME = os.environ.get('ZIMRA_MODEL_NAME', 'Server')
+ZIMRA_MODEL_VERSION = os.environ.get('ZIMRA_MODEL_VERSION', 'v1')
+ZIMRA_COMPANY_NAME = os.environ.get('ZIMRA_COMPANY_NAME', 'ClarityPOS')
+
+# Certificate paths
+CERTS_DIR = os.path.join(BASE_DIR, 'certs')
+ZIMRA_FOLDER_NAME = CERTS_DIR
+ZIMRA_CERT_PATH = os.path.join(CERTS_DIR, 'certificate.crt')
+ZIMRA_KEY_PATH = os.path.join(CERTS_DIR, 'decrypted_key.key')
+
+# Create certs directory if it doesn't exist
+os.makedirs(CERTS_DIR, exist_ok=True)

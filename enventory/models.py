@@ -1,6 +1,7 @@
+import uuid
 from django.db import models
 
-from accounts.models import Supplier, Manufacturer, User, ClientSetting
+from accounts.models import Supplier, Manufacturer, User, ClientSetting, Branch
 from payments.models import VATCode, Payment
 
 from django.http import HttpResponseRedirect
@@ -32,11 +33,25 @@ CLASSES HERE:
 
 
 class Product(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	global_id = models.CharField(max_length=100, default='', blank=True, null=True)
 	bar_code = models.CharField(max_length=30, default='N/A', blank=True, null=True)
 	title = models.CharField(max_length=30)
 	product_code = models.CharField(max_length=50, default='N/A', blank=True, null=True)
 	details = models.TextField(max_length=400, default='')
 	vat_code = models.ForeignKey(VATCode, on_delete=models.DO_NOTHING, blank=True, null=True)
+
+	#sync
+	branch_created = models.CharField(max_length=100, default='', blank=True, null=True)
+	branch_updated = models.CharField(max_length=100, default='', blank=True, null=True)
+	date_synced = models.CharField(max_length=100, default='', blank=True, null=True)
 
 	created_by = models.CharField(max_length=30,blank=True, null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -49,6 +64,15 @@ class Product(models.Model):
 
 	
 class Stock(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
 	selling_price = models.DecimalField(max_digits=22, decimal_places=4, default='0')
 	markup = models.DecimalField(max_digits=22, decimal_places=2, default=50, blank=True, null=True)
@@ -137,6 +161,15 @@ class Notification(models.Model):
 
 
 class Batch(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	batch_number = models.CharField(max_length=100)
 	stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING)
 	manufacturer = models.ForeignKey(Manufacturer, on_delete=models.DO_NOTHING)
@@ -239,6 +272,15 @@ class Batch(models.Model):
 
 
 class BatchAdjustmentReason(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	shortcut = models.CharField(max_length=20)
 	details = models.CharField(max_length=40)
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -249,6 +291,15 @@ class BatchAdjustmentReason(models.Model):
 
 
 class BatchAdjustment(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
 	action = models.CharField(max_length=10, default='Subtract')
 	reason = models.ForeignKey(BatchAdjustmentReason, on_delete=models.DO_NOTHING)
@@ -311,6 +362,15 @@ class TemporaryInvoice(models.Model):
 
 
 class Invoice(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	invoice_number = models.CharField(max_length=40)
 	supplier = models.ForeignKey(Supplier, on_delete=models.DO_NOTHING)
 	date = models.DateTimeField()
@@ -403,6 +463,15 @@ class Invoice(models.Model):
 
 
 class InvoiceItem(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
 	stock = models.ForeignKey(Stock, on_delete=models.CASCADE, blank=True, null=True)
 	manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
@@ -471,6 +540,15 @@ class TemporaryInvoiceItem(models.Model):
 
 
 class ReturnReason(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	shortcut = models.CharField(max_length=20)
 	details = models.CharField(max_length=40)
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -482,6 +560,15 @@ class ReturnReason(models.Model):
 
 
 class ReturnOut(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	batch = models.ForeignKey(Batch, on_delete=models.DO_NOTHING, null=True, blank=True)
 	reason = models.ForeignKey(ReturnReason, on_delete=models.DO_NOTHING)
 	notes = models.CharField(max_length=255, default='')
@@ -527,6 +614,15 @@ class ReturnOut(models.Model):
 
 
 class CreditNote(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	sale_transaction = models.ForeignKey('payments.SaleTransaction', on_delete=models.DO_NOTHING, blank=True, null=True)
 	reason = models.ForeignKey(ReturnReason, on_delete=models.DO_NOTHING, null=True, blank=True)
 	notes = models.CharField(max_length=255, default='')
@@ -595,6 +691,15 @@ class CreditNote(models.Model):
 
 
 class ReturnInn(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	sale = models.ForeignKey('payments.Sale', on_delete=models.DO_NOTHING, null=True, blank=True)
 	credit_note = models.ForeignKey("enventory.CreditNote", on_delete=models.CASCADE, blank=True, null=True)
 	stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING, null=True, blank=True)

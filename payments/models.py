@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from django.http import HttpResponseRedirect
 
-from accounts.models import ClientSetting, User
+from accounts.models import ClientSetting, User, Branch
 
 
 '''
@@ -21,6 +21,14 @@ CLASSES HERE
 
 
 class VATCode(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	title = models.CharField(max_length=30, blank=True, null=True)
 	percentage = models.DecimalField(max_digits=22, decimal_places=4, default=0)
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -33,6 +41,14 @@ class VATCode(models.Model):
 
 
 class PaymentMethod(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	currency = models.CharField(max_length=100)
 	shortcut = models.CharField(max_length=10)
 	rate = models.DecimalField(max_digits=15,decimal_places=2)
@@ -47,6 +63,14 @@ class PaymentMethod(models.Model):
 
 
 class Payment(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	amount_paid = models.DecimalField(max_digits=22,decimal_places=4)
 	rate = models.DecimalField(max_digits=15,decimal_places=2)
 	date = models.DateTimeField()
@@ -73,6 +97,14 @@ class Payment(models.Model):
 
 # also called receipt
 class SaleTransaction(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	recipt_number = models.AutoField(primary_key=True)
 	change = models.DecimalField(max_digits=22,decimal_places=4, default=0 ) 
 	change_given = models.DecimalField(max_digits=22,decimal_places=4, default=0)
@@ -146,6 +178,14 @@ class SaleTransaction(models.Model):
 
 
 class Sale(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	sale_transaction = models.ForeignKey(SaleTransaction, on_delete=models.DO_NOTHING, blank=True, null=True)
 	stock = models.ForeignKey('enventory.Stock', on_delete=models.DO_NOTHING)
 	selling_price = models.DecimalField(max_digits=22,decimal_places=4) #its the salling price for the whole sale not for a single item
@@ -197,6 +237,14 @@ class Sale(models.Model):
 
 
 class ExpensesType(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	title = models.CharField(max_length=30)
 	description = models.CharField(max_length=255, blank=True, null=True)
 	active = models.BooleanField(default=True)
@@ -230,6 +278,14 @@ class ExpensesType(models.Model):
 
 
 class Expense(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	expense_type = models.ForeignKey(ExpensesType, on_delete=models.CASCADE)
 	description = models.CharField(max_length=255, blank=True, null=True)
 	date = models.DateTimeField()
