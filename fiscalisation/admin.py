@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import *
+
+admin.site.register(FiscalDevice)
+admin.site.register(FiscalState)
+admin.site.register(FiscalReceipt)
+admin.site.register(FiscalDaySummary)
