@@ -59,6 +59,7 @@ class FiscalReceipt(models.Model):
         ('DEBITNOTE', 'Debit Note'),
     ]
     
+    
     fiscal_state = models.ForeignKey(FiscalState, on_delete=models.CASCADE, related_name="receipts")
     fiscal_day_no = models.IntegerField()
     receipt_global_no = models.IntegerField()

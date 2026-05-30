@@ -1184,6 +1184,7 @@ class Device:
             response_object = {response.status_code: response.text}
             return response_object
             
+            
         
     def generate_qr_code(self, signature: str, receipt_global_no, receipt_date=datetime.now().date()):
         """

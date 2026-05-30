@@ -27,6 +27,7 @@ __all__ = [
     'ZimraServerError'
 ]
 
+
 class ZimraServerError(Exception):
     """Raised when the Zimra server returns an error."""
     
