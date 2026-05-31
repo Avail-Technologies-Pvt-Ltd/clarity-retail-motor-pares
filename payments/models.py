@@ -31,6 +31,7 @@ class VATCode(models.Model):
 	
 	title = models.CharField(max_length=30, blank=True, null=True)
 	percentage = models.DecimalField(max_digits=22, decimal_places=4, default=0)
+	zimra_tax_id = models.IntegerField(null=True, blank=True, help_text="ZIMRA taxID: 2=Zero%, 3=Exempt, 514=5%, 515=15.5%")
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	created_at = models.DateTimeField(auto_now_add=True,blank=True, null=True)
 	updated_at = models.DateTimeField(auto_now=True,blank=True, null=True)
@@ -51,6 +52,7 @@ class PaymentMethod(models.Model):
 	
 	currency = models.CharField(max_length=100)
 	shortcut = models.CharField(max_length=10)
+	zimra_money_type_code = models.IntegerField(default=0, help_text="ZIMRA MoneyType: 0=Cash, 1=Card, 2=MobileWallet, 3=Coupon, 4=Credit, 5=BankTransfer, 6=Other")
 	rate = models.DecimalField(max_digits=15,decimal_places=2)
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	status = models.BooleanField(default=True)

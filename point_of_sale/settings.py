@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'whitenoise.runserver_nostatic',
+    'django_apscheduler',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

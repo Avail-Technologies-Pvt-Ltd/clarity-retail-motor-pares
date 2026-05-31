@@ -37,8 +37,128 @@ __all__ = [
     'register_new_device',
     'tax_calculator',
     'Device',
-    'ZimraServerError'
+    'ZimraServerError',
+    'zimra_now',
+    'validate_receipt_for_zimra',
 ]
+
+
+# Set of MoneyType codes ZIMRA accepts (spec section 4.4.5).
+ZIMRA_MONEY_TYPE_CODES = {0, 1, 2, 3, 4, 5, 6}
+
+
+def validate_receipt_for_zimra(receipt_data, applicable_taxes, tax_inclusive=True):
+    """Run the basic ZIMRA receipt-shape checks BEFORE signing/submitting.
+
+    Catches the validation rules that the FDMS will otherwise reject after the
+    fact (RCPT016-RCPT019, RCPT039, RCPT040, plus tax-id and money-type
+    sanity). Returns a list of human-readable error strings; an empty list
+    means the receipt is structurally sound for submission. The library's
+    prepareReceipt also auto-reconciles the payment total, but other
+    mismatches will still trip ZIMRA, so we surface them at the till.
+    """
+    from decimal import Decimal
+
+    errors = []
+
+    lines = receipt_data.get('receiptLines') or []
+    if not lines:
+        errors.append("RCPT016: at least one receipt line is required.")
+        return errors  # rest of the checks are meaningless without lines
+
+    payments = receipt_data.get('receiptPayments') or []
+    if not payments:
+        errors.append("RCPT018: at least one payment line is required.")
+
+    valid_tax_keys = set(applicable_taxes.keys())
+    for i, ln in enumerate(lines, start=1):
+        tp = ln.get('tax_percent')
+        if tp is None:
+            errors.append(f"Line {i}: tax_percent is required.")
+            continue
+        if isinstance(tp, str) and tp.lower() in ('e', 'exempt'):
+            if 'exempt' not in valid_tax_keys:
+                errors.append(f"Line {i}: exempt is not in this device's applicableTaxes; refresh getConfig.")
+            continue
+        try:
+            tp_val = float(tp)
+        except (TypeError, ValueError):
+            errors.append(f"Line {i}: tax_percent '{tp}' is not numeric.")
+            continue
+        if tp_val not in valid_tax_keys and int(tp_val) not in valid_tax_keys:
+            errors.append(
+                f"Line {i}: tax_percent {tp_val} is not in device's applicableTaxes "
+                f"({sorted(k for k in valid_tax_keys if k != 'exempt')}). Refresh getConfig if rates changed."
+            )
+
+    for i, p in enumerate(payments, start=1):
+        mtc = p.get('moneyTypeCode')
+        try:
+            if mtc is None or int(mtc) not in ZIMRA_MONEY_TYPE_CODES:
+                errors.append(f"Payment {i}: moneyTypeCode '{mtc}' is not in ZIMRA's valid set 0-6.")
+        except (TypeError, ValueError):
+            errors.append(f"Payment {i}: moneyTypeCode '{mtc}' is not an integer.")
+
+    if tax_inclusive:
+        try:
+            line_sum = sum(
+                Decimal(str(ln.get('unit_price', 0))) * Decimal(str(ln.get('quantity', 0)))
+                for ln in lines
+            )
+        except Exception as e:
+            errors.append(f"Could not sum receipt lines: {e}")
+            line_sum = None
+
+        if line_sum is not None:
+            try:
+                pay_sum = sum(Decimal(str(p.get('paymentAmount', 0))) for p in payments)
+            except Exception as e:
+                errors.append(f"Could not sum payments: {e}")
+                pay_sum = None
+            if pay_sum is not None and abs(pay_sum - line_sum) > Decimal('0.01'):
+                errors.append(
+                    f"RCPT039: payment total ({pay_sum}) does not match line sum ({line_sum})."
+                )
+
+            rtype = (receipt_data.get('receiptType') or '').upper()
+            if rtype in ('FISCALINVOICE', 'DEBITNOTE') and line_sum <= 0:
+                errors.append(f"RCPT040: receipt total ({line_sum}) must be > 0 for {rtype}.")
+            if rtype == 'CREDITNOTE' and line_sum >= 0:
+                errors.append(f"RCPT040: receipt total ({line_sum}) must be < 0 for CREDITNOTE.")
+
+    if not (receipt_data.get('invoiceNo') or '').strip():
+        errors.append("RCPT013: invoiceNo is required.")
+
+    return errors
+
+
+# Global default timeout for ALL ZIMRA HTTP calls (seconds).
+# Without this, requests can hang indefinitely on bad connectivity, blocking
+# the POS thread forever. 30s is generous for a single API call; failure to
+# respond in that window means we leave the receipt PENDING and the sync
+# worker retries later.
+ZIMRA_HTTP_TIMEOUT = 30
+
+
+# Zimbabwe operates on CAT (UTC+2, no DST). Receipt dates and fiscal-day
+# dates MUST be in Zimbabwean local time per ZIMRA spec section 12.2.1,
+# regardless of what TZ the Django process is running in. Using a naive
+# datetime.now() is unsafe because Django can pin the process TZ to UTC.
+try:
+    from zoneinfo import ZoneInfo
+    _ZIMBABWE_TZ = ZoneInfo('Africa/Harare')
+except Exception:  # pragma: no cover — fallback if tzdata not available
+    from datetime import timezone, timedelta
+    _ZIMBABWE_TZ = timezone(timedelta(hours=2), name='CAT')
+
+
+def zimra_now():
+    """Return current Zimbabwe local time as a naive datetime.
+
+    Naive (no tzinfo) because the ZIMRA spec format is YYYY-MM-DDTHH:mm:ss
+    with no offset — they treat it as local time implicitly.
+    """
+    return datetime.now(_ZIMBABWE_TZ).replace(tzinfo=None)
 
 class ZimraServerError(Exception):
     """Raised when the Zimra server returns an error."""
@@ -244,7 +364,7 @@ def register_new_device(
         'certificateRequest': csr_pem,
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, timeout=ZIMRA_HTTP_TIMEOUT)
 
     if response.status_code == 200:
         logging.info("Request was successful!")
@@ -262,17 +382,24 @@ def register_new_device(
 
 
 class Device:
+    # Sensible defaults if the caller doesn't pass applicableTaxes.
+    # These should be considered placeholders — real tax IDs MUST come from the
+    # device's own getConfig response (call refreshApplicableTaxes()), because
+    # ZIMRA assigns different IDs per device / environment.
+    DEFAULT_APPLICABLE_TAXES: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
+
     def __init__(
             self,
-            device_id: str, 
-            serialNo: str, 
-            activationKey: str, 
-            cert_path: str, 
-            private_key_path:str, 
-            test_mode:bool =True, 
-            deviceModelName: str='Server', 
+            device_id: str,
+            serialNo: str,
+            activationKey: str,
+            cert_path: str,
+            private_key_path:str,
+            test_mode:bool =True,
+            deviceModelName: str='Server',
             deviceModelVersion:str = 'v1',
-            company_name:str ="NexusClient"
+            company_name:str ="NexusClient",
+            applicableTaxes: dict = None,
         ):
         self.companyName: str = company_name
         self.deviceID: int = device_id
@@ -280,25 +407,56 @@ class Device:
         self.deviceModelVersion = deviceModelVersion
         self.certPath: str = cert_path
         self.keyPath: str = private_key_path
-        
-        
+
         if test_mode:
             self.test_mode = True
             self.base_url: str = 'https://fdmsapitest.zimra.co.zw/Device/v1/'
             self.qrUrl:str = 'https://fdmstest.zimra.co.zw/'
-            # Updated 2026: Standard VAT is now 15.5% (ID 515), Exempt is ID 3 and 15% is invalid
-            self.applicableTaxes: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
         else:
             self.test_mode = False
             self.base_url: str = 'https://fdmsapi.zimra.co.zw/Device/v1/'
             self.qrUrl:str = 'https://fdms.zimra.co.zw/'
-            # Updated 2026: Standard VAT is now 15.5% (ID 515), Exempt is ID 3 and 15% is invalid
-            self.applicableTaxes: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
+
+        # Caller-supplied overrides win; otherwise fall back to defaults.
+        # Call refreshApplicableTaxes() after construction to sync with the
+        # actual taxes ZIMRA has registered for this device.
+        self.applicableTaxes: dict = dict(applicableTaxes) if applicableTaxes else dict(self.DEFAULT_APPLICABLE_TAXES)
 
         self.deviceBaseUrl = f'{self.base_url}{self.deviceID}'
-        
+
         self.serialNo = serialNo
         self.activationKey = activationKey
+
+    def refreshApplicableTaxes(self) -> dict:
+        """Re-fetch applicableTaxes from ZIMRA via getConfig and update self.applicableTaxes.
+
+        Returns the new dict, or raises if getConfig fails.
+
+        The dict is keyed the way prepareReceipt's receiptlinesfixer expects:
+        numeric tax_percent values (0, 5, 15.5, ...) map to integer taxID,
+        plus 'exempt' -> taxID for the exempt rate.
+        """
+        config = self.getConfig()
+        if not isinstance(config, dict) or 'applicableTaxes' not in config:
+            raise ValueError(f"getConfig returned no applicableTaxes: {config}")
+
+        new_taxes = {}
+        for t in config.get('applicableTaxes', []):
+            tax_id = t.get('taxID')
+            if tax_id is None:
+                continue
+            if 'taxPercent' in t:
+                key = float(t['taxPercent'])
+                # Use int key when value is whole (so {0: 513} not {0.0: 513})
+                if key == int(key):
+                    key = int(key)
+                new_taxes[key] = int(tax_id)
+            else:
+                # No taxPercent => exempt
+                new_taxes['exempt'] = int(tax_id)
+
+        self.applicableTaxes = new_taxes
+        return new_taxes
 
 
     def insert_receiptDeviceSignature(self, receiptData: OrderedDict, previous_hash=None)-> OrderedDict:
@@ -463,6 +621,7 @@ class Device:
         response = requests.get(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers = {
                 'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
                 'DeviceModelVersion': self.deviceModelVersion
@@ -525,6 +684,7 @@ class Device:
                 url,
                 headers=headers, 
                 cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
                 json=data,
             )
             response.raise_for_status() 
@@ -555,6 +715,7 @@ class Device:
         response = requests.get(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers = {
                 'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
                 'DeviceModelVersion': self.deviceModelVersion
@@ -578,6 +739,7 @@ class Device:
         response = requests.post(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers=headers
         )
         if response.status_code == 200:
@@ -600,7 +762,7 @@ class Device:
             'operationID': '0HN4FDK6T1CNI:00000001'
         }
         '''
-        fiscalDayOpened = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        fiscalDayOpened = zimra_now().strftime('%Y-%m-%dT%H:%M:%S')
         #check if the day is closed
         status = self.getStatus()
         if status['fiscalDayStatus'] != 'FiscalDayClosed':
@@ -630,6 +792,7 @@ class Device:
             response = requests.post(
                 url, 
                 cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
                 headers=headers, 
                 json=payload
                 )
@@ -1172,6 +1335,7 @@ class Device:
         response = requests.post(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers=headers,
             json=payload
         )
@@ -1355,6 +1519,7 @@ class Device:
                 url, 
                 headers=headers,
                 cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
                 json=payload
             )
             logging.info(f"Response from Zimra======: {response.json()}")

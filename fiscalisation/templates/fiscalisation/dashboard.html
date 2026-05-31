@@ -313,6 +313,11 @@
             <h1>🏪 Fiscalisation Dashboard</h1>
             <p>ZIMRA FDMS Integration for {{ current_time|date:"F j, Y H:i:s" }}</p>
         </div>
+
+        <!-- Day-age banner (hidden until status is warning/critical) -->
+        <div id="dayAgeBanner" style="display:none; background:#fff4d6; color:#8a6500; border-left:6px solid #f5a623; padding:14px 18px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+            <strong>Heads up:</strong> <span id="dayAgeText"></span>
+        </div>
         
         <!-- Status Cards -->
         <div class="status-grid" id="statusGrid">
@@ -364,6 +369,12 @@
             <button class="btn btn-info" onclick="showQRModal()">
                 📱 Show QR Scanner
             </button>
+            <button class="btn btn-primary" onclick="reconcileWithZimra()" title="Pull current state from ZIMRA into local DB. Use after ZIMRA manually closes a day on your behalf.">
+                🔁 Reconcile with ZIMRA
+            </button>
+            <button class="btn btn-warning" onclick="syncPending()" title="Push all PENDING receipts to ZIMRA right now (otherwise the cron worker does it).">
+                ⬆ Sync Pending Now
+            </button>
         </div>
         
         <!-- Latest Receipts -->
@@ -410,12 +421,23 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        updateDeviceStatus(data.data.device_status);
-                        updateFiscalStatus(data.data.fiscal_state, data.data.device_status);
-                        updateTodaySummary(data.data.today_stats, data.data.current_day_summary);
-                        updateLatestReceipts(data.data.latest_receipts);
-                        updateRecentSummaries(data.data.recent_summaries);
-                        updateButtons(data.data.device_status.is_day_open);
+                        // Day-age banner (works regardless of older fields)
+                        updateDayAgeBanner(data.state);
+
+                        // Legacy/optional fields — guard so missing keys don't crash
+                        if (data.data) {
+                            if (data.data.device_status) updateDeviceStatus(data.data.device_status);
+                            if (data.data.fiscal_state) updateFiscalStatus(data.data.fiscal_state, data.data.device_status || {});
+                            if (data.data.today_stats || data.data.current_day_summary) {
+                                updateTodaySummary(data.data.today_stats, data.data.current_day_summary);
+                            }
+                            if (data.data.latest_receipts) updateLatestReceipts(data.data.latest_receipts);
+                            if (data.data.recent_summaries) updateRecentSummaries(data.data.recent_summaries);
+                            if (data.data.device_status) updateButtons(data.data.device_status.is_day_open);
+                        } else if (data.state) {
+                            // New API shape: drive buttons from state
+                            updateButtons(data.state.is_day_open);
+                        }
                     } else {
                         showToast('Error loading dashboard data: ' + data.error, 'error');
                     }
@@ -424,6 +446,27 @@
                     console.error('Error:', error);
                     showToast('Failed to load dashboard data', 'error');
                 });
+        }
+
+        function updateDayAgeBanner(state) {
+            const banner = document.getElementById('dayAgeBanner');
+            const txt = document.getElementById('dayAgeText');
+            if (!banner || !state) return;
+            if (state.day_age_status === 'warning') {
+                banner.style.display = 'block';
+                banner.style.background = '#fff4d6';
+                banner.style.color = '#8a6500';
+                banner.style.borderLeftColor = '#f5a623';
+                txt.textContent = `Fiscal day ${state.fiscal_day_no} has been open for ${state.hours_open} of ${state.max_hours} allowed hours. Close it soon to avoid ZIMRA refusing receipts.`;
+            } else if (state.day_age_status === 'critical') {
+                banner.style.display = 'block';
+                banner.style.background = '#ffd6d6';
+                banner.style.color = '#8a0000';
+                banner.style.borderLeftColor = '#d0021b';
+                txt.textContent = `URGENT — Fiscal day ${state.fiscal_day_no} has been open ${state.hours_open}h (cap ${state.max_hours}h). ZIMRA will reject new receipts. Close the day now.`;
+            } else {
+                banner.style.display = 'none';
+            }
         }
         
         function updateDeviceStatus(status) {
@@ -671,6 +714,45 @@
             });
         }
         
+        function reconcileWithZimra() {
+            if (!confirm('Pull state from ZIMRA and overwrite local DB? Use after ZIMRA manually closed the day on your behalf.')) return;
+            fetch('/fiscalisation/api/reconcile/', {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json'}
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    const a = d.after || {};
+                    showToast(`Reconciled. Day ${a.fiscal_day_no} ${a.is_day_open ? 'OPEN' : 'CLOSED'} · globalNo ${a.receipt_global_no}`, 'success');
+                    loadDashboardData();
+                } else {
+                    showToast('Reconcile failed: ' + (d.error || 'unknown'), 'error');
+                }
+            })
+            .catch(e => showToast('Reconcile error: ' + e, 'error'));
+        }
+
+        function syncPending() {
+            showToast('Sync started — this may take a few seconds per receipt...', 'success');
+            fetch('/fiscalisation/api/sync-pending/', {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json'}
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    showToast('Sync complete. See log in console.', 'success');
+                    console.log('[sync log]\n' + d.log);
+                    loadDashboardData();
+                } else {
+                    showToast('Sync error: ' + (d.error || 'unknown'), 'error');
+                    console.error(d.log);
+                }
+            })
+            .catch(e => showToast('Sync transport error: ' + e, 'error'));
+        }
+
         function createTestReceipt() {
             fetch('/fiscalisation/api/create-test-receipt/', {
                 method: 'POST',

@@ -931,25 +931,36 @@ def void_cart(request):
 
 
 
+import time
+import logging
+from datetime import datetime, timedelta
+
 from django.db import transaction as db_transaction
 from django.http import JsonResponse
-from datetime import datetime
-from .models import FiscalDevice, FiscalState, FiscalReceipt  # Import your relational models
+from fiscalisation.models import FiscalDevice, FiscalState, FiscalReceipt
+from fiscalisation.services import zimra_now, validate_receipt_for_zimra
+from fiscalisation.views import device, classify_submit_response
 import json
 
-@db_transaction.atomic 
+logger = logging.getLogger(__name__)
+
+@db_transaction.atomic
 def check_out(request):
     try:
-        # ---------------------------------------------------------
-        # ZIMRA GUARD: Fetch Device State and Ensure Day is Open
-        # ---------------------------------------------------------
-        # Assuming device_id matches the instance initialized in your views.py (e.g., "35440")
+        # ZIMRA GUARD: lock the active device's FiscalState row so two
+        # concurrent checkouts can't both read receipt_global_no=N and
+        # both write N+1. select_for_update is held until this atomic
+        # block commits, serializing the counter-increment critical section.
         try:
-            fiscal_device = FiscalDevice.objects.get(device_id="35440", is_active=True)
-            fiscal_state = FiscalState.objects.get(device=fiscal_device)
+            fiscal_device = FiscalDevice.objects.get(is_active=True)
+            fiscal_state = (
+                FiscalState.objects
+                .select_for_update()
+                .get(device=fiscal_device)
+            )
         except (FiscalDevice.DoesNotExist, FiscalState.DoesNotExist):
             return JsonResponse({
-                "custome_status": "Error", 
+                "custome_status": "Error",
                 "message": "Fiscal Device or State Configuration is missing in the database."
             })
 
@@ -1024,20 +1035,17 @@ def check_out(request):
 
             # Accumulate subtotal using the inclusive customer price
             subtotal += cart_item.quantity * cart_item.unit_price
-            
-            tax_percentage = cart_item.stock.product.vat_code.percentage
-            tax_id = cart_item.stock.product.vat_code.zimra_tax_id 
 
-            # Build lines dictionary for services.py crypto engines
+            tax_percentage = cart_item.stock.product.vat_code.percentage
+
+            # Build lines dictionary in the format prepareReceipt expects.
+            # prepareReceipt computes taxID internally from tax_percent via applicableTaxes.
             receipt_lines_payload.append({
-                "receiptLineIndex": index,
-                "productCode": getattr(cart_item.stock.product, 'hs_code', '0000.00.00'),
-                "productName": cart_item.stock.product.name,
-                "unitPrice": float(cart_item.unit_price),
-                "quantity": float(cart_item.quantity),
-                "taxCode": "A" if tax_percentage > 0 else "E",
-                "taxPercent": float(tax_percentage),
-                "taxID": int(tax_id)
+                "item_name": cart_item.stock.product.title,
+                "unit_price": str(cart_item.unit_price),
+                "quantity": str(cart_item.quantity),
+                "tax_percent": float(tax_percentage),
+                "hs_code": getattr(cart_item.stock.product, 'product_code', '04021099') or '04021099',
             })
 
         total_cost = subtotal - discount
@@ -1050,11 +1058,10 @@ def check_out(request):
             receipt_money_portion.payment_for_id = sale_transaction.recipt_number
             receipt_money_portion.loose_status = False
             receipt_money_portion.save()
-            
-            # Extract ZIMRA accepted payment strings (e.g. CASH, CARD, MOBILE)
+
             payment_methods_payload.append({
-                "moneyPortionName": getattr(receipt_money_portion, 'zimra_method_code', 'CASH'),
-                "moneyPortionAmount": float(receipt_money_portion.amount)
+                "moneyTypeCode": getattr(receipt_money_portion.payment_method, 'zimra_money_type_code', 0),
+                "paymentAmount": float(receipt_money_portion.amount_paid),
             })
 
         essential.discount = 0
@@ -1070,17 +1077,73 @@ def check_out(request):
         next_receipt_counter = fiscal_state.receipt_counter + 1
         next_receipt_global_no = fiscal_state.receipt_global_no + 1
 
+        # Guarantee a strictly increasing receiptDate vs the prior receipt.
+        # ZIMRA's spec uses second-precision; two receipts in the same wall
+        # clock second trip RCPT030 ("date earlier than previously submitted").
+        receipt_dt = zimra_now()
+        last_receipt = (
+            FiscalReceipt.objects
+            .filter(fiscal_state=fiscal_state)
+            .order_by('-receipt_global_no')
+            .first()
+        )
+        if last_receipt and last_receipt.prepared_payload:
+            try:
+                prior_dt = datetime.strptime(
+                    last_receipt.prepared_payload['receiptDate'],
+                    '%Y-%m-%dT%H:%M:%S',
+                )
+                # If we'd land in the same (or earlier) second, sleep just
+                # long enough to roll over into the next one. Burst checkouts
+                # cost at most ~1s of human-imperceptible delay.
+                if receipt_dt <= prior_dt:
+                    delta = (prior_dt - receipt_dt).total_seconds() + 1.0
+                    time.sleep(min(delta, 2.0))
+                    receipt_dt = zimra_now()
+            except (KeyError, ValueError):
+                pass
+
         mock_receipt_data = {
             "receiptType": "FISCALINVOICE",
-            "receiptCurrency": "USD", # Modify dynamically if payments handle local/foreign variants
-            "buyerCostCenterName": getattr(sale_transaction, 'buyer_name', ''),
-            "buyerTIN": getattr(sale_transaction, 'buyer_tin', ''),
-            "buyerVatNumber": getattr(sale_transaction, 'buyer_vat', ''),
-            "buyerAddress": getattr(sale_transaction, 'buyer_address', ''),
-            "buyerPhone": getattr(sale_transaction, 'buyer_tel', ''),
+            "receiptCurrency": "USD",
+            "receiptCounter": next_receipt_counter,
+            "receiptGlobalNo": next_receipt_global_no,
+            "invoiceNo": str(sale_transaction.recipt_number),
+            # ZIMRA expects Zimbabwe local time (CAT) regardless of host TZ.
+            "receiptDate": receipt_dt,
             "receiptLines": receipt_lines_payload,
-            "receiptPayments": payment_methods_payload
+            "receiptPayments": payment_methods_payload,
         }
+
+        # Attach buyerData only when we actually captured customer details
+        if sale_transaction.buyer_name or sale_transaction.buyer_tin:
+            mock_receipt_data["buyerData"] = {
+                "buyerTIN": sale_transaction.buyer_tin or "",
+                "buyerName": sale_transaction.buyer_name or "",
+                "buyerAddress": sale_transaction.buyer_address or "",
+                "buyerPhone": sale_transaction.buyer_tel or "",
+                "vatNumber": sale_transaction.buyer_vat or "",
+            }
+
+        # Pre-flight validation: catch the obvious mistakes (missing tax_percent,
+        # bad moneyTypeCode, payment-sum != line-sum, RCPT040 sign) BEFORE we
+        # waste an ZIMRA round-trip and pollute the day with a bad receipt.
+        try:
+            applicable_taxes = device.applicableTaxes
+        except Exception:
+            applicable_taxes = {}
+        validation_errors = validate_receipt_for_zimra(
+            mock_receipt_data,
+            applicable_taxes=applicable_taxes,
+            tax_inclusive=True,
+        )
+        if validation_errors:
+            logger.warning("Pre-flight validation failed for receipt %s: %s",
+                           sale_transaction.recipt_number, validation_errors)
+            return JsonResponse({
+                "custome_status": "Error",
+                "message": "Receipt validation failed before signing:\n- " + "\n- ".join(validation_errors),
+            })
 
         # prepareReceipt parses your dict locally using loaded cert keys and the tracked hash chain
         prepared_receipt = device.prepareReceipt(
@@ -1090,16 +1153,32 @@ def check_out(request):
 
         local_sig_struct = prepared_receipt["receiptDeviceSignature"]
         
-        # Generate raw verification QR layout data string
+        # Use the same receipt_dt the signature was built around so the QR
+        # url's date component matches what ZIMRA stored.
         local_qr_string = device.generate_qr_code(
             signature=local_sig_struct["signature"],
             receipt_global_no=prepared_receipt["receiptGlobalNo"],
-            receipt_date=datetime.now()
+            receipt_date=receipt_dt
         )
 
-        # ---------------------------------------------------------
-        # Record into Relational Fiscal History Models & Increment States
-        # ---------------------------------------------------------
+        # Try to submit to ZIMRA immediately. If the network is down or ZIMRA
+        # is unreachable, we still keep going — the receipt is fully signed
+        # and queued PENDING for the background sync worker to push later.
+        # This keeps checkout latency in the happy path low while remaining
+        # offline-tolerant.
+        submit_response = None
+        sync_status = 'PENDING'
+        zimra_receipt_id = None
+        try:
+            submit_response = device.submitReceipt(prepared_receipt)
+            sync_status = classify_submit_response(submit_response)
+            if isinstance(submit_response, dict):
+                zimra_receipt_id = submit_response.get('receiptID')
+        except Exception as exc:
+            logger.warning("ZIMRA submitReceipt failed at checkout: %s", exc)
+            submit_response = {"error": str(exc)}
+            sync_status = 'PENDING'
+
         FiscalReceipt.objects.create(
             fiscal_state=fiscal_state,
             fiscal_day_no=fiscal_state.fiscal_day_no,
@@ -1108,17 +1187,16 @@ def check_out(request):
             receipt_type='FISCALINVOICE',
             invoice_no=str(sale_transaction.recipt_number),
             total_amount=total_cost,
-            
-            # Custom Fields additions for Offline Queuing architecture:
-            # Add these specific layout rows to your FiscalReceipt fields to secure offline sync data
             local_hash=local_sig_struct["hash"],
             local_signature=local_sig_struct["signature"],
             qr_code_string=local_qr_string,
-            prepared_payload=prepared_receipt, # Full JSON footprint for background syncing workers
-            sync_status='PENDING'
+            prepared_payload=prepared_receipt,
+            sync_status=sync_status,
+            zimra_receipt_id=zimra_receipt_id,
+            zimra_response_log=submit_response if isinstance(submit_response, dict) else {"raw": str(submit_response)},
         )
 
-        # Save the ongoing blockchain variables back down to the state ledger
+        # Save the ongoing chain variables back to the state ledger
         fiscal_state.receipt_counter = next_receipt_counter
         fiscal_state.receipt_global_no = next_receipt_global_no
         fiscal_state.last_receipt_hash = local_sig_struct["hash"]
