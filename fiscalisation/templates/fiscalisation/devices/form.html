@@ -1,0 +1,33 @@
+{% extends "fiscalisation/devices/_base.html" %}
+{% block title %}{{ mode|capfirst }} Device{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>{{ mode|capfirst }} Fiscal Device</h1>
+    <p class="muted">Enter the credentials ZIMRA emailed you when the device was issued.</p>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {% if field.field.widget.input_type == "checkbox" %}
+                    <div class="form-check">
+                        {{ field }}
+                        <span>{{ field.help_text }}</span>
+                    </div>
+                {% else %}
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% endif %}
+                {% if field.errors %}
+                    <div class="form-text" style="color:#b00">{{ field.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'fiscal_device_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

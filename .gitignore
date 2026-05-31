@@ -1,11 +1,15 @@
 # folders
 venv/
+.venv/
 updates/
 tmp/
 tests/
 
 certs/
 
+# python bytecode
+__pycache__/
+*.pyc
 
 # data
 *.sqlite3

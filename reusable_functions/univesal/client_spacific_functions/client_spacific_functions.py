@@ -37,9 +37,16 @@ CLIENT: TAJO MOTOR SPARES
 
 
 import textwrap
-import win32print
-import win32ui
-from PIL import Image, ImageWin
+try:
+    import win32print
+    import win32ui
+    from PIL import Image, ImageWin
+except ImportError:
+    # win32 modules only exist on Windows; allow non-Windows dev to import this file
+    win32print = None
+    win32ui = None
+    Image = None
+    ImageWin = None
 
 from payments.models import Sale, SaleTransaction, Payment
 from accounts.models import ClientSetting, PrinterCase, CustomerAccount

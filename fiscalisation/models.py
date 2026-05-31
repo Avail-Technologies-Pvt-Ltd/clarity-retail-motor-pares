@@ -35,9 +35,15 @@ class FiscalState(models.Model):
         verbose_name_plural = "Fiscal States"
     
     def reset_for_new_day(self, next_day_no, day_date):
-        """Prepares state variables when openDay succeeds."""
+        """Prepares state variables when openDay succeeds.
+
+        Clears last_receipt_hash because the receipt-signature chain RESETS
+        at each fiscal day (spec section 12.2.1: previousReceiptHash is not
+        used when receipt is first in fiscal day).
+        """
         self.fiscal_day_no = next_day_no
         self.receipt_counter = 0
+        self.last_receipt_hash = None
         self.is_day_open = True
         self.current_day_date = day_date
         self.save()

@@ -37,8 +37,38 @@ __all__ = [
     'register_new_device',
     'tax_calculator',
     'Device',
-    'ZimraServerError'
+    'ZimraServerError',
+    'zimra_now',
 ]
+
+
+# Global default timeout for ALL ZIMRA HTTP calls (seconds).
+# Without this, requests can hang indefinitely on bad connectivity, blocking
+# the POS thread forever. 30s is generous for a single API call; failure to
+# respond in that window means we leave the receipt PENDING and the sync
+# worker retries later.
+ZIMRA_HTTP_TIMEOUT = 30
+
+
+# Zimbabwe operates on CAT (UTC+2, no DST). Receipt dates and fiscal-day
+# dates MUST be in Zimbabwean local time per ZIMRA spec section 12.2.1,
+# regardless of what TZ the Django process is running in. Using a naive
+# datetime.now() is unsafe because Django can pin the process TZ to UTC.
+try:
+    from zoneinfo import ZoneInfo
+    _ZIMBABWE_TZ = ZoneInfo('Africa/Harare')
+except Exception:  # pragma: no cover — fallback if tzdata not available
+    from datetime import timezone, timedelta
+    _ZIMBABWE_TZ = timezone(timedelta(hours=2), name='CAT')
+
+
+def zimra_now():
+    """Return current Zimbabwe local time as a naive datetime.
+
+    Naive (no tzinfo) because the ZIMRA spec format is YYYY-MM-DDTHH:mm:ss
+    with no offset — they treat it as local time implicitly.
+    """
+    return datetime.now(_ZIMBABWE_TZ).replace(tzinfo=None)
 
 class ZimraServerError(Exception):
     """Raised when the Zimra server returns an error."""
@@ -244,7 +274,7 @@ def register_new_device(
         'certificateRequest': csr_pem,
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, timeout=ZIMRA_HTTP_TIMEOUT)
 
     if response.status_code == 200:
         logging.info("Request was successful!")
@@ -262,17 +292,24 @@ def register_new_device(
 
 
 class Device:
+    # Sensible defaults if the caller doesn't pass applicableTaxes.
+    # These should be considered placeholders — real tax IDs MUST come from the
+    # device's own getConfig response (call refreshApplicableTaxes()), because
+    # ZIMRA assigns different IDs per device / environment.
+    DEFAULT_APPLICABLE_TAXES: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
+
     def __init__(
             self,
-            device_id: str, 
-            serialNo: str, 
-            activationKey: str, 
-            cert_path: str, 
-            private_key_path:str, 
-            test_mode:bool =True, 
-            deviceModelName: str='Server', 
+            device_id: str,
+            serialNo: str,
+            activationKey: str,
+            cert_path: str,
+            private_key_path:str,
+            test_mode:bool =True,
+            deviceModelName: str='Server',
             deviceModelVersion:str = 'v1',
-            company_name:str ="NexusClient"
+            company_name:str ="NexusClient",
+            applicableTaxes: dict = None,
         ):
         self.companyName: str = company_name
         self.deviceID: int = device_id
@@ -280,25 +317,56 @@ class Device:
         self.deviceModelVersion = deviceModelVersion
         self.certPath: str = cert_path
         self.keyPath: str = private_key_path
-        
-        
+
         if test_mode:
             self.test_mode = True
             self.base_url: str = 'https://fdmsapitest.zimra.co.zw/Device/v1/'
             self.qrUrl:str = 'https://fdmstest.zimra.co.zw/'
-            # Updated 2026: Standard VAT is now 15.5% (ID 515), Exempt is ID 3 and 15% is invalid
-            self.applicableTaxes: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
         else:
             self.test_mode = False
             self.base_url: str = 'https://fdmsapi.zimra.co.zw/Device/v1/'
             self.qrUrl:str = 'https://fdms.zimra.co.zw/'
-            # Updated 2026: Standard VAT is now 15.5% (ID 515), Exempt is ID 3 and 15% is invalid
-            self.applicableTaxes: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
+
+        # Caller-supplied overrides win; otherwise fall back to defaults.
+        # Call refreshApplicableTaxes() after construction to sync with the
+        # actual taxes ZIMRA has registered for this device.
+        self.applicableTaxes: dict = dict(applicableTaxes) if applicableTaxes else dict(self.DEFAULT_APPLICABLE_TAXES)
 
         self.deviceBaseUrl = f'{self.base_url}{self.deviceID}'
-        
+
         self.serialNo = serialNo
         self.activationKey = activationKey
+
+    def refreshApplicableTaxes(self) -> dict:
+        """Re-fetch applicableTaxes from ZIMRA via getConfig and update self.applicableTaxes.
+
+        Returns the new dict, or raises if getConfig fails.
+
+        The dict is keyed the way prepareReceipt's receiptlinesfixer expects:
+        numeric tax_percent values (0, 5, 15.5, ...) map to integer taxID,
+        plus 'exempt' -> taxID for the exempt rate.
+        """
+        config = self.getConfig()
+        if not isinstance(config, dict) or 'applicableTaxes' not in config:
+            raise ValueError(f"getConfig returned no applicableTaxes: {config}")
+
+        new_taxes = {}
+        for t in config.get('applicableTaxes', []):
+            tax_id = t.get('taxID')
+            if tax_id is None:
+                continue
+            if 'taxPercent' in t:
+                key = float(t['taxPercent'])
+                # Use int key when value is whole (so {0: 513} not {0.0: 513})
+                if key == int(key):
+                    key = int(key)
+                new_taxes[key] = int(tax_id)
+            else:
+                # No taxPercent => exempt
+                new_taxes['exempt'] = int(tax_id)
+
+        self.applicableTaxes = new_taxes
+        return new_taxes
 
 
     def insert_receiptDeviceSignature(self, receiptData: OrderedDict, previous_hash=None)-> OrderedDict:
@@ -463,6 +531,7 @@ class Device:
         response = requests.get(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers = {
                 'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
                 'DeviceModelVersion': self.deviceModelVersion
@@ -525,6 +594,7 @@ class Device:
                 url,
                 headers=headers, 
                 cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
                 json=data,
             )
             response.raise_for_status() 
@@ -555,6 +625,7 @@ class Device:
         response = requests.get(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers = {
                 'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
                 'DeviceModelVersion': self.deviceModelVersion
@@ -578,6 +649,7 @@ class Device:
         response = requests.post(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers=headers
         )
         if response.status_code == 200:
@@ -600,7 +672,7 @@ class Device:
             'operationID': '0HN4FDK6T1CNI:00000001'
         }
         '''
-        fiscalDayOpened = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        fiscalDayOpened = zimra_now().strftime('%Y-%m-%dT%H:%M:%S')
         #check if the day is closed
         status = self.getStatus()
         if status['fiscalDayStatus'] != 'FiscalDayClosed':
@@ -630,6 +702,7 @@ class Device:
             response = requests.post(
                 url, 
                 cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
                 headers=headers, 
                 json=payload
                 )
@@ -1172,6 +1245,7 @@ class Device:
         response = requests.post(
             url,
             cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
             headers=headers,
             json=payload
         )
@@ -1355,6 +1429,7 @@ class Device:
                 url, 
                 headers=headers,
                 cert=(self.certPath, self.keyPath),
+            timeout=ZIMRA_HTTP_TIMEOUT,
                 json=payload
             )
             logging.info(f"Response from Zimra======: {response.json()}")
