@@ -1,12 +1,16 @@
+apscheduler==3.11.2
 asgiref==3.8.0
 certifi==2026.2.25
 charset-normalizer==3.4.6
+cryptography>=44.0
 decouple==0.0.7
 Django==5.0.3
+django-apscheduler==0.7.0
 django-filter==24.2
 django-humanize==0.1.2
 django-mathfilters==1.0.0
 djangorestframework==3.15.1
+pycryptodome>=3.20
 gunicorn==23.0.0
 humanize==4.9.0
 idna==3.11
@@ -15,12 +19,13 @@ packaging==24.2
 pandas==2.3.3
 pillow==10.4.0
 psycopg2-binary==2.9.11
+pymongo>=4.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.1.1
 pytube==15.0.0
 pytz==2025.2
-pywin32==306
+pywin32==306 ; sys_platform == 'win32'
 requests==2.32.5
 sentry-sdk==2.55.0
 six==1.16.0
