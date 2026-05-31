@@ -937,7 +937,7 @@ from datetime import datetime, timedelta
 
 from django.db import transaction as db_transaction
 from django.http import JsonResponse
-from fiscalisation.models import FiscalDevice, FiscalState, FiscalReceipt
+from fiscalisation.models import FiscalDevice, FiscalState, FiscalReceipt, FiscalSettings
 from fiscalisation.services import zimra_now, validate_receipt_for_zimra
 from fiscalisation.views import device, classify_submit_response
 import json
@@ -947,28 +947,42 @@ logger = logging.getLogger(__name__)
 @db_transaction.atomic
 def check_out(request):
     try:
-        # ZIMRA GUARD: lock the active device's FiscalState row so two
-        # concurrent checkouts can't both read receipt_global_no=N and
-        # both write N+1. select_for_update is held until this atomic
-        # block commits, serializing the counter-increment critical section.
-        try:
-            fiscal_device = FiscalDevice.objects.get(is_active=True)
-            fiscal_state = (
-                FiscalState.objects
-                .select_for_update()
-                .get(device=fiscal_device)
-            )
-        except (FiscalDevice.DoesNotExist, FiscalState.DoesNotExist):
-            return JsonResponse({
-                "custome_status": "Error",
-                "message": "Fiscal Device or State Configuration is missing in the database."
-            })
+        # If a CSO has paused fiscalisation (because ZIMRA is down, cert
+        # expired, etc.), the till keeps trading: we still create the
+        # Sale/Payment records, but skip all ZIMRA signing/submission and
+        # print without a QR. The reseller is then on the hook to issue
+        # manual paper receipts for the audit trail (and to resume
+        # fiscalisation as soon as possible).
+        fiscal_settings = FiscalSettings.get()
+        fiscalization_paused = fiscal_settings.fiscalization_paused
 
-        if not fiscal_state.is_day_open:
-            return JsonResponse({
-                "custome_status": "Error", 
-                "message": "Fiscal Day is closed. Please open the business day before checking out."
-            })
+        fiscal_device = None
+        fiscal_state = None
+        if not fiscalization_paused:
+            try:
+                fiscal_device = FiscalDevice.objects.get(is_active=True)
+                # select_for_update so two concurrent checkouts can't both
+                # read receipt_global_no=N and both write N+1.
+                fiscal_state = (
+                    FiscalState.objects
+                    .select_for_update()
+                    .get(device=fiscal_device)
+                )
+            except (FiscalDevice.DoesNotExist, FiscalState.DoesNotExist):
+                return JsonResponse({
+                    "custome_status": "Error",
+                    "message": (
+                        "Fiscal Device or State Configuration is missing. "
+                        "Either add a device at /fiscalisation/devices/ or "
+                        "pause fiscalisation to keep trading."
+                    ),
+                })
+
+            if not fiscal_state.is_day_open:
+                return JsonResponse({
+                    "custome_status": "Error",
+                    "message": "Fiscal Day is closed. Please open the business day before checking out (or pause fiscalisation to bypass)."
+                })
 
         customer_id = request.GET.get('customer_id')
 
@@ -1069,6 +1083,21 @@ def check_out(request):
 
         sale_transaction.open_state = False
         sale_transaction.save()
+
+        # If fiscalisation is paused, skip everything below — sign nothing,
+        # submit nothing, write no FiscalReceipt — and just print without
+        # a QR. The sale still goes through the books.
+        local_qr_string = ""
+        if fiscalization_paused:
+            custome_status, message = print_receipt(sale_transaction.recipt_number, " (BYPASS)", qr_data=local_qr_string)
+            print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data=local_qr_string)
+            return JsonResponse({
+                "custome_status": custome_status or "",
+                "message": (
+                    "Transaction recorded WITHOUT fiscalisation (paused). "
+                    "You are responsible for issuing a compliant manual receipt."
+                ),
+            })
 
         # ---------------------------------------------------------
         # Compute Cryptographic Strings & Signatures Offline

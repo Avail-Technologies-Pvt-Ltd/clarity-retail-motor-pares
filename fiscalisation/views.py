@@ -20,13 +20,54 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 from .services import Device, zimra_now, register_new_device
-from .models import FiscalDevice, FiscalState, FiscalReceipt, FiscalDaySummary
+from .models import FiscalDevice, FiscalState, FiscalReceipt, FiscalDaySummary, FiscalSettings
 from .forms import FiscalDeviceForm, CertUploadForm
 
 
 def _zimra_today():
     """Today's date in Zimbabwe local time (CAT)."""
     return zimra_now().date()
+
+
+# Compact human-readable map of the ZIMRA validation error codes we surface.
+# Source: Fiscal Device Gateway API v6.0 spec, section 7.3. We don't try to
+# cover every code — just the ones that actually show up in practice and the
+# common Red ones the operator needs to act on.
+RCPT_CODE_EXPLANATIONS = {
+    'RCPT010': 'Wrong currency code.',
+    'RCPT011': 'Receipt counter is not sequential (must reset to 1 each day, then +1).',
+    'RCPT012': 'Receipt global number is not sequential (must be +1 from prior).',
+    'RCPT013': 'Invoice number is not unique for this taxpayer.',
+    'RCPT014': 'Receipt date is earlier than fiscal day opening date — usually a clock-skew/timezone issue.',
+    'RCPT015': 'Credit/debit note is missing the original-receipt reference.',
+    'RCPT016': 'No receipt lines provided.',
+    'RCPT017': 'No tax information provided.',
+    'RCPT018': 'No payment information provided.',
+    'RCPT019': 'Receipt total doesn’t equal sum of all receipt lines.',
+    'RCPT020': 'Invoice signature is not valid — the device signature does not match what ZIMRA recomputed.',
+    'RCPT021': 'VAT tax used but the taxpayer is not VAT-registered.',
+    'RCPT029': 'CreditDebitNote object provided on a FiscalInvoice (should be on a CreditNote/DebitNote only).',
+    'RCPT030': 'Receipt date earlier than a previously submitted receipt date — back-to-back receipts in the same wall-clock second.',
+    'RCPT031': 'Receipt date is in the future.',
+    'RCPT032': 'Credit/debit note refers to a non-existent original invoice.',
+    'RCPT033': 'Credited/debited invoice was issued more than 12 months ago.',
+    'RCPT034': 'Notes field is required on a credit/debit note but missing.',
+    'RCPT035': 'Total credit-note amount exceeds the original invoice amount.',
+    'RCPT036': 'Credit/debit note uses taxes that weren’t on the original invoice.',
+    'RCPT037': 'Tax-exclusive: receipt total doesn’t equal sum(lines) + sum(taxes).',
+    'RCPT038': 'Receipt total doesn’t equal sum of salesAmountWithTax across taxes.',
+    'RCPT039': 'Receipt total doesn’t equal sum of all payment amounts.',
+    'RCPT040': 'Receipt total must be ≥ 0 for FiscalInvoice/DebitNote; ≤ 0 for CreditNote.',
+    'RCPT041': 'Receipt was submitted after fiscal day end.',
+    'RCPT042': 'Credit/debit note currency differs from the original invoice.',
+}
+
+
+def _explain_rcpt_code(code):
+    """Return the human description for a ZIMRA RCPTxxx code, or a placeholder."""
+    if not code:
+        return ''
+    return RCPT_CODE_EXPLANATIONS.get(code, f'{code}: see ZIMRA Fiscal Device Gateway API v6.0 §7.3 for details.')
 
 
 # ------------------------------------------------------------------
@@ -659,6 +700,49 @@ def dashboard(request):
 
 
 @csrf_exempt
+def pause_fiscalization(request):
+    """Halt all ZIMRA signing/submission. Checkout continues, prints have no QR."""
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "POST only."}, status=405)
+    import json as _json
+    try:
+        body = _json.loads(request.body or b'{}')
+    except Exception:
+        body = {}
+    reason = body.get('reason', 'other')
+    notes = (body.get('notes') or '').strip()
+
+    settings_obj = FiscalSettings.get()
+    settings_obj.fiscalization_paused = True
+    # tz-aware CAT so Django stores the right UTC instant
+    settings_obj.paused_at = zimra_now().replace(tzinfo=_ZIMBABWE_TZ)
+    settings_obj.paused_reason = reason if reason in dict(FiscalSettings.PAUSE_REASON_CHOICES) else 'other'
+    settings_obj.paused_notes = notes
+    settings_obj.save()
+    return JsonResponse({
+        "success": True,
+        "fiscalization_paused": True,
+        "paused_at": settings_obj.paused_at.isoformat() if settings_obj.paused_at else None,
+        "reason": settings_obj.paused_reason,
+        "notes": settings_obj.paused_notes,
+    })
+
+
+@csrf_exempt
+def resume_fiscalization(request):
+    """Re-enable ZIMRA signing/submission."""
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "POST only."}, status=405)
+    settings_obj = FiscalSettings.get()
+    settings_obj.fiscalization_paused = False
+    settings_obj.paused_at = None
+    settings_obj.paused_reason = ''
+    settings_obj.paused_notes = ''
+    settings_obj.save()
+    return JsonResponse({"success": True, "fiscalization_paused": False})
+
+
+@csrf_exempt
 def sync_pending_now(request):
     """One-shot sync of PENDING receipts, triggered from UI."""
     from django.core.management import call_command
@@ -687,69 +771,161 @@ def reconcile(request):
 
 
 def dashboard_data(request):
+    """Single endpoint backing the dashboard. Returns everything the UI needs
+    in one round-trip: device + day state + receipt counts + recent + failed
+    list (with ZIMRA validation codes/colours expanded) + pause state.
+    """
+    # Pause state is always reportable, even with no device configured.
+    settings_obj = FiscalSettings.get()
+    pause_block = {
+        "fiscalization_paused": settings_obj.fiscalization_paused,
+        "paused_at": settings_obj.paused_at.isoformat() if settings_obj.paused_at else None,
+        "paused_reason": settings_obj.paused_reason,
+        "paused_reason_label": dict(FiscalSettings.PAUSE_REASON_CHOICES).get(settings_obj.paused_reason, ''),
+        "paused_notes": settings_obj.paused_notes,
+    }
+
     try:
         fiscal_device = FiscalDevice.objects.get(is_active=True)
-        fiscal_state, _ = FiscalState.objects.get_or_create(device=fiscal_device)
-
-        recent_receipts = (
-            FiscalReceipt.objects
-            .filter(fiscal_state=fiscal_state)
-            .order_by('-created_at')[:20]
-        )
-        summaries = (
-            FiscalDaySummary.objects
-            .filter(fiscal_state=fiscal_state)
-            .order_by('-fiscal_day_no')[:10]
-        )
-
-        return JsonResponse({
-            "success": True,
-            "device": {
-                "device_id": fiscal_device.device_id,
-                "company": fiscal_device.company_name,
-                "test_mode": fiscal_device.is_test_mode,
-            },
-            "state": {
-                "fiscal_day_no": fiscal_state.fiscal_day_no,
-                "is_day_open": fiscal_state.is_day_open,
-                "receipt_counter": fiscal_state.receipt_counter,
-                "receipt_global_no": fiscal_state.receipt_global_no,
-                "current_day_date": str(fiscal_state.current_day_date) if fiscal_state.current_day_date else None,
-                "day_opened_at": fiscal_state.day_opened_at.isoformat() if fiscal_state.day_opened_at else None,
-                **_day_age_summary(fiscal_state),
-            },
-            "recent_receipts": [
-                {
-                    "invoice_no": r.invoice_no,
-                    "receipt_global_no": r.receipt_global_no,
-                    "receipt_counter": r.receipt_counter,
-                    "receipt_type": r.receipt_type,
-                    "total_amount": float(r.total_amount),
-                    "sync_status": r.sync_status,
-                    "created_at": r.created_at.isoformat(),
-                }
-                for r in recent_receipts
-            ],
-            "day_summaries": [
-                {
-                    "fiscal_day_no": s.fiscal_day_no,
-                    "day_date": str(s.day_date),
-                    "total_receipts_processed": s.total_receipts_processed,
-                    "total_sales_value": float(s.total_sales_value),
-                    "is_closed_successfully": s.is_closed_successfully,
-                    "closed_at": s.closed_at.isoformat() if s.closed_at else None,
-                }
-                for s in summaries
-            ],
-        })
-
     except FiscalDevice.DoesNotExist:
         return JsonResponse({
-            "success": False,
-            "error": "No active FiscalDevice configured in the database."
-        }, status=500)
-    except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)}, status=500)
+            "success": True,
+            "configured": False,
+            "pause": pause_block,
+            "message": "No active FiscalDevice. Add one at /fiscalisation/devices/",
+        })
+
+    fiscal_state, _ = FiscalState.objects.get_or_create(device=fiscal_device)
+
+    # Receipt sync-status counts (current day + lifetime)
+    today_receipts = FiscalReceipt.objects.filter(
+        fiscal_state=fiscal_state,
+        fiscal_day_no=fiscal_state.fiscal_day_no,
+    )
+    today_counts = {
+        'success': today_receipts.filter(sync_status='SUCCESS').count(),
+        'pending': today_receipts.filter(sync_status='PENDING').count(),
+        'failed':  today_receipts.filter(sync_status='FAILED').count(),
+        'total':   today_receipts.count(),
+    }
+    all_receipts = FiscalReceipt.objects.filter(fiscal_state=fiscal_state)
+    lifetime_counts = {
+        'success': all_receipts.filter(sync_status='SUCCESS').count(),
+        'pending': all_receipts.filter(sync_status='PENDING').count(),
+        'failed':  all_receipts.filter(sync_status='FAILED').count(),
+        'total':   all_receipts.count(),
+    }
+
+    # Failed receipts — surface the ZIMRA validation codes + colours so the
+    # operator knows what was wrong and which one to escalate.
+    failed_qs = (
+        FiscalReceipt.objects
+        .filter(fiscal_state=fiscal_state, sync_status='FAILED')
+        .order_by('-created_at')[:20]
+    )
+    failed_list = []
+    for r in failed_qs:
+        ve = (r.zimra_response_log or {}).get('validationErrors') or []
+        failed_list.append({
+            'invoice_no': r.invoice_no,
+            'fiscal_day_no': r.fiscal_day_no,
+            'receipt_global_no': r.receipt_global_no,
+            'total_amount': float(r.total_amount),
+            'created_at': r.created_at.isoformat(),
+            'zimra_receipt_id': r.zimra_receipt_id,
+            'validation_errors': [
+                {
+                    'code': v.get('validationErrorCode'),
+                    'colour': v.get('validationErrorColor'),
+                    'explain': _explain_rcpt_code(v.get('validationErrorCode', '')),
+                }
+                for v in ve
+            ],
+            'qr_url': r.qr_code_string,
+        })
+
+    pending_qs = (
+        FiscalReceipt.objects
+        .filter(fiscal_state=fiscal_state, sync_status='PENDING')
+        .order_by('-created_at')[:20]
+    )
+    pending_list = [
+        {
+            'invoice_no': r.invoice_no,
+            'fiscal_day_no': r.fiscal_day_no,
+            'receipt_global_no': r.receipt_global_no,
+            'total_amount': float(r.total_amount),
+            'created_at': r.created_at.isoformat(),
+            'last_error': (r.zimra_response_log or {}).get('error') or '(awaiting first submit)',
+        }
+        for r in pending_qs
+    ]
+
+    recent_receipts = (
+        FiscalReceipt.objects
+        .filter(fiscal_state=fiscal_state)
+        .order_by('-created_at')[:15]
+    )
+    recent_list = [
+        {
+            'invoice_no': r.invoice_no,
+            'fiscal_day_no': r.fiscal_day_no,
+            'receipt_global_no': r.receipt_global_no,
+            'total_amount': float(r.total_amount),
+            'sync_status': r.sync_status,
+            'created_at': r.created_at.isoformat(),
+            'qr_url': r.qr_code_string,
+        }
+        for r in recent_receipts
+    ]
+
+    summaries = (
+        FiscalDaySummary.objects
+        .filter(fiscal_state=fiscal_state)
+        .order_by('-fiscal_day_no')[:10]
+    )
+    summaries_list = [
+        {
+            'fiscal_day_no': s.fiscal_day_no,
+            'day_date': str(s.day_date),
+            'total_receipts_processed': s.total_receipts_processed,
+            'total_sales_value': float(s.total_sales_value),
+            'is_closed_successfully': s.is_closed_successfully,
+            'closed_at': s.closed_at.isoformat() if s.closed_at else None,
+            'closing_response': s.closing_response,
+        }
+        for s in summaries
+    ]
+
+    return JsonResponse({
+        "success": True,
+        "configured": True,
+        "pause": pause_block,
+        "device": {
+            "device_id": fiscal_device.device_id,
+            "serial_no": fiscal_device.serial_no,
+            "company": fiscal_device.company_name,
+            "test_mode": fiscal_device.is_test_mode,
+            "cert_expiry": cert_expiry_info(fiscal_device.cert_path),
+        },
+        "state": {
+            "fiscal_day_no": fiscal_state.fiscal_day_no,
+            "is_day_open": fiscal_state.is_day_open,
+            "receipt_counter": fiscal_state.receipt_counter,
+            "receipt_global_no": fiscal_state.receipt_global_no,
+            "current_day_date": str(fiscal_state.current_day_date) if fiscal_state.current_day_date else None,
+            "day_opened_at": fiscal_state.day_opened_at.isoformat() if fiscal_state.day_opened_at else None,
+            **_day_age_summary(fiscal_state),
+        },
+        "counts": {
+            "today": today_counts,
+            "lifetime": lifetime_counts,
+        },
+        "recent_receipts": recent_list,
+        "failed_receipts": failed_list,
+        "pending_receipts": pending_list,
+        "day_summaries": summaries_list,
+    })
 
 # ===================================================================
 # DEVICE MANAGEMENT UI

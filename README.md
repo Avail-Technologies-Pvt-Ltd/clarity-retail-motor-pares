@@ -82,13 +82,61 @@ No cron job, no separate worker daemon, nothing for the operator to manage.
 
 ---
 
-## Operational features
+## Operational dashboard
+
+The dashboard at `/fiscalisation/dashboard/` is the operator's single
+control panel. Auto-refreshes every 15 seconds. It shows:
+
+- **Active device card** — ID, serial, company, environment, certificate
+  expiry days remaining.
+- **Current fiscal day card** — day number, open/closed, opened-at,
+  hours-open vs cap, next receipt counters.
+- **Receipt counters** — today and lifetime, split into Total / Synced
+  (SUCCESS) / Pending / Failed.
+- **Failed Receipts list** — every receipt ZIMRA rejected, with the
+  RCPTxxx validation code, the colour (Red/Yellow), and a plain-English
+  explanation. The operator can read the list and act, no spec lookup.
+- **Pending Receipts list** — receipts the system signed but hasn't
+  managed to submit yet, with last transport error.
+- **Recent receipts** — sync status badge + clickable ZIMRA verification
+  URL for every receipt.
+- **Closed-day summaries** — historical day-close records.
+
+Top-of-screen banners auto-appear when:
+
+- Fiscalisation is paused (see below)
+- The fiscal day is approaching ZIMRA's `taxPayerDayMaxHrs` cap (yellow)
+  or has exceeded it (red)
+- No active fiscal device is configured
+
+Action buttons: **Refresh**, **Open Day**, **Close Day**, **Reconcile**,
+**Sync Pending**, **Pause Fiscalisation** (or **Resume** if already paused).
+
+## Pause fiscalisation (emergency escape hatch)
+
+Use this when ZIMRA is unreachable, the cert is invalid, or the device
+isn't configured yet — and the shop still needs to trade.
+
+Click **Pause Fiscalisation** on the dashboard, pick a reason
+(zimra_down / cert_expired / device_not_configured / maintenance /
+other) and optionally add notes. While paused:
+
+- Every checkout still records the Sale + Payment to the books.
+- **No** ZIMRA signing, **no** submission, **no** FiscalReceipt row.
+- The printed receipt has **no QR code**.
+- The operator is responsible for giving customers a compliant
+  **manual paper receipt** and reconciling these sales with ZIMRA
+  after the pause ends.
+
+A red banner remains visible across the dashboard for as long as the
+system is paused. Click **Resume Fiscalisation** to return to normal
+operation.
+
+## Other operational features
 
 - **Pre-flight receipt validator** rejects bad receipts at the till
   (totals mismatch, invalid tax_percent, wrong moneyTypeCode, wrong sign
   for the receipt type) before they reach ZIMRA.
-- **Day-age banner** on the dashboard warns when a fiscal day is
-  approaching ZIMRA's `taxPayerDayMaxHrs` cap (default 24h).
 - **Cert-expiry badge** in the device list flags certs nearing expiry;
   the system refuses to open a new fiscal day when <7 days remain.
 - **Concurrency lock** on `FiscalState` so two simultaneous checkouts
@@ -96,9 +144,8 @@ No cron job, no separate worker daemon, nothing for the operator to manage.
 - **HTTP timeouts** (30s) on every ZIMRA call — a misbehaving server
   cannot hang a cashier.
 - **Close-day gating** — refuses to call closeDay if any local FiscalReceipt
-  is still `PENDING` or `FAILED` for that day; surfaces the blocking list.
-- **Reconcile + Sync Pending buttons** on the dashboard for one-click
-  manual recovery.
+  is still `PENDING` or `FAILED` for that day; the dashboard surfaces the
+  blocking list so the operator knows what to fix first.
 
 ---
 
@@ -172,4 +219,3 @@ Receipt flow on checkout (see `pos/views.py:check_out`):
 
 If step 5 fails (network/timeout), the receipt is `PENDING` and the
 background scheduler picks it up within 2 minutes.
->>>>>>> 7b0a5d348c046ac50be19834f73f0995485cd983

@@ -100,6 +100,47 @@ class FiscalReceipt(models.Model):
         return f"Inv {self.invoice_no} | Global #{self.receipt_global_no} [{self.sync_status}]"
 
 
+class FiscalSettings(models.Model):
+    """Operational toggles for the fiscalisation pipeline. Singleton — exactly
+    one row, accessed via FiscalSettings.get().
+
+    Why a separate table instead of a flag on FiscalDevice: the pause is a
+    process-level switch (affects every checkout, every device) and we want
+    an audit trail of who flipped it and why. The reseller's CSO can resume
+    fiscalisation in 1 click from the dashboard once the underlying ZIMRA /
+    network issue is fixed.
+    """
+    PAUSE_REASON_CHOICES = [
+        ('zimra_down', 'ZIMRA / FDMS unreachable'),
+        ('cert_expired', 'Certificate expired or invalid'),
+        ('device_not_configured', 'Device not yet configured'),
+        ('maintenance', 'Scheduled maintenance'),
+        ('other', 'Other (see notes)'),
+    ]
+    singleton_id = models.PositiveSmallIntegerField(primary_key=True, default=1)
+    fiscalization_paused = models.BooleanField(default=False)
+    paused_at = models.DateTimeField(null=True, blank=True)
+    paused_reason = models.CharField(max_length=32, choices=PAUSE_REASON_CHOICES, blank=True, default='')
+    paused_notes = models.TextField(blank=True, default='',
+        help_text="Free-text reason — shown on the dashboard banner.")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Fiscal Settings"
+
+    def save(self, *args, **kwargs):
+        self.singleton_id = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(singleton_id=1)
+        return obj
+
+    def __str__(self):
+        return f"Fiscal Settings (paused={self.fiscalization_paused})"
+
+
 class FiscalDaySummary(models.Model):
     """Saves Z-Report parameters to handle day closing securely."""
     fiscal_state = models.ForeignKey(FiscalState, on_delete=models.CASCADE)

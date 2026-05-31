@@ -33,4 +33,6 @@ urlpatterns = [
     path("api/config/", views.get_config),
     path("api/reconcile/", views.reconcile),
     path("api/sync-pending/", views.sync_pending_now),
+    path("api/pause/", views.pause_fiscalization),
+    path("api/resume/", views.resume_fiscalization),
 ]
