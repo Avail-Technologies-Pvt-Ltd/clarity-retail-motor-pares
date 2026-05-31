@@ -39,7 +39,97 @@ __all__ = [
     'Device',
     'ZimraServerError',
     'zimra_now',
+    'validate_receipt_for_zimra',
 ]
+
+
+# Set of MoneyType codes ZIMRA accepts (spec section 4.4.5).
+ZIMRA_MONEY_TYPE_CODES = {0, 1, 2, 3, 4, 5, 6}
+
+
+def validate_receipt_for_zimra(receipt_data, applicable_taxes, tax_inclusive=True):
+    """Run the basic ZIMRA receipt-shape checks BEFORE signing/submitting.
+
+    Catches the validation rules that the FDMS will otherwise reject after the
+    fact (RCPT016-RCPT019, RCPT039, RCPT040, plus tax-id and money-type
+    sanity). Returns a list of human-readable error strings; an empty list
+    means the receipt is structurally sound for submission. The library's
+    prepareReceipt also auto-reconciles the payment total, but other
+    mismatches will still trip ZIMRA, so we surface them at the till.
+    """
+    from decimal import Decimal
+
+    errors = []
+
+    lines = receipt_data.get('receiptLines') or []
+    if not lines:
+        errors.append("RCPT016: at least one receipt line is required.")
+        return errors  # rest of the checks are meaningless without lines
+
+    payments = receipt_data.get('receiptPayments') or []
+    if not payments:
+        errors.append("RCPT018: at least one payment line is required.")
+
+    valid_tax_keys = set(applicable_taxes.keys())
+    for i, ln in enumerate(lines, start=1):
+        tp = ln.get('tax_percent')
+        if tp is None:
+            errors.append(f"Line {i}: tax_percent is required.")
+            continue
+        if isinstance(tp, str) and tp.lower() in ('e', 'exempt'):
+            if 'exempt' not in valid_tax_keys:
+                errors.append(f"Line {i}: exempt is not in this device's applicableTaxes; refresh getConfig.")
+            continue
+        try:
+            tp_val = float(tp)
+        except (TypeError, ValueError):
+            errors.append(f"Line {i}: tax_percent '{tp}' is not numeric.")
+            continue
+        if tp_val not in valid_tax_keys and int(tp_val) not in valid_tax_keys:
+            errors.append(
+                f"Line {i}: tax_percent {tp_val} is not in device's applicableTaxes "
+                f"({sorted(k for k in valid_tax_keys if k != 'exempt')}). Refresh getConfig if rates changed."
+            )
+
+    for i, p in enumerate(payments, start=1):
+        mtc = p.get('moneyTypeCode')
+        try:
+            if mtc is None or int(mtc) not in ZIMRA_MONEY_TYPE_CODES:
+                errors.append(f"Payment {i}: moneyTypeCode '{mtc}' is not in ZIMRA's valid set 0-6.")
+        except (TypeError, ValueError):
+            errors.append(f"Payment {i}: moneyTypeCode '{mtc}' is not an integer.")
+
+    if tax_inclusive:
+        try:
+            line_sum = sum(
+                Decimal(str(ln.get('unit_price', 0))) * Decimal(str(ln.get('quantity', 0)))
+                for ln in lines
+            )
+        except Exception as e:
+            errors.append(f"Could not sum receipt lines: {e}")
+            line_sum = None
+
+        if line_sum is not None:
+            try:
+                pay_sum = sum(Decimal(str(p.get('paymentAmount', 0))) for p in payments)
+            except Exception as e:
+                errors.append(f"Could not sum payments: {e}")
+                pay_sum = None
+            if pay_sum is not None and abs(pay_sum - line_sum) > Decimal('0.01'):
+                errors.append(
+                    f"RCPT039: payment total ({pay_sum}) does not match line sum ({line_sum})."
+                )
+
+            rtype = (receipt_data.get('receiptType') or '').upper()
+            if rtype in ('FISCALINVOICE', 'DEBITNOTE') and line_sum <= 0:
+                errors.append(f"RCPT040: receipt total ({line_sum}) must be > 0 for {rtype}.")
+            if rtype == 'CREDITNOTE' and line_sum >= 0:
+                errors.append(f"RCPT040: receipt total ({line_sum}) must be < 0 for CREDITNOTE.")
+
+    if not (receipt_data.get('invoiceNo') or '').strip():
+        errors.append("RCPT013: invoiceNo is required.")
+
+    return errors
 
 
 # Global default timeout for ALL ZIMRA HTTP calls (seconds).

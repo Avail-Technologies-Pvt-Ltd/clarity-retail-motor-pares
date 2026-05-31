@@ -938,7 +938,7 @@ from datetime import datetime, timedelta
 from django.db import transaction as db_transaction
 from django.http import JsonResponse
 from fiscalisation.models import FiscalDevice, FiscalState, FiscalReceipt
-from fiscalisation.services import zimra_now
+from fiscalisation.services import zimra_now, validate_receipt_for_zimra
 from fiscalisation.views import device, classify_submit_response
 import json
 
@@ -1124,6 +1124,26 @@ def check_out(request):
                 "buyerPhone": sale_transaction.buyer_tel or "",
                 "vatNumber": sale_transaction.buyer_vat or "",
             }
+
+        # Pre-flight validation: catch the obvious mistakes (missing tax_percent,
+        # bad moneyTypeCode, payment-sum != line-sum, RCPT040 sign) BEFORE we
+        # waste an ZIMRA round-trip and pollute the day with a bad receipt.
+        try:
+            applicable_taxes = device.applicableTaxes
+        except Exception:
+            applicable_taxes = {}
+        validation_errors = validate_receipt_for_zimra(
+            mock_receipt_data,
+            applicable_taxes=applicable_taxes,
+            tax_inclusive=True,
+        )
+        if validation_errors:
+            logger.warning("Pre-flight validation failed for receipt %s: %s",
+                           sale_transaction.recipt_number, validation_errors)
+            return JsonResponse({
+                "custome_status": "Error",
+                "message": "Receipt validation failed before signing:\n- " + "\n- ".join(validation_errors),
+            })
 
         # prepareReceipt parses your dict locally using loaded cert keys and the tracked hash chain
         prepared_receipt = device.prepareReceipt(

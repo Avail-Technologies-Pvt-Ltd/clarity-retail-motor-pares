@@ -715,6 +715,8 @@ def dashboard_data(request):
                 "receipt_counter": fiscal_state.receipt_counter,
                 "receipt_global_no": fiscal_state.receipt_global_no,
                 "current_day_date": str(fiscal_state.current_day_date) if fiscal_state.current_day_date else None,
+                "day_opened_at": fiscal_state.day_opened_at.isoformat() if fiscal_state.day_opened_at else None,
+                **_day_age_summary(fiscal_state),
             },
             "recent_receipts": [
                 {
@@ -809,6 +811,76 @@ def cert_expiry_info(cert_path):
 
 # Re-import _ZIMBABWE_TZ at module level for cert_expiry_info
 from .services import _ZIMBABWE_TZ  # noqa: E402
+
+
+# Cache the per-device fiscal-day limits (pulled from getConfig).
+# These rarely change so caching them avoids hitting ZIMRA on every dashboard tick.
+_day_limits_cache = {}  # device_id -> {'max_hours': int, 'notify_hours': int}
+
+
+def _get_day_limits(device_obj):
+    """Return {'max_hours': N, 'notify_hours': M} for the device.
+
+    Tries the cache first; falls back to a fresh getConfig; defaults to
+    24/2 (ZIMRA's standard) if everything fails so we never block on it.
+    """
+    dev_id = device_obj.deviceID
+    if dev_id in _day_limits_cache:
+        return _day_limits_cache[dev_id]
+    limits = {'max_hours': 24, 'notify_hours': 2}
+    try:
+        cfg = device_obj.getConfig()
+        if isinstance(cfg, dict):
+            limits['max_hours'] = int(cfg.get('taxPayerDayMaxHrs', 24))
+            limits['notify_hours'] = int(cfg.get('taxpayerDayEndNotificationHrs', 2))
+            _day_limits_cache[dev_id] = limits
+    except Exception:
+        pass
+    return limits
+
+
+def _day_age_summary(fiscal_state):
+    """How long has the current fiscal day been open?
+
+    Returns a dict that goes straight into the dashboard JSON. Status:
+        ok       — well within the max-hours window
+        warning  — inside the notification window (taxpayerDayEndNotificationHrs
+                   before the cap)
+        critical — past the cap; ZIMRA will refuse new receipts soon and the
+                   day will need an emergency close
+    """
+    if not fiscal_state.is_day_open or not fiscal_state.day_opened_at:
+        return {
+            'hours_open': None,
+            'max_hours': None,
+            'notify_at_hours': None,
+            'day_age_status': 'ok',
+        }
+    try:
+        limits = _get_day_limits(get_device())
+    except Exception:
+        limits = {'max_hours': 24, 'notify_hours': 2}
+
+    opened = fiscal_state.day_opened_at
+    if opened.tzinfo is None:
+        opened = opened.replace(tzinfo=_ZIMBABWE_TZ)
+    now_aware = zimra_now().replace(tzinfo=_ZIMBABWE_TZ)
+    hours_open = (now_aware - opened).total_seconds() / 3600
+
+    notify_at = limits['max_hours'] - limits['notify_hours']
+    if hours_open >= limits['max_hours']:
+        status = 'critical'
+    elif hours_open >= notify_at:
+        status = 'warning'
+    else:
+        status = 'ok'
+
+    return {
+        'hours_open': round(hours_open, 1),
+        'max_hours': limits['max_hours'],
+        'notify_at_hours': notify_at,
+        'day_age_status': status,
+    }
 
 
 def device_list(request):
