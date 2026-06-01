@@ -1659,122 +1659,88 @@ def activate_all_deactivated_batches(request):
 	print(f"{batches.count()} activated")
 
 
-
 @transaction.atomic
 def db_fix(request):
-	print("RECEIPT MONEY PORTIONS")
-	receiptmoneyportions = ReceiptMoneyPortion.objects.all()
-	
-	for money_portion in receiptmoneyportions:
-		print(f"Old {money_portion.id}")
-		payment = Payment()
-		payment.amount_paid = money_portion.amount_paid
-		payment.rate = money_portion.rate
-		payment.date = money_portion.date
-		payment.payment_method = money_portion.payment_method
-		payment.payment_for = "RECEIPT"
-		payment.payment_for_id = money_portion.sale_transaction.recipt_number
-		payment.loose_status = False
-		payment.change = money_portion.change
-		payment.change_given = money_portion.change_given
-		payment.created_by = money_portion.created_by
-		payment.created_at = money_portion.created_at
-		payment.save()
-		money_portion.delete()
-		print(f"New {payment.id}")
+	import csv
 
-	payments = Payment.objects.filter(payment_for="RECEIPT")
-	print("****************************************************")
+	global_suplier = Supplier()
+	global_suplier.company_name = "INTIAL DEFAULT"
+	global_suplier.registration_number = "INTIAL DEFAULT"
+	global_suplier.phone_number = ""
+	global_suplier.email = ""
+	global_suplier.address = ""
+	global_suplier.created_by = request.user
+	global_suplier.save()
+	print("global_suplier saved")
 
-	print("INVOICE MONEY PORTIONS")
-	invoicemoneyportions = InvoiceMoneyPortion.objects.all()
-	
-	for money_portion in invoicemoneyportions:
-		print(f"Old {money_portion.id}")
-		payment = Payment()
-		payment.amount_paid = money_portion.amount_paid
-		payment.rate = money_portion.rate
-		payment.date = money_portion.date
-		payment.payment_method = money_portion.payment_method
-		payment.payment_for = "INVOICE"
-		payment.payment_for_id = money_portion.invoice.id
-		payment.loose_status = False
-		payment.created_by = money_portion.created_by
-		payment.created_at = money_portion.created_at
-		payment.save()
-		money_portion.delete()
-		print(f"New {payment.id}")
+	global_manufacturer = Manufacturer()
+	global_manufacturer.company_name = "INTIAL DEFAULT"
+	global_manufacturer.registration_number = "INTIAL DEFAULT"
+	global_manufacturer.phone_number = ""
+	global_manufacturer.email = ""
+	global_manufacturer.address = ""
+	global_manufacturer.created_by = request.user
+	global_manufacturer.save()
+	print("global_manufacturer saved")
 
-	payments = Payment.objects.filter(payment_for="INVOICE")
-	print("****************************************************")
+	global_invoice = Invoice()
+	global_invoice.invoice_number = "AAAA0001"
+	global_invoice.supplier = global_suplier
+	global_invoice.date = datetime_.today().date()
+	global_invoice.created_by = request.user
+	global_invoice.save()
+	print("global_invoice saved")
 
+	global_vat_code = VATCode()
+	global_vat_code.title = "Zero rated"
+	global_vat_code.percentage = 0
+	global_vat_code.created_by = request.user
+	global_vat_code.save()
+	print("global_vat_code saved")
 
-	print("EXPENSE MONEY PORTIONS")
-	expensemoneyportions = ExpenseMoneyPortion.objects.all()
-	
-	for money_portion in expensemoneyportions:
-		print(f"Old {money_portion.id}")
-		payment = Payment()
-		payment.amount_paid = money_portion.amount_paid
-		payment.rate = money_portion.rate
-		payment.date = money_portion.date
-		payment.payment_method = money_portion.payment_method
-		payment.payment_for = "EXPENSE"
-		payment.payment_for_id = money_portion.expense.id
-		payment.loose_status = False
-		payment.created_by = money_portion.created_by
-		payment.created_at = money_portion.created_at
-		payment.save()
-		money_portion.delete()
-		print(f"New {payment.id}")
+	counter = 0
 
-	payments = Payment.objects.filter(payment_for="INVOICE")
-	print("****************************************************")
+	file_path = "reports/products.csv"
+	with open(file_path, 'r', encoding='utf-8') as file:
+		reader = csv.DictReader(file)
+		for row in reader:
+			counter+= 1
+			new_product = Product()
+			new_product.title = row['Name']
+			new_product.bar_code = row['Barcode']
+			# new_product.product_code = row['']
+			new_product.details = row['Name']
+			new_product.vat_code = global_vat_code
+			new_product.created_by = request.user
+			new_product.save()
+			print("new_product saved")
+
+			new_stock = Stock()
+			new_stock.product = new_product
+			new_stock.selling_price = row['Price']
+			new_stock.markup = row['Markup']
+			new_stock.reorder_quantity = 5
+			# new_stock.expiration_warning_days = row['']
+			# new_stock.status = row['']
+			# new_stock.is_tax_inclusive = row['']
+			new_stock.save()
+			print("new_stock saved")
 
 
-	print("RETURN_OUT_REFUND MONEY PORTIONS")
-	refundreturnoutmoneyportions = RefundReturnOutMoneyPortion.objects.all()
-	
-	for money_portion in refundreturnoutmoneyportions:
-		print(f"Old {money_portion.id}")
-		payment = Payment()
-		payment.amount_paid = money_portion.amount_paid
-		payment.rate = money_portion.rate
-		payment.date = money_portion.date
-		payment.payment_method = money_portion.payment_method
-		payment.payment_for = "RETURN_OUT_REFUND"
-		payment.payment_for_id = money_portion.return_out.id
-		payment.loose_status = False
-		payment.created_by = money_portion.created_by
-		payment.created_at = money_portion.created_at
-		payment.save()
-		money_portion.delete()
-		print(f"New {payment.id}")
-
-	payments = Payment.objects.filter(payment_for="INVOICE")
-	print("****************************************************")
-
-
-	payments = Payment.objects.all()
-
-	print("-----------------------------------------------------")
-	print("-----------------------------------------------------")
-	print("SUMMERY")
-	print("-----------------------------------------------------")
-	print("")
-	print("")
-	print(f"Receiptmoneyportions {receiptmoneyportions.count()}")
-	print(f"Payments {payments.filter(payment_for='RECEIPT').count()}")
-	print("----------------------------------------------------")
-	print(f"Invoicemoneyportions {invoicemoneyportions.count()}")
-	print(f"Payments {payments.filter(payment_for='INVOICE').count()}")
-	print("----------------------------------------------------")
-	print(f"Expensemoneyportions {expensemoneyportions.count()}")
-	print(f"Payments {payments.filter(payment_for='EXPENSE').count()}")
-	print("----------------------------------------------------")
-	print(f"Expensemoneyportions {refundreturnoutmoneyportions.count()}")
-	print(f"Payments {payments.filter(payment_for='RETURN_OUT_REFUND').count()}")
-	print("----------------------------------------------------")
-
-	
+			new_batch = Batch()
+			new_batch.batch_number = f"INTIAL-B-{counter}"
+			new_batch.stock = new_stock
+			new_batch.manufacturer = global_manufacturer
+			new_batch.invoice = global_invoice
+			# new_batch.total_packs = row['Quantity']
+			new_batch.total_packs = 1
+			new_batch.pack_size = 1
+			# new_batch.total_units = row['Quantity']
+			new_batch.total_units = 1
+			new_batch.buying_pack_price = row['Cost']
+			new_batch.VAT = 0
+			new_batch.markup = row['Markup']
+			new_batch.created_by = request.user
+			new_batch.save()
+			print(f"{counter} new_batch saved")	
 	return JsonResponse({"response":"Done"})

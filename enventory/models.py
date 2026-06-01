@@ -41,7 +41,7 @@ class Product(models.Model):
 	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
 	deleted_at = models.DateTimeField(null=True, blank=True)
 	
-	global_id = models.CharField(max_length=100, default='', blank=True, null=True)
+	# global_id = models.CharField(max_length=100, default='', blank=True, null=True)
 	bar_code = models.CharField(max_length=30, default='N/A', blank=True, null=True)
 	title = models.CharField(max_length=30)
 	product_code = models.CharField(max_length=50, default='N/A', blank=True, null=True)
