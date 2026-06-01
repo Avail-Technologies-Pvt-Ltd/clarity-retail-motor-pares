@@ -28,6 +28,9 @@ class FiscalState(models.Model):
     receipt_global_no = models.IntegerField(default=0)  # Continuous increment tracking
     is_day_open = models.BooleanField(default=False)
     current_day_date = models.DateField(null=True, blank=True)
+    day_opened_at = models.DateTimeField(null=True, blank=True,
+        help_text="Wall-clock timestamp when openDay succeeded. Used to "
+                  "compute hours-open and warn before ZIMRA's max-hours cap.")
     last_receipt_hash = models.CharField(max_length=255, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -35,11 +38,20 @@ class FiscalState(models.Model):
         verbose_name_plural = "Fiscal States"
     
     def reset_for_new_day(self, next_day_no, day_date):
-        """Prepares state variables when openDay succeeds."""
+        """Prepares state variables when openDay succeeds.
+
+        Clears last_receipt_hash because the receipt-signature chain RESETS
+        at each fiscal day (spec section 12.2.1: previousReceiptHash is not
+        used when receipt is first in fiscal day).
+        """
+        from .services import zimra_now
         self.fiscal_day_no = next_day_no
         self.receipt_counter = 0
+        self.last_receipt_hash = None
         self.is_day_open = True
         self.current_day_date = day_date
+        self.day_opened_at = zimra_now()
+>>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
         self.save()
 
     def __str__(self):
@@ -59,6 +71,10 @@ class FiscalReceipt(models.Model):
         ('DEBITNOTE', 'Debit Note'),
     ]
     
+<<<<<<< HEAD
+=======
+    
+>>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
     fiscal_state = models.ForeignKey(FiscalState, on_delete=models.CASCADE, related_name="receipts")
     fiscal_day_no = models.IntegerField()
     receipt_global_no = models.IntegerField()
@@ -87,6 +103,50 @@ class FiscalReceipt(models.Model):
     def __str__(self):
         return f"Inv {self.invoice_no} | Global #{self.receipt_global_no} [{self.sync_status}]"
 
+<<<<<<< HEAD
+=======
+
+class FiscalSettings(models.Model):
+    """Operational toggles for the fiscalisation pipeline. Singleton — exactly
+    one row, accessed via FiscalSettings.get().
+
+    Why a separate table instead of a flag on FiscalDevice: the pause is a
+    process-level switch (affects every checkout, every device) and we want
+    an audit trail of who flipped it and why. The reseller's CSO can resume
+    fiscalisation in 1 click from the dashboard once the underlying ZIMRA /
+    network issue is fixed.
+    """
+    PAUSE_REASON_CHOICES = [
+        ('zimra_down', 'ZIMRA / FDMS unreachable'),
+        ('cert_expired', 'Certificate expired or invalid'),
+        ('device_not_configured', 'Device not yet configured'),
+        ('maintenance', 'Scheduled maintenance'),
+        ('other', 'Other (see notes)'),
+    ]
+    singleton_id = models.PositiveSmallIntegerField(primary_key=True, default=1)
+    fiscalization_paused = models.BooleanField(default=False)
+    paused_at = models.DateTimeField(null=True, blank=True)
+    paused_reason = models.CharField(max_length=32, choices=PAUSE_REASON_CHOICES, blank=True, default='')
+    paused_notes = models.TextField(blank=True, default='',
+        help_text="Free-text reason — shown on the dashboard banner.")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Fiscal Settings"
+
+    def save(self, *args, **kwargs):
+        self.singleton_id = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(singleton_id=1)
+        return obj
+
+    def __str__(self):
+        return f"Fiscal Settings (paused={self.fiscalization_paused})"
+
+>>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
 
 class FiscalDaySummary(models.Model):
     """Saves Z-Report parameters to handle day closing securely."""

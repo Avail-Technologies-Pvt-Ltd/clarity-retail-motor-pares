@@ -1,0 +1,104 @@
+{% extends "fiscalisation/devices/_base.html" %}
+{% block title %}Device {{ device.device_id }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="row">
+        <div class="grow">
+            <h1>Device {{ device.device_id }}</h1>
+            <p class="muted">{{ device.company_name|default:"" }} — Serial {{ device.serial_no }}</p>
+        </div>
+        <a href="{% url 'fiscal_device_list' %}" class="btn btn-secondary">← Back to list</a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Status</h2>
+    <table>
+        <tr><th>Environment</th><td>{% if device.is_test_mode %}<span class="badge badge-test">TEST</span>{% else %}<span class="badge badge-prod">PROD</span>{% endif %}</td></tr>
+        <tr><th>Active</th><td>{% if device.is_active %}<span class="badge badge-active">Yes</span>{% else %}<span class="badge badge-inactive">No</span>{% endif %}</td></tr>
+        <tr><th>Certificate file</th><td>{% if has_cert %}<span class="badge badge-ok">Present</span> {{ device.cert_path }}{% else %}<span class="badge badge-err">Missing</span>{% endif %}</td></tr>
+        <tr><th>Private key file</th><td>{% if has_key %}<span class="badge badge-ok">Present</span> {{ device.private_key_path }}{% else %}<span class="badge badge-err">Missing</span>{% endif %}</td></tr>
+        {% if cert_expiry %}
+        <tr><th>Cert expires</th><td>
+            {{ cert_expiry.expires_at|default:"?" }}
+            ({% if cert_expiry.status == 'critical' %}<span class="badge badge-err">{{ cert_expiry.days_remaining }} days left — renew now</span>
+            {% elif cert_expiry.status == 'warning' %}<span class="badge badge-warn">{{ cert_expiry.days_remaining }} days left</span>
+            {% elif cert_expiry.status == 'ok' %}<span class="badge badge-ok">{{ cert_expiry.days_remaining }} days left</span>
+            {% else %}<span class="badge badge-err">unreadable: {{ cert_expiry.error }}</span>{% endif %})
+        </td></tr>
+        {% endif %}
+        <tr><th>Registered</th><td>{{ device.registered_at|date:"Y-m-d H:i" }}</td></tr>
+    </table>
+</div>
+
+{% if not has_cert or not has_key %}
+<div class="card">
+    <h2>Install certificate</h2>
+    <p class="muted">Pick ONE option:</p>
+
+    <div style="margin-top: 16px; padding: 16px; border: 1px solid #d4d7e0; border-radius: 8px;">
+        <h2 style="font-size: 16px;">Option A — Register with ZIMRA now</h2>
+        <p class="muted" style="margin-bottom: 12px;">
+            Generates a fresh keypair, sends a CSR to ZIMRA's
+            {% if device.is_test_mode %}TEST{% else %}PRODUCTION{% endif %}
+            FDMS API, and saves the issued certificate. Requires internet + valid activation key.
+        </p>
+        <form method="post" action="{% url 'fiscal_device_register' device.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Generate CSR + Fetch Cert</button>
+        </form>
+    </div>
+
+    <div style="margin-top: 16px; padding: 16px; border: 1px solid #d4d7e0; border-radius: 8px;">
+        <h2 style="font-size: 16px;">Option B — Upload existing cert + key</h2>
+        <p class="muted" style="margin-bottom: 12px;">If this device was already registered elsewhere and you have its PEM files.</p>
+        <form method="post" action="{% url 'fiscal_device_upload_cert' device.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in upload_form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Actions</h2>
+    <div class="row">
+        {% if has_cert and has_key %}
+            <button type="button" class="btn btn-secondary" onclick="runTest()">Test connection (ping + status + config)</button>
+        {% endif %}
+        {% if not device.is_active and has_cert and has_key %}
+            <form method="post" action="{% url 'fiscal_device_set_active' device.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Set as Active Device</button>
+            </form>
+        {% endif %}
+        {% if not device.is_active %}
+            <form method="post" action="{% url 'fiscal_device_delete' device.pk %}" style="display:inline"
+                  onsubmit="return confirm('Delete this device? This does NOT unregister it with ZIMRA.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        {% endif %}
+    </div>
+    <pre id="test-output" style="display:none; margin-top: 16px;"></pre>
+</div>
+
+<script>
+function runTest() {
+    const out = document.getElementById('test-output');
+    out.style.display = 'block';
+    out.textContent = 'Running...';
+    fetch('{% url "fiscal_device_test" device.pk %}', {method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}})
+        .then(r => r.json())
+        .then(d => { out.textContent = JSON.stringify(d, null, 2); })
+        .catch(e => { out.textContent = 'Error: ' + e; });
+}
+</script>
+{% endblock %}

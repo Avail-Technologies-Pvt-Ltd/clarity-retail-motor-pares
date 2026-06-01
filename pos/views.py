@@ -930,10 +930,60 @@ def void_cart(request):
 
 
 
-@login_required
-@transaction.atomic 
+
+import time
+import logging
+from datetime import datetime, timedelta
+
+from django.db import transaction as db_transaction
+from django.http import JsonResponse
+from fiscalisation.models import FiscalDevice, FiscalState, FiscalReceipt, FiscalSettings
+from fiscalisation.services import zimra_now, validate_receipt_for_zimra
+from fiscalisation.views import device, classify_submit_response
+import json
+
+logger = logging.getLogger(__name__)
+
+@db_transaction.atomic
 def check_out(request):
     try:
+        # If a CSO has paused fiscalisation (because ZIMRA is down, cert
+        # expired, etc.), the till keeps trading: we still create the
+        # Sale/Payment records, but skip all ZIMRA signing/submission and
+        # print without a QR. The reseller is then on the hook to issue
+        # manual paper receipts for the audit trail (and to resume
+        # fiscalisation as soon as possible).
+        fiscal_settings = FiscalSettings.get()
+        fiscalization_paused = fiscal_settings.fiscalization_paused
+
+        fiscal_device = None
+        fiscal_state = None
+        if not fiscalization_paused:
+            try:
+                fiscal_device = FiscalDevice.objects.get(is_active=True)
+                # select_for_update so two concurrent checkouts can't both
+                # read receipt_global_no=N and both write N+1.
+                fiscal_state = (
+                    FiscalState.objects
+                    .select_for_update()
+                    .get(device=fiscal_device)
+                )
+            except (FiscalDevice.DoesNotExist, FiscalState.DoesNotExist):
+                return JsonResponse({
+                    "custome_status": "Error",
+                    "message": (
+                        "Fiscal Device or State Configuration is missing. "
+                        "Either add a device at /fiscalisation/devices/ or "
+                        "pause fiscalisation to keep trading."
+                    ),
+                })
+
+            if not fiscal_state.is_day_open:
+                return JsonResponse({
+                    "custome_status": "Error",
+                    "message": "Fiscal Day is closed. Please open the business day before checking out (or pause fiscalisation to bypass)."
+                })
+
         customer_id = request.GET.get('customer_id')
 
         cart_items = CartItem.objects.filter(user=request.user)
@@ -941,7 +991,8 @@ def check_out(request):
             pass
         else:
             return JsonResponse({"custome_status": "Error", "message":"You cart is empty"})
-        # creating a sale transaction
+        
+        # Creating a sale transaction
         sale_transactions = SaleTransaction.objects.filter(created_by=request.user, open_state=True)
         essential = ReceiptPaymentEssential.objects.filter(user=request.user)[0]
         if sale_transactions:
@@ -966,29 +1017,26 @@ def check_out(request):
                 pass
 
             new_sale_transaction.save()
-
             sale_transaction = new_sale_transaction
 
-        # changing cart items into sales
+        # ---------------------------------------------------------
+        # Compile Cart Items into Sales & Construct ZIMRA Payload Lines
+        # ---------------------------------------------------------
         subtotal = 0
-        VAT = 0
-        total_cost = 0
         try:
             discount = essential.discount
         except:
             discount = 0
 
-
-        products_data = ""
+        receipt_lines_payload = []
         
-
-        for cart_item in cart_items:
+        for index, cart_item in enumerate(cart_items, start=1):
             new_sale = Sale()
             new_sale.sale_transaction = sale_transaction
             new_sale.buying_unit_price = cart_item.buying_unit_price
             new_sale.stock = cart_item.stock
             new_sale.selling_price = cart_item.unit_price * cart_item.quantity
-            new_sale.VAT = cart_item.VAT
+            new_sale.VAT = 0 # Tax inclusive setup: Ignored and forced cleanly to 0
             new_sale.unit_price = cart_item.unit_price
             new_sale.quantity = cart_item.quantity
             new_sale.used_batches = cart_item.used_baches_data
@@ -999,22 +1047,36 @@ def check_out(request):
             stock_quantity_notification(new_sale.stock.id)
             cart_item.delete()
 
+            # Accumulate subtotal using the inclusive customer price
             subtotal += cart_item.quantity * cart_item.unit_price
-            VAT += (cart_item.stock.product.vat_code.percentage/100) * (cart_item.quantity * cart_item.unit_price)
 
+            tax_percentage = cart_item.stock.product.vat_code.percentage
 
-        total_cost = (VAT + subtotal) - discount
+            # Build lines dictionary in the format prepareReceipt expects.
+            # prepareReceipt computes taxID internally from tax_percent via applicableTaxes.
+            receipt_lines_payload.append({
+                "item_name": cart_item.stock.product.title,
+                "unit_price": str(cart_item.unit_price),
+                "quantity": str(cart_item.quantity),
+                "tax_percent": float(tax_percentage),
+                "hs_code": getattr(cart_item.stock.product, 'product_code', '04021099') or '04021099',
+            })
 
-        # linking money portions to sale transactios and tying loose_status
-        # receipt_money_portions = ReceiptMoneyPortion.objects.filter(created_by=request.user, loose_status=True)
+        total_cost = subtotal - discount
+
+        # Linking money portions to sale transactions and tying loose_status
         receipt_money_portions = Payment.objects.filter(payment_for="RECEIPT", created_by=request.user, loose_status=True)
+        payment_methods_payload = []
+
         for receipt_money_portion in receipt_money_portions:
             receipt_money_portion.payment_for_id = sale_transaction.recipt_number
-
-
             receipt_money_portion.loose_status = False
-
             receipt_money_portion.save()
+
+            payment_methods_payload.append({
+                "moneyTypeCode": getattr(receipt_money_portion.payment_method, 'zimra_money_type_code', 0),
+                "paymentAmount": float(receipt_money_portion.amount_paid),
+            })
 
         essential.discount = 0
         essential.save()
@@ -1022,8 +1084,159 @@ def check_out(request):
         sale_transaction.open_state = False
         sale_transaction.save()
 
-        custome_status, message = print_receipt(sale_transaction.recipt_number, " ")
-        print_receipt(sale_transaction.recipt_number, "(COPY)")
+        # If fiscalisation is paused, skip everything below — sign nothing,
+        # submit nothing, write no FiscalReceipt — and just print without
+        # a QR. The sale still goes through the books.
+        local_qr_string = ""
+        if fiscalization_paused:
+            custome_status, message = print_receipt(sale_transaction.recipt_number, " (BYPASS)", qr_data=local_qr_string)
+            print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data=local_qr_string)
+            return JsonResponse({
+                "custome_status": custome_status or "",
+                "message": (
+                    "Transaction recorded WITHOUT fiscalisation (paused). "
+                    "You are responsible for issuing a compliant manual receipt."
+                ),
+            })
+
+        # ---------------------------------------------------------
+        # Compute Cryptographic Strings & Signatures Offline
+        # ---------------------------------------------------------
+        # Pre-calculate what the incremented counters should become
+        next_receipt_counter = fiscal_state.receipt_counter + 1
+        next_receipt_global_no = fiscal_state.receipt_global_no + 1
+
+        # Guarantee a strictly increasing receiptDate vs the prior receipt.
+        # ZIMRA's spec uses second-precision; two receipts in the same wall
+        # clock second trip RCPT030 ("date earlier than previously submitted").
+        receipt_dt = zimra_now()
+        last_receipt = (
+            FiscalReceipt.objects
+            .filter(fiscal_state=fiscal_state)
+            .order_by('-receipt_global_no')
+            .first()
+        )
+        if last_receipt and last_receipt.prepared_payload:
+            try:
+                prior_dt = datetime.strptime(
+                    last_receipt.prepared_payload['receiptDate'],
+                    '%Y-%m-%dT%H:%M:%S',
+                )
+                # If we'd land in the same (or earlier) second, sleep just
+                # long enough to roll over into the next one. Burst checkouts
+                # cost at most ~1s of human-imperceptible delay.
+                if receipt_dt <= prior_dt:
+                    delta = (prior_dt - receipt_dt).total_seconds() + 1.0
+                    time.sleep(min(delta, 2.0))
+                    receipt_dt = zimra_now()
+            except (KeyError, ValueError):
+                pass
+
+        mock_receipt_data = {
+            "receiptType": "FISCALINVOICE",
+            "receiptCurrency": "USD",
+            "receiptCounter": next_receipt_counter,
+            "receiptGlobalNo": next_receipt_global_no,
+            "invoiceNo": str(sale_transaction.recipt_number),
+            # ZIMRA expects Zimbabwe local time (CAT) regardless of host TZ.
+            "receiptDate": receipt_dt,
+            "receiptLines": receipt_lines_payload,
+            "receiptPayments": payment_methods_payload,
+        }
+
+        # Attach buyerData only when we actually captured customer details
+        if sale_transaction.buyer_name or sale_transaction.buyer_tin:
+            mock_receipt_data["buyerData"] = {
+                "buyerTIN": sale_transaction.buyer_tin or "",
+                "buyerName": sale_transaction.buyer_name or "",
+                "buyerAddress": sale_transaction.buyer_address or "",
+                "buyerPhone": sale_transaction.buyer_tel or "",
+                "vatNumber": sale_transaction.buyer_vat or "",
+            }
+
+        # Pre-flight validation: catch the obvious mistakes (missing tax_percent,
+        # bad moneyTypeCode, payment-sum != line-sum, RCPT040 sign) BEFORE we
+        # waste an ZIMRA round-trip and pollute the day with a bad receipt.
+        try:
+            applicable_taxes = device.applicableTaxes
+        except Exception:
+            applicable_taxes = {}
+        validation_errors = validate_receipt_for_zimra(
+            mock_receipt_data,
+            applicable_taxes=applicable_taxes,
+            tax_inclusive=True,
+        )
+        if validation_errors:
+            logger.warning("Pre-flight validation failed for receipt %s: %s",
+                           sale_transaction.recipt_number, validation_errors)
+            return JsonResponse({
+                "custome_status": "Error",
+                "message": "Receipt validation failed before signing:\n- " + "\n- ".join(validation_errors),
+            })
+
+        # prepareReceipt parses your dict locally using loaded cert keys and the tracked hash chain
+        prepared_receipt = device.prepareReceipt(
+            mock_receipt_data,
+            previousReceiptHash=fiscal_state.last_receipt_hash
+        )
+
+        local_sig_struct = prepared_receipt["receiptDeviceSignature"]
+        
+        # Use the same receipt_dt the signature was built around so the QR
+        # url's date component matches what ZIMRA stored.
+        local_qr_string = device.generate_qr_code(
+            signature=local_sig_struct["signature"],
+            receipt_global_no=prepared_receipt["receiptGlobalNo"],
+            receipt_date=receipt_dt
+        )
+
+        # Try to submit to ZIMRA immediately. If the network is down or ZIMRA
+        # is unreachable, we still keep going — the receipt is fully signed
+        # and queued PENDING for the background sync worker to push later.
+        # This keeps checkout latency in the happy path low while remaining
+        # offline-tolerant.
+        submit_response = None
+        sync_status = 'PENDING'
+        zimra_receipt_id = None
+        try:
+            submit_response = device.submitReceipt(prepared_receipt)
+            sync_status = classify_submit_response(submit_response)
+            if isinstance(submit_response, dict):
+                zimra_receipt_id = submit_response.get('receiptID')
+        except Exception as exc:
+            logger.warning("ZIMRA submitReceipt failed at checkout: %s", exc)
+            submit_response = {"error": str(exc)}
+            sync_status = 'PENDING'
+
+        FiscalReceipt.objects.create(
+            fiscal_state=fiscal_state,
+            fiscal_day_no=fiscal_state.fiscal_day_no,
+            receipt_global_no=prepared_receipt["receiptGlobalNo"],
+            receipt_counter=next_receipt_counter,
+            receipt_type='FISCALINVOICE',
+            invoice_no=str(sale_transaction.recipt_number),
+            total_amount=total_cost,
+            local_hash=local_sig_struct["hash"],
+            local_signature=local_sig_struct["signature"],
+            qr_code_string=local_qr_string,
+            prepared_payload=prepared_receipt,
+            sync_status=sync_status,
+            zimra_receipt_id=zimra_receipt_id,
+            zimra_response_log=submit_response if isinstance(submit_response, dict) else {"raw": str(submit_response)},
+        )
+
+        # Save the ongoing chain variables back to the state ledger
+        fiscal_state.receipt_counter = next_receipt_counter
+        fiscal_state.receipt_global_no = next_receipt_global_no
+        fiscal_state.last_receipt_hash = local_sig_struct["hash"]
+        fiscal_state.save()
+
+        # ---------------------------------------------------------
+        # Execute Print Out with Offline Generated QR Codes
+        # ---------------------------------------------------------
+        # Pass the pre-computed local_qr_string directly to your print script layers
+        custome_status, message = print_receipt(sale_transaction.recipt_number, " ", qr_data=local_qr_string)
+        print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data=local_qr_string)
 
         if custome_status == "":
             message = "Transaction successful"
@@ -1033,6 +1246,116 @@ def check_out(request):
 
     except Exception as e:
         return JsonResponse({"custome_status":"Error", "message":str(e)})
+
+
+        
+# @login_required
+# @transaction.atomic 
+# def check_out(request):
+#     try:
+#         customer_id = request.GET.get('customer_id')
+
+#         cart_items = CartItem.objects.filter(user=request.user)
+#         if cart_items:
+#             pass
+#         else:
+#             return JsonResponse({"custome_status": "Error", "message":"You cart is empty"})
+#         # creating a sale transaction
+#         sale_transactions = SaleTransaction.objects.filter(created_by=request.user, open_state=True)
+#         essential = ReceiptPaymentEssential.objects.filter(user=request.user)[0]
+#         if sale_transactions:
+#             sale_transaction = sale_transactions[0]
+#             for i in sale_transactions:
+#                 if i.recipt_number != sale_transaction.recipt_number:
+#                     i.open_state = False
+#                     i.save()
+#         else:
+#             new_sale_transaction = SaleTransaction()
+#             new_sale_transaction.discount = essential.discount
+#             new_sale_transaction.created_by = request.user
+
+#             try:
+#                 customer = CustomerAccount.objects.get(id=int(customer_id))
+#                 new_sale_transaction.buyer_name = customer.company_name
+#                 new_sale_transaction.buyer_tin = customer.tin_number
+#                 new_sale_transaction.buyer_vat = customer.vat_number
+#                 new_sale_transaction.buyer_address = customer.address
+#                 new_sale_transaction.buyer_tel = customer.phone_number
+#             except:
+#                 pass
+
+#             new_sale_transaction.save()
+
+#             sale_transaction = new_sale_transaction
+
+#         # changing cart items into sales
+#         subtotal = 0
+#         VAT = 0
+#         total_cost = 0
+#         try:
+#             discount = essential.discount
+#         except:
+#             discount = 0
+
+
+#         products_data = ""
+        
+
+#         for cart_item in cart_items:
+#             new_sale = Sale()
+#             new_sale.sale_transaction = sale_transaction
+#             new_sale.buying_unit_price = cart_item.buying_unit_price
+#             new_sale.stock = cart_item.stock
+#             new_sale.selling_price = cart_item.unit_price * cart_item.quantity
+#             new_sale.VAT = cart_item.VAT
+#             new_sale.unit_price = cart_item.unit_price
+#             new_sale.quantity = cart_item.quantity
+#             new_sale.used_batches = cart_item.used_baches_data
+#             new_sale.used_batch_quantities = cart_item.used_baches_quantities_data
+#             new_sale.created_by = request.user
+
+#             new_sale.save()
+#             stock_quantity_notification(new_sale.stock.id)
+#             cart_item.delete()
+
+#             subtotal += cart_item.quantity * cart_item.unit_price
+#             VAT += (cart_item.stock.product.vat_code.percentage/100) * (cart_item.quantity * cart_item.unit_price)
+
+
+#         total_cost = (VAT + subtotal) - discount
+
+#         # linking money portions to sale transactios and tying loose_status
+#         # receipt_money_portions = ReceiptMoneyPortion.objects.filter(created_by=request.user, loose_status=True)
+#         receipt_money_portions = Payment.objects.filter(payment_for="RECEIPT", created_by=request.user, loose_status=True)
+#         for receipt_money_portion in receipt_money_portions:
+#             receipt_money_portion.payment_for_id = sale_transaction.recipt_number
+
+
+#             receipt_money_portion.loose_status = False
+
+#             receipt_money_portion.save()
+
+#         essential.discount = 0
+#         essential.save()
+
+#         sale_transaction.open_state = False
+#         sale_transaction.save()
+
+#         fiscalise = True
+#         if fiscalise:
+#             fiscalise_receipt(sale_transaction.id)
+
+#         custome_status, message = print_receipt(sale_transaction.recipt_number, " ")
+#         print_receipt(sale_transaction.recipt_number, "(COPY)")
+
+#         if custome_status == "":
+#             message = "Transaction successful"
+#             return JsonResponse({"custome_status": "", "message":message})
+#         else:
+#             return JsonResponse({"custome_status":custome_status, "message":message})
+
+#     except Exception as e:
+#         return JsonResponse({"custome_status":"Error", "message":str(e)})
 
 
 

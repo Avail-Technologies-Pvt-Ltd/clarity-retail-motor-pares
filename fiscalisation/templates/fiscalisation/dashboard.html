@@ -1,766 +1,512 @@
-<!-- fiscalisation/templates/fiscalisation/dashboard.html -->
-<!DOCTYPE html>
+{% load humanize %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fiscalisation Dashboard - {{ title }}</title>
+    <title>Fiscalisation Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #2c2c33;
         }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* Header Styles */
-        .header {
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav { background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 22px; align-items: center; }
+        .nav a { color: #555; font-weight: 500; text-decoration: none; }
+        .nav a.active { color: #667eea; font-weight: 700; }
+        .nav .right { margin-left: auto; color: #888; font-size: 13px; }
+        .card {
             background: white;
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
-        
-        .header h1 {
-            color: #333;
-            margin-bottom: 5px;
+        h1 { font-size: 22px; color: #2c2c33; margin-bottom: 4px; }
+        h2 { font-size: 16px; color: #444; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .muted { color: #888; font-size: 13px; }
+        .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+        .grow { flex: 1; min-width: 0; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        .kv { display: grid; grid-template-columns: 160px 1fr; gap: 6px 16px; font-size: 14px; }
+        .kv .k { color: #777; }
+        .kv .v { color: #222; word-break: break-word; }
+
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .b-ok    { background: #d4f8e8; color: #1b6e44; }
+        .b-warn  { background: #fff4d6; color: #8a6500; }
+        .b-err   { background: #ffd6d6; color: #8a0000; }
+        .b-neutral { background: #eef0f7; color: #555; }
+
+        .counter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        @media (max-width: 700px) { .counter-grid { grid-template-columns: repeat(2, 1fr); } }
+        .counter {
+            background: #f6f7fb; border-radius: 8px; padding: 14px; text-align: center;
         }
-        
-        .header p {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        /* Status Cards */
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .status-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        
-        .status-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .status-card h3 {
-            color: #333;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-        
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .status-label {
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .status-value {
-            color: #333;
-            font-family: monospace;
-        }
-        
-        .badge {
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .badge-open {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .badge-closed {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .badge-connected {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .badge-disconnected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        /* Button Grid */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .btn {
-            padding: 15px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-        }
-        
-        .btn-info {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-        }
-        
-        /* Tables */
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow-x: auto;
-        }
-        
-        .table-container h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #555;
-        }
-        
-        tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .qr-link {
-            color: #667eea;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
-        .qr-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 500px;
-            position: relative;
-        }
-        
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: #000;
-        }
-        
-        /* Loading Spinner */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Toast Notifications */
+        .counter .n { font-size: 28px; font-weight: 700; color: #2c2c33; line-height: 1.1; }
+        .counter .l { font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+        .counter.c-ok      { border-left: 4px solid #1b6e44; }
+        .counter.c-pending { border-left: 4px solid #f5a623; }
+        .counter.c-failed  { border-left: 4px solid #d0021b; }
+        .counter.c-total   { border-left: 4px solid #667eea; }
+
+        .btn { display: inline-block; padding: 9px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; transition: filter .15s; }
+        .btn:hover:not(:disabled) { filter: brightness(0.95); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #e8eaf6; color: #444; }
+        .btn-success { background: #4caf50; color: white; }
+        .btn-danger  { background: #d0021b; color: white; }
+        .btn-warning { background: #f5a623; color: white; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 13px; }
+        th { background: #f6f7fb; color: #555; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+        tr:hover td { background: #fafbff; }
+        td.right, th.right { text-align: right; }
+        td.mono { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; word-break: break-all; }
+        td a { color: #5b6fda; text-decoration: none; }
+        td a:hover { text-decoration: underline; }
+
+        .banner { padding: 14px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .banner-paused { background: #d0021b; color: white; border-left: 6px solid #8a0000; }
+        .banner-warn   { background: #fff4d6; color: #8a6500; border-left: 6px solid #f5a623; }
+        .banner-err    { background: #ffd6d6; color: #8a0000; border-left: 6px solid #d0021b; }
+        .banner-ok     { background: #d4f8e8; color: #1b6e44; border-left: 6px solid #1b6e44; }
+        .banner-info   { background: #e8eaf6; color: #2c2c33; border-left: 6px solid #667eea; }
+
         .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1001;
-            animation: slideIn 0.3s ease-out;
+            position: fixed; bottom: 20px; right: 20px;
+            background: #2c2c33; color: white; padding: 12px 18px; border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 14px;
+            opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 2000;
         }
-        
-        .toast.success {
-            border-left: 4px solid #28a745;
+        .toast.show { opacity: 1; }
+        .toast.error { background: #d0021b; }
+        .toast.success { background: #1b6e44; }
+
+        .errlist { margin: 4px 0 0 0; padding: 0 0 0 0; list-style: none; }
+        .errlist li { padding: 2px 0; }
+
+        .modal-bg {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: center; justify-content: center;
         }
-        
-        .toast.error {
-            border-left: 4px solid #dc3545;
+        .modal-bg.show { display: flex; }
+        .modal {
+            background: white; border-radius: 10px; padding: 24px; width: 90%; max-width: 480px;
         }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        .modal h2 { margin-bottom: 12px; }
+        .modal label { display: block; margin-bottom: 6px; color: #444; font-size: 13px; }
+        .modal select, .modal textarea {
+            width: 100%; padding: 10px; border: 1px solid #d4d7e0; border-radius: 6px;
+            font-size: 14px; margin-bottom: 14px; font-family: inherit;
         }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .status-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-        }
+        .modal textarea { min-height: 70px; }
+        .modal .actions { justify-content: flex-end; }
+
+        details { background: #f6f7fb; border-radius: 6px; padding: 8px 12px; margin-top: 6px; }
+        details > summary { cursor: pointer; color: #5b6fda; font-size: 13px; }
+        details pre { font-size: 11px; margin-top: 8px; white-space: pre-wrap; word-break: break-all; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🏪 Fiscalisation Dashboard</h1>
-            <p>ZIMRA FDMS Integration for {{ current_time|date:"F j, Y H:i:s" }}</p>
-        </div>
-        
-        <!-- Status Cards -->
-        <div class="status-grid" id="statusGrid">
-            <div class="status-card">
-                <h3>🔌 Device Status</h3>
-                <div id="deviceStatus">
-                    <div class="status-item">
-                        <span class="status-label">Connection:</span>
-                        <span class="status-value"><span class="loading"></span> Loading...</span>
-                    </div>
-                </div>
+<div class="container">
+
+    <div class="nav">
+        <a href="{% url 'fiscal_dashboard' %}" class="active">Dashboard</a>
+        <a href="{% url 'fiscal_device_list' %}">Devices</a>
+        <span class="right" id="lastUpdated">Loading…</span>
+    </div>
+
+    <!-- Banners (paused, day-age, device-missing) -->
+    <div id="pausedBanner" class="banner banner-paused" style="display:none">
+        <div class="row">
+            <div class="grow">
+                <strong>Fiscalisation is PAUSED.</strong>
+                Every checkout writes to the books WITHOUT signing or submitting to ZIMRA, and prints without a QR.
+                You must issue compliant manual receipts to customers.
+                <span id="pausedDetail" class="muted" style="color: rgba(255,255,255,0.8); display:block; margin-top:4px;"></span>
             </div>
-            
-            <div class="status-card">
-                <h3>📅 Fiscal Day Status</h3>
-                <div id="fiscalStatus">
-                    <div class="status-item">
-                        <span class="status-label">Status:</span>
-                        <span class="status-value"><span class="loading"></span> Loading...</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="status-card">
-                <h3>💰 Today's Summary</h3>
-                <div id="todaySummary">
-                    <div class="status-item">
-                        <span class="status-label">Receipts:</span>
-                        <span class="status-value"><span class="loading"></span> Loading...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="action-grid">
-            <button class="btn btn-primary" onclick="refreshStatus()">
-                🔄 Refresh Status
-            </button>
-            <button class="btn btn-success" onclick="openFiscalDay()" id="openDayBtn">
-                📂 Open Fiscal Day
-            </button>
-            <button class="btn btn-danger" onclick="closeFiscalDay()" id="closeDayBtn">
-                🔒 Close Fiscal Day
-            </button>
-            <button class="btn btn-warning" onclick="createTestReceipt()">
-                🧪 Create Test Receipt
-            </button>
-            <button class="btn btn-info" onclick="showQRModal()">
-                📱 Show QR Scanner
-            </button>
-        </div>
-        
-        <!-- Latest Receipts -->
-        <div class="table-container">
-            <h3>📋 Latest Receipts</h3>
-            <div id="latestReceipts">
-                <div class="loading"></div> Loading receipts...
-            </div>
-        </div>
-        
-        <!-- Recent Fiscal Days -->
-        <div class="table-container">
-            <h3>📊 Recent Fiscal Days</h3>
-            <div id="recentSummaries">
-                <div class="loading"></div> Loading summaries...
-            </div>
+            <button class="btn btn-success" onclick="resumeFiscalisation()">Resume Fiscalisation</button>
         </div>
     </div>
-    
-    <!-- QR Code Modal -->
-    <div id="qrModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeQRModal()">&times;</span>
-            <h3>QR Code Scanner</h3>
-            <p>Scan this QR code to verify your receipt with ZIMRA:</p>
-            <div id="qrCodeDisplay" style="text-align: center; padding: 20px;">
-                <!-- QR code will be displayed here -->
-            </div>
-            <button class="btn btn-primary" onclick="closeQRModal()" style="width: 100%;">Close</button>
+
+    <div id="dayAgeBanner" class="banner" style="display:none"></div>
+    <div id="configBanner" class="banner banner-warn" style="display:none">
+        <strong>No active fiscal device.</strong>
+        <a href="{% url 'fiscal_device_list' %}" style="color: inherit; text-decoration: underline;">Set one up</a>
+        — or use “Pause Fiscalisation” to keep trading while you finish configuration.
+    </div>
+
+    <!-- Header card with device + day -->
+    <div class="grid-2">
+        <div class="card">
+            <h2>Active Device</h2>
+            <div class="kv" id="deviceKV"><div class="muted">Loading…</div></div>
+        </div>
+        <div class="card">
+            <h2>Current Fiscal Day</h2>
+            <div class="kv" id="dayKV"><div class="muted">Loading…</div></div>
         </div>
     </div>
-    
-    <script>
-        // Auto-refresh every 30 seconds
-        let refreshInterval = setInterval(loadDashboardData, 30000);
-        
-        // Load all dashboard data on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDashboardData();
+
+    <!-- Receipt counts -->
+    <div class="card">
+        <h2>Today’s Receipts (Day <span id="todayDayNo">—</span>)</h2>
+        <div class="counter-grid" id="countersToday"></div>
+        <h2 style="margin-top:18px;">Lifetime</h2>
+        <div class="counter-grid" id="countersLifetime"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+        <h2>Actions</h2>
+        <div class="actions">
+            <button class="btn btn-primary"   onclick="refresh()">Refresh</button>
+            <button class="btn btn-success"   id="btnOpenDay"  onclick="openDay()">Open Day</button>
+            <button class="btn btn-danger"    id="btnCloseDay" onclick="closeDay()">Close Day</button>
+            <button class="btn btn-secondary" onclick="reconcile()" title="Pull state from ZIMRA into local DB. Use after ZIMRA manually closes the day on your behalf.">Reconcile</button>
+            <button class="btn btn-warning"   onclick="syncPending()" title="Push PENDING receipts to ZIMRA right now (otherwise the scheduler does it every 2 min).">Sync Pending</button>
+            <button class="btn btn-danger"    id="btnPause" onclick="openPauseModal()">Pause Fiscalisation</button>
+        </div>
+    </div>
+
+    <!-- Failed receipts (the most actionable list) -->
+    <div class="card">
+        <h2 style="color: #8a0000;">Failed Receipts (need action)</h2>
+        <div id="failedReceipts"><p class="muted">Loading…</p></div>
+    </div>
+
+    <!-- Pending receipts -->
+    <div class="card">
+        <h2 style="color: #8a6500;">Pending Receipts (queued for sync)</h2>
+        <div id="pendingReceipts"><p class="muted">Loading…</p></div>
+    </div>
+
+    <!-- Recent receipts -->
+    <div class="card">
+        <h2>Most Recent Receipts</h2>
+        <div id="recentReceipts"><p class="muted">Loading…</p></div>
+    </div>
+
+    <!-- Day summaries -->
+    <div class="card">
+        <h2>Closed-Day Summary</h2>
+        <div id="daySummaries"><p class="muted">Loading…</p></div>
+    </div>
+
+</div>
+
+<!-- Pause modal -->
+<div class="modal-bg" id="pauseModal">
+    <div class="modal">
+        <h2>Pause Fiscalisation</h2>
+        <p class="muted" style="margin-bottom: 12px;">
+            Checkouts will continue without ZIMRA signing/submission. You must give customers compliant
+            manual receipts during the pause. The reseller (you) is responsible for ZIMRA reconciliation
+            of these sales after resuming.
+        </p>
+        <label>Reason</label>
+        <select id="pauseReason">
+            <option value="zimra_down">ZIMRA / FDMS unreachable</option>
+            <option value="cert_expired">Certificate expired or invalid</option>
+            <option value="device_not_configured">Device not yet configured</option>
+            <option value="maintenance">Scheduled maintenance</option>
+            <option value="other">Other (see notes)</option>
+        </select>
+        <label>Notes (optional, shown on banner)</label>
+        <textarea id="pauseNotes" placeholder="e.g. 'ZIMRA test env returned 502 since 11:30'"></textarea>
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="closePauseModal()">Cancel</button>
+            <button class="btn btn-danger"    onclick="submitPause()">Pause Now</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+let refreshTimer = null;
+
+function getCookie(name) {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+}
+
+function toast(msg, kind) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + (kind || '');
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function badge(label, cls) { return `<span class="badge ${cls}">${label}</span>`; }
+function escapeHtml(s) { return (s ?? '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtMoney(n) { return (n == null) ? '—' : ('$' + Number(n).toFixed(2)); }
+function fmtDate(iso) { if (!iso) return '—'; const d = new Date(iso); return d.toLocaleString(); }
+
+function load() {
+    fetch('/fiscalisation/api/dashboard-data/')
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('lastUpdated').textContent = 'Last refresh: ' + new Date().toLocaleTimeString();
+
+            renderPause(d.pause);
+
+            if (!d.configured) {
+                document.getElementById('configBanner').style.display = 'block';
+                document.getElementById('deviceKV').innerHTML = '<div class="muted">No device configured. <a href="{% url 'fiscal_device_list' %}">Add one</a>.</div>';
+                document.getElementById('dayKV').innerHTML = '<div class="muted">—</div>';
+                ['countersToday','countersLifetime','failedReceipts','pendingReceipts','recentReceipts','daySummaries'].forEach(id => document.getElementById(id).innerHTML = '<p class="muted">—</p>');
+                return;
+            }
+            document.getElementById('configBanner').style.display = 'none';
+
+            renderDevice(d.device);
+            renderDay(d.state);
+            renderDayAgeBanner(d.state);
+            renderCounters('countersToday', d.counts.today);
+            renderCounters('countersLifetime', d.counts.lifetime);
+            renderFailed(d.failed_receipts || []);
+            renderPending(d.pending_receipts || []);
+            renderRecent(d.recent_receipts || []);
+            renderSummaries(d.day_summaries || []);
+            updateActionButtons(d);
+        })
+        .catch(e => {
+            console.error(e);
+            toast('Failed to load dashboard: ' + e, 'error');
         });
-        
-        function loadDashboardData() {
-            fetch('/fiscalisation/api/dashboard-data/')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateDeviceStatus(data.data.device_status);
-                        updateFiscalStatus(data.data.fiscal_state, data.data.device_status);
-                        updateTodaySummary(data.data.today_stats, data.data.current_day_summary);
-                        updateLatestReceipts(data.data.latest_receipts);
-                        updateRecentSummaries(data.data.recent_summaries);
-                        updateButtons(data.data.device_status.is_day_open);
-                    } else {
-                        showToast('Error loading dashboard data: ' + data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Failed to load dashboard data', 'error');
-                });
-        }
-        
-        function updateDeviceStatus(status) {
-            const html = `
-                <div class="status-item">
-                    <span class="status-label">Connection:</span>
-                    <span class="status-value">
-                        <span class="badge ${status.is_connected ? 'badge-connected' : 'badge-disconnected'}">
-                            ${status.is_connected ? '✓ Connected' : '✗ Disconnected'}
-                        </span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Taxpayer:</span>
-                    <span class="status-value">${status.taxpayer_name || 'N/A'}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Device Serial:</span>
-                    <span class="status-value">${status.device_serial || 'N/A'}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Certificate Valid:</span>
-                    <span class="status-value">${status.certificate_valid_till || 'N/A'}</span>
-                </div>
-            `;
-            document.getElementById('deviceStatus').innerHTML = html;
-        }
-        
-        function updateFiscalStatus(fiscal, device) {
-            const dayStatus = device.is_day_open ? 'Open' : 'Closed';
-            const badgeClass = device.is_day_open ? 'badge-open' : 'badge-closed';
-            
-            const html = `
-                <div class="status-item">
-                    <span class="status-label">Status:</span>
-                    <span class="status-value">
-                        <span class="badge ${badgeClass}">${dayStatus}</span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Day Number:</span>
-                    <span class="status-value">${fiscal.day_number || 'N/A'}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Next Receipt Counter:</span>
-                    <span class="status-value">${device.next_receipt_counter || 'N/A'}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Next Global Number:</span>
-                    <span class="status-value">${device.next_global_no || 'N/A'}</span>
-                </div>
-                ${fiscal.current_day_date ? `
-                <div class="status-item">
-                    <span class="status-label">Current Day Date:</span>
-                    <span class="status-value">${fiscal.current_day_date}</span>
-                </div>
-                ` : ''}
-            `;
-            document.getElementById('fiscalStatus').innerHTML = html;
-        }
-        
-        function updateTodaySummary(todayStats, currentDaySummary) {
-            let summaryHtml = '';
-            
-            if (currentDaySummary && currentDaySummary.total_receipts > 0) {
-                summaryHtml = `
-                    <div class="status-item">
-                        <span class="status-label">Today's Receipts:</span>
-                        <span class="status-value">${currentDaySummary.total_receipts}</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Today's Sales:</span>
-                        <span class="status-value">$${currentDaySummary.total_sales.toFixed(2)}</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">First Receipt:</span>
-                        <span class="status-value">#${currentDaySummary.first_receipt || 'N/A'}</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Last Receipt:</span>
-                        <span class="status-value">#${currentDaySummary.last_receipt || 'N/A'}</span>
-                    </div>
-                `;
-            } else {
-                summaryHtml = `
-                    <div class="status-item">
-                        <span class="status-label">Today's Receipts:</span>
-                        <span class="status-value">0</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Today's Sales:</span>
-                        <span class="status-value">$0.00</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Status:</span>
-                        <span class="status-value">No receipts today</span>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('todaySummary').innerHTML = summaryHtml;
-        }
-        
-        function updateLatestReceipts(receipts) {
-            if (!receipts || receipts.length === 0) {
-                document.getElementById('latestReceipts').innerHTML = 
-                    '<p style="text-align: center; color: #999;">No receipts found</p>';
-                return;
-            }
-            
-            const html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Global #</th>
-                            <th>Invoice #</th>
-                            <th>Type</th>
-                            <th>Total</th>
-                            <th>Time</th>
-                            <th>QR Code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${receipts.map(r => `
-                            <tr>
-                                <td>${r.global_no}</td>
-                                <td>${r.invoice_no}</td>
-                                <td>${r.type}</td>
-                                <td>$${r.total.toFixed(2)}</td>
-                                <td>${r.created_at}</td>
-                                <td>
-                                    <a href="javascript:void(0)" class="qr-link" onclick="showQR('${r.qr_url}')">
-                                        📱 View QR
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            document.getElementById('latestReceipts').innerHTML = html;
-        }
-        
-        function updateRecentSummaries(summaries) {
-            if (!summaries || summaries.length === 0) {
-                document.getElementById('recentSummaries').innerHTML = 
-                    '<p style="text-align: center; color: #999;">No closed days yet</p>';
-                return;
-            }
-            
-            const html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Day #</th>
-                            <th>Date</th>
-                            <th>Receipts</th>
-                            <th>Total Sales</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${summaries.map(s => `
-                            <tr>
-                                <td>${s.day_no}</td>
-                                <td>${s.date}</td>
-                                <td>${s.receipts}</td>
-                                <td>$${s.sales.toFixed(2)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            document.getElementById('recentSummaries').innerHTML = html;
-        }
-        
-        function updateButtons(isDayOpen) {
-            const openBtn = document.getElementById('openDayBtn');
-            const closeBtn = document.getElementById('closeDayBtn');
-            
-            if (isDayOpen) {
-                openBtn.disabled = true;
-                openBtn.style.opacity = '0.5';
-                openBtn.style.cursor = 'not-allowed';
-                closeBtn.disabled = false;
-                closeBtn.style.opacity = '1';
-            } else {
-                openBtn.disabled = false;
-                openBtn.style.opacity = '1';
-                closeBtn.disabled = true;
-                closeBtn.style.opacity = '0.5';
-                closeBtn.style.cursor = 'not-allowed';
-            }
-        }
-        
-        function refreshStatus() {
-            showToast('Refreshing status...', 'info');
-            loadDashboardData();
-        }
-        
-        function openFiscalDay() {
-            if (!confirm('Are you sure you want to open a new fiscal day?')) return;
-            
-            fetch('/fiscalisation/api/open-day/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    loadDashboardData();
-                } else {
-                    showToast('Error: ' + data.error, 'error');
-                }
-            })
-            .catch(error => {
-                showToast('Error opening fiscal day: ' + error, 'error');
-            });
-        }
-        
-        function closeFiscalDay() {
-            if (!confirm('Are you sure you want to close the current fiscal day? This action cannot be undone.')) return;
-            
-            fetch('/fiscalisation/api/close-day/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    loadDashboardData();
-                } else {
-                    showToast('Error: ' + data.error, 'error');
-                }
-            })
-            .catch(error => {
-                showToast('Error closing fiscal day: ' + error, 'error');
-            });
-        }
-        
-        function createTestReceipt() {
-            fetch('/fiscalisation/api/create-test-receipt/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('Test receipt created successfully! Global #' + data.data.receipt_global_no, 'success');
-                    loadDashboardData();
-                    if (data.data.qr_code_url) {
-                        setTimeout(() => showQR(data.data.qr_code_url), 1000);
-                    }
-                } else {
-                    showToast('Error: ' + data.error, 'error');
-                }
-            })
-            .catch(error => {
-                showToast('Error creating test receipt: ' + error, 'error');
-            });
-        }
-        
-        function showQR(qrUrl) {
-            const modal = document.getElementById('qrModal');
-            const qrDisplay = document.getElementById('qrCodeDisplay');
-            
-            if (qrUrl) {
-                qrDisplay.innerHTML = `
-                    <p>Scan this QR code to verify with ZIMRA:</p>
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
-                         alt="QR Code" style="max-width: 200px; margin: 10px auto;">
-                    <p style="font-size: 12px; word-break: break-all;">${qrUrl}</p>
-                `;
-            } else {
-                qrDisplay.innerHTML = '<p>No QR code available</p>';
-            }
-            
-            modal.style.display = 'block';
-        }
-        
-        function showQRModal() {
-            const modal = document.getElementById('qrModal');
-            const qrDisplay = document.getElementById('qrCodeDisplay');
-            qrDisplay.innerHTML = '<p>Click on a receipt\'s QR link to display QR code</p>';
-            modal.style.display = 'block';
-        }
-        
-        function closeQRModal() {
-            document.getElementById('qrModal').style.display = 'none';
-        }
-        
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <strong>${type === 'success' ? '✓' : '✗'} ${type.toUpperCase()}</strong>
-                <p style="margin-top: 5px;">${message}</p>
-            `;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
-        }
-        
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('qrModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
+}
+
+function renderPause(p) {
+    const banner = document.getElementById('pausedBanner');
+    if (p && p.fiscalization_paused) {
+        banner.style.display = 'block';
+        const at = p.paused_at ? new Date(p.paused_at).toLocaleString() : '?';
+        const reason = p.paused_reason_label || p.paused_reason || '?';
+        const notes = p.paused_notes ? ' — ' + p.paused_notes : '';
+        document.getElementById('pausedDetail').textContent = `Paused at ${at}. Reason: ${reason}${notes}`;
+        document.getElementById('btnPause').style.display = 'none';
+    } else {
+        banner.style.display = 'none';
+        document.getElementById('btnPause').style.display = '';
+    }
+}
+
+function renderDevice(dev) {
+    const cert = dev.cert_expiry || {};
+    let certBadge = '<span class="muted">unknown</span>';
+    if (cert.status === 'ok')       certBadge = badge(`${cert.days_remaining} days left`, 'b-ok');
+    else if (cert.status === 'warning')  certBadge = badge(`${cert.days_remaining} days — renew soon`, 'b-warn');
+    else if (cert.status === 'critical') certBadge = badge(`${cert.days_remaining} days — RENEW NOW`, 'b-err');
+    else if (cert.status === 'unreadable') certBadge = badge('unreadable', 'b-err');
+
+    document.getElementById('deviceKV').innerHTML = `
+        <div class="k">Device ID</div>     <div class="v"><strong>${escapeHtml(dev.device_id)}</strong></div>
+        <div class="k">Serial</div>         <div class="v mono">${escapeHtml(dev.serial_no)}</div>
+        <div class="k">Company</div>        <div class="v">${escapeHtml(dev.company || '—')}</div>
+        <div class="k">Environment</div>    <div class="v">${dev.test_mode ? badge('TEST', 'b-warn') : badge('PROD', 'b-err')}</div>
+        <div class="k">Certificate</div>    <div class="v">${certBadge}</div>
+    `;
+}
+
+function renderDay(s) {
+    document.getElementById('todayDayNo').textContent = s.fiscal_day_no ?? '—';
+    const openBadge = s.is_day_open ? badge('OPEN', 'b-ok') : badge('CLOSED', 'b-neutral');
+    document.getElementById('dayKV').innerHTML = `
+        <div class="k">Day Number</div>             <div class="v"><strong>${s.fiscal_day_no ?? '—'}</strong> ${openBadge}</div>
+        <div class="k">Opened At</div>              <div class="v">${fmtDate(s.day_opened_at)}</div>
+        <div class="k">Hours Open</div>             <div class="v">${s.hours_open != null ? s.hours_open + ' / ' + (s.max_hours || 24) + ' h' : '—'}</div>
+        <div class="k">Next Receipt #</div>         <div class="v">${(s.receipt_counter ?? 0) + 1}</div>
+        <div class="k">Next Global #</div>          <div class="v">${(s.receipt_global_no ?? 0) + 1}</div>
+    `;
+}
+
+function renderDayAgeBanner(s) {
+    const b = document.getElementById('dayAgeBanner');
+    if (!s || s.day_age_status === 'ok' || s.day_age_status == null) { b.style.display = 'none'; return; }
+    b.style.display = 'block';
+    if (s.day_age_status === 'warning') {
+        b.className = 'banner banner-warn';
+        b.innerHTML = `Day ${s.fiscal_day_no} has been open ${s.hours_open} of ${s.max_hours} allowed hours. Close it soon.`;
+    } else if (s.day_age_status === 'critical') {
+        b.className = 'banner banner-err';
+        b.innerHTML = `URGENT — Day ${s.fiscal_day_no} has been open ${s.hours_open}h (cap ${s.max_hours}h). ZIMRA will reject new receipts.`;
+    }
+}
+
+function renderCounters(elId, c) {
+    document.getElementById(elId).innerHTML = `
+        <div class="counter c-total"><div class="n">${c.total}</div>   <div class="l">Total</div></div>
+        <div class="counter c-ok"><div class="n">${c.success}</div>     <div class="l">Synced</div></div>
+        <div class="counter c-pending"><div class="n">${c.pending}</div><div class="l">Pending</div></div>
+        <div class="counter c-failed"><div class="n">${c.failed}</div>  <div class="l">Failed</div></div>
+    `;
+}
+
+function renderFailed(rows) {
+    const el = document.getElementById('failedReceipts');
+    if (!rows.length) { el.innerHTML = '<p class="muted">No failed receipts. 🎉</p>'; return; }
+    let html = `<table><thead><tr>
+        <th>Invoice</th><th>Day/Global</th><th class="right">Amount</th><th>Validation errors</th><th>Submitted</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r => {
+        const errsHtml = r.validation_errors.length
+            ? '<ul class="errlist">' + r.validation_errors.map(e => `<li>${badge(e.code || '?', e.colour === 'Red' ? 'b-err' : 'b-warn')} ${escapeHtml(e.explain)}</li>`).join('') + '</ul>'
+            : '<span class="muted">(no validationErrors returned)</span>';
+        html += `<tr>
+            <td><strong>${escapeHtml(r.invoice_no)}</strong></td>
+            <td>Day ${r.fiscal_day_no} / #${r.receipt_global_no}</td>
+            <td class="right">${fmtMoney(r.total_amount)}</td>
+            <td>${errsHtml}</td>
+            <td>${fmtDate(r.created_at)}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+function renderPending(rows) {
+    const el = document.getElementById('pendingReceipts');
+    if (!rows.length) { el.innerHTML = '<p class="muted">Nothing pending.</p>'; return; }
+    let html = `<table><thead><tr>
+        <th>Invoice</th><th>Day/Global</th><th class="right">Amount</th><th>Status</th><th>Last error</th><th>Created</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r => {
+        html += `<tr>
+            <td><strong>${escapeHtml(r.invoice_no)}</strong></td>
+            <td>Day ${r.fiscal_day_no} / #${r.receipt_global_no}</td>
+            <td class="right">${fmtMoney(r.total_amount)}</td>
+            <td>${badge('PENDING', 'b-warn')}</td>
+            <td>${escapeHtml(r.last_error)}</td>
+            <td>${fmtDate(r.created_at)}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+function renderRecent(rows) {
+    const el = document.getElementById('recentReceipts');
+    if (!rows.length) { el.innerHTML = '<p class="muted">No receipts yet.</p>'; return; }
+    let html = `<table><thead><tr>
+        <th>Invoice</th><th>Day/Global</th><th class="right">Amount</th><th>Status</th><th>Verification URL</th><th>Created</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r => {
+        const cls = r.sync_status === 'SUCCESS' ? 'b-ok' : (r.sync_status === 'PENDING' ? 'b-warn' : 'b-err');
+        const url = r.qr_url ? `<a href="${escapeHtml(r.qr_url)}" target="_blank">open</a>` : '<span class="muted">—</span>';
+        html += `<tr>
+            <td><strong>${escapeHtml(r.invoice_no)}</strong></td>
+            <td>Day ${r.fiscal_day_no} / #${r.receipt_global_no}</td>
+            <td class="right">${fmtMoney(r.total_amount)}</td>
+            <td>${badge(r.sync_status, cls)}</td>
+            <td>${url}</td>
+            <td>${fmtDate(r.created_at)}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+function renderSummaries(rows) {
+    const el = document.getElementById('daySummaries');
+    if (!rows.length) { el.innerHTML = '<p class="muted">No closed days yet.</p>'; return; }
+    let html = `<table><thead><tr>
+        <th>Day</th><th>Date</th><th class="right">Receipts</th><th class="right">Total</th><th>Close status</th><th>Closed At</th>
+    </tr></thead><tbody>`;
+    rows.forEach(s => {
+        const status = s.is_closed_successfully ? badge('CLOSED', 'b-ok') : badge('CLOSE FAILED', 'b-err');
+        html += `<tr>
+            <td><strong>${s.fiscal_day_no}</strong></td>
+            <td>${escapeHtml(s.day_date)}</td>
+            <td class="right">${s.total_receipts_processed}</td>
+            <td class="right">${fmtMoney(s.total_sales_value)}</td>
+            <td>${status}</td>
+            <td>${fmtDate(s.closed_at)}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+function updateActionButtons(d) {
+    document.getElementById('btnOpenDay').disabled = (d.state && d.state.is_day_open) || (d.pause && d.pause.fiscalization_paused);
+    document.getElementById('btnCloseDay').disabled = !(d.state && d.state.is_day_open) || (d.pause && d.pause.fiscalization_paused);
+}
+
+function refresh() { load(); toast('Refreshed', 'success'); }
+
+function openDay() {
+    fetch('/fiscalisation/api/open-day/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') || CSRF }})
+        .then(r => r.json())
+        .then(d => { toast(d.success ? 'Day opened.' : 'Open failed: ' + (d.error || ''), d.success ? 'success' : 'error'); load(); });
+}
+
+function closeDay() {
+    if (!confirm('Close the current fiscal day on ZIMRA?')) return;
+    fetch('/fiscalisation/api/close-day/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') || CSRF }})
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) toast('Day closed.', 'success');
+            else if (d.blocking_receipts) toast(`Cannot close — ${d.blocking_receipts.length} blocking receipt(s). Fix them in the Failed/Pending lists below.`, 'error');
+            else toast('Close failed: ' + (d.error || JSON.stringify(d.response||{})), 'error');
+            load();
+        });
+}
+
+function reconcile() {
+    if (!confirm('Pull state from ZIMRA and overwrite local DB? Use after ZIMRA manually closed a day on your behalf.')) return;
+    fetch('/fiscalisation/api/reconcile/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') || CSRF }})
+        .then(r => r.json())
+        .then(d => { toast(d.success ? `Reconciled. Day ${d.after.fiscal_day_no} ${d.after.is_day_open?'OPEN':'CLOSED'}` : 'Reconcile failed: ' + (d.error||''), d.success ? 'success' : 'error'); load(); });
+}
+
+function syncPending() {
+    toast('Sync started — may take a few seconds per receipt…');
+    fetch('/fiscalisation/api/sync-pending/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') || CSRF }})
+        .then(r => r.json())
+        .then(d => { toast(d.success ? 'Sync complete (see console for log).' : 'Sync error: ' + (d.error||''), d.success ? 'success' : 'error'); if (d.log) console.log('[sync log]\n' + d.log); load(); });
+}
+
+function openPauseModal()  { document.getElementById('pauseModal').classList.add('show'); }
+function closePauseModal() { document.getElementById('pauseModal').classList.remove('show'); }
+
+function submitPause() {
+    const reason = document.getElementById('pauseReason').value;
+    const notes  = document.getElementById('pauseNotes').value;
+    fetch('/fiscalisation/api/pause/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') || CSRF, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason, notes }),
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) { toast('Fiscalisation paused.', 'success'); closePauseModal(); }
+        else toast('Pause failed: ' + (d.error||''), 'error');
+        load();
+    });
+}
+
+function resumeFiscalisation() {
+    if (!confirm('Resume ZIMRA signing/submission for all future checkouts?')) return;
+    fetch('/fiscalisation/api/resume/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') || CSRF }})
+        .then(r => r.json())
+        .then(d => { toast(d.success ? 'Fiscalisation resumed.' : 'Resume failed: ' + (d.error||''), d.success ? 'success' : 'error'); load(); });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    load();
+    refreshTimer = setInterval(load, 15000);
+});
+</script>
 </body>
 </html>
