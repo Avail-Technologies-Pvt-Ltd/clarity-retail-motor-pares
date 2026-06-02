@@ -42,6 +42,7 @@ class Product(models.Model):
 	deleted_at = models.DateTimeField(null=True, blank=True)
 	
 	# global_id = models.CharField(max_length=100, default='', blank=True, null=True)
+	zimra_hs_code = models.CharField(max_length=30, blank=True, null=True)
 	bar_code = models.CharField(max_length=30, default='N/A', blank=True, null=True)
 	title = models.CharField(max_length=30)
 	product_code = models.CharField(max_length=50, default='N/A', blank=True, null=True)
@@ -231,15 +232,18 @@ class Batch(models.Model):
 
 
 	def expiring_in(self):
-		txt = str(self.expiration_date.date() - (datetime.today().date()))
-		if txt[0] == "-":
-			txt = f'Expired { txt[1:][:-9] } ago'
-		else:
-			txt = f'Expiring in { txt[:-9] }'
+		try:
+			txt = str(self.expiration_date.date() - (datetime.today().date()))
+			if txt[0] == "-":
+				txt = f'Expired { txt[1:][:-9] } ago'
+			else:
+				txt = f'Expiring in { txt[:-9] }'
 
-		expiring_in = txt
+			expiring_in = txt
 
-		return expiring_in
+			return expiring_in
+		except:
+			return "No expiration date"
 
 	expiring_in = property(expiring_in)
 

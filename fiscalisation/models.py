@@ -51,7 +51,6 @@ class FiscalState(models.Model):
         self.is_day_open = True
         self.current_day_date = day_date
         self.day_opened_at = zimra_now()
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
         self.save()
 
     def __str__(self):
@@ -71,10 +70,7 @@ class FiscalReceipt(models.Model):
         ('DEBITNOTE', 'Debit Note'),
     ]
     
-<<<<<<< HEAD
-=======
-    
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
     fiscal_state = models.ForeignKey(FiscalState, on_delete=models.CASCADE, related_name="receipts")
     fiscal_day_no = models.IntegerField()
     receipt_global_no = models.IntegerField()
@@ -103,8 +99,6 @@ class FiscalReceipt(models.Model):
     def __str__(self):
         return f"Inv {self.invoice_no} | Global #{self.receipt_global_no} [{self.sync_status}]"
 
-<<<<<<< HEAD
-=======
 
 class FiscalSettings(models.Model):
     """Operational toggles for the fiscalisation pipeline. Singleton — exactly
@@ -146,7 +140,7 @@ class FiscalSettings(models.Model):
     def __str__(self):
         return f"Fiscal Settings (paused={self.fiscalization_paused})"
 
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
 
 class FiscalDaySummary(models.Model):
     """Saves Z-Report parameters to handle day closing securely."""

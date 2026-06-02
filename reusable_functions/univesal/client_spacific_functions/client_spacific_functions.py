@@ -48,6 +48,13 @@ except ImportError:
     Image = None
     ImageWin = None
 
+
+
+import qrcode
+
+
+
+
 from payments.models import Sale, SaleTransaction, Payment
 from accounts.models import ClientSetting, PrinterCase, CustomerAccount
 from enventory.models import ReturnInn, CreditNote
@@ -102,6 +109,54 @@ def print_logo(printer_name):
     hDC.EndPage ()
     hDC.EndDoc ()
     hDC.DeleteDC ()
+
+
+
+
+def print_qrcode(printer_name, qr_string):
+    PHYSICALWIDTH = 30
+    PHYSICALHEIGHT = 30
+    
+    # Create QR code from string
+    qr = qrcode.QRCode(
+        version=None,  # Auto-size
+        box_size=10,
+        border=2
+    )
+    qr.add_data(data_string)
+    qr.make(fit=True)
+    
+    # Convert QR to image
+    qr_img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Save temporarily or use directly in memory
+    temp_file = "temp_qr.png"
+    qr_img.save(temp_file)
+    
+    # Print the QR code
+    hDC = win32ui.CreateDC()
+    hDC.CreatePrinterDC(printer_name)
+    printer_size = hDC.GetDeviceCaps(PHYSICALWIDTH), hDC.GetDeviceCaps(PHYSICALHEIGHT)
+    
+    bmp = Image.open(temp_file)
+    
+    hDC.StartDoc("QR Code")
+    hDC.StartPage()
+    
+    dib = ImageWin.Dib(bmp)
+    # Adjust position and size as needed
+    dib.draw(hDC.GetHandleOutput(), (80, 0, printer_size[0] + 200, printer_size[1] + 0))
+    
+    hDC.EndPage()
+    hDC.EndDoc()
+    hDC.DeleteDC()
+    
+    # Clean up temp file (optional)
+    import os
+    os.remove(temp_file)
+
+# Usage example:
+# print_qrcode("Your_Printer_Name", "https://www.example.com")
 
 
 
@@ -797,7 +852,7 @@ ZiG   : 09026668530014
         return title, type, message
 
 
-def print_receipt(sale_transaction_id, receipt_purpose):
+def print_receipt(sale_transaction_id, receipt_purpose, qr_code):
     try:
         sale_transaction = SaleTransaction.objects.get(recipt_number=int(sale_transaction_id))
     except Exception as e:

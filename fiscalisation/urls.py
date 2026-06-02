@@ -36,4 +36,4 @@ urlpatterns = [
     path("api/pause/", views.pause_fiscalization),
     path("api/resume/", views.resume_fiscalization),
 ]
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+

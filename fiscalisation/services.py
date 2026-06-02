@@ -160,7 +160,7 @@ def zimra_now():
     """
     return datetime.now(_ZIMBABWE_TZ).replace(tzinfo=None)
 
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
 class ZimraServerError(Exception):
     """Raised when the Zimra server returns an error."""
     
@@ -259,186 +259,7 @@ def tax_calculator(sale_amount, tax_rate):
         Args:
             total_amount (float or Decimal): The total amount including VAT
             tax_rate (float or Decimal): The tax rate as a percentage (e.g., 20 for 20%)
-<<<<<<< HEAD
-            
-        Returns:
-            Decimal: The VAT amount, rounded to 2 decimal places
-        """
-        # Set decimal precision
-        decimal.getcontext().prec = 28
-        
-        # Convert inputs to Decimal to avoid floating point errors
-        total_decimal = Decimal(str(sale_amount))
-        rate_decimal = Decimal(str(tax_rate))
-        
-        # Calculate the divisor (1 + tax_rate/100)
-        divisor = Decimal('1') + (rate_decimal / Decimal('100'))
-        
-        # Calculate pre-tax amount
-        pre_tax = total_decimal / divisor
-        
-        # Calculate VAT (total - pre_tax)
-        vat_amount = total_decimal - pre_tax
-        
-        # Round to 2 decimal places (rounding HALF_UP as per your accepted code)
-        return float(vat_amount.quantize(Decimal('0.01'), rounding=decimal.ROUND_HALF_UP))
 
-def register_new_device(
-    
-    fiscal_device_serial_no:str, 
-    device_id:str,
-    activation_key:str, 
-    model_name:str = 'Server',
-    folder_name:str = 'prod', 
-    certificate_filename:str='certificate', 
-    private_key_filename:str='decrypted_key',
-    prod:bool = False
-    ):
-    '''
-    Parameters:
-    
-    folder_name: string (name of the prospective folder to save the certificate and file)
-    
-    fiscal_device_serial_no: string 
-    
-    device_id: string (should be 0 padded 10 digit string but confirm with Zimra first after the debacle with Kolfhurst)
-    
-    activation_key: str (should be 0 padded 8 digit string. For example: '00398834')
-    
-    certificate_filename: string (prospective file name for the certificate)
-    
-    private_key_filename: (prospective file name for the private key)
-    
-    prod: bool  (True for production, False for testing)
-
-    
-    todo: create a pfx along so that output is just sent to Mr Kashiri's system
-    '''
-    if not os.path.exists(f'{folder_name}'):
-        os.makedirs(f'{folder_name}')
-
-    # Format Device serial number and device ID
-    formatted_device_id = device_id.zfill(10)
-
-
-    # Generate RSA private key (2048 bits)
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-        backend=default_backend()
-    )
-
-    # Save the private key to a PEM file
-    private_key_pem = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption()
-    )
-
-    with open(f"{folder_name}/{private_key_filename}.key", "wb") as key_file:
-        key_file.write(private_key_pem)
-        logging.info(f"Private key saved to {folder_name}/{private_key_filename}.key")
-
-    # Define the Common Name (CN) based on the format
-    common_name = f'ZIMRA-{fiscal_device_serial_no}-{formatted_device_id}'
-
-    # Generate CSR with the required Subject fields
-    csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, common_name),
-    ])).sign(private_key, hashes.SHA256(), default_backend())
-
-    # Serialize CSR to PEM format
-    csr_pem = csr.public_bytes(serialization.Encoding.PEM).decode('utf-8')
-    if prod:
-        url = f'https://fdmsapi.zimra.co.zw/Public/v1/{device_id}/RegisterDevice'
-    else:
-        url = f'https://fdmsapitest.zimra.co.zw/Public/v1/{device_id}/RegisterDevice'
-
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-        'DeviceModelName': model_name,
-        'DeviceModelVersion': '1.0'
-    }
-
-    payload = {
-        'activationKey': activation_key,
-        'certificateRequest': csr_pem,
-    }
-
-    response = requests.post(url, json=payload, headers=headers)
-
-    if response.status_code == 200:
-        logging.info("Request was successful!")
-        response_json = response.json()
-        certificate_pem = response_json['certificate']
-
-        # Save the certificate to a PEM file
-        with open(f"{folder_name}/{certificate_filename}.crt", "w") as cert_file:
-            cert_file.write(certificate_pem)
-            logging.info(f"Certificate saved to {folder_name}/{certificate_filename}.crt")
-        
-    else:
-        logging.fatal(f"Request failed with status code {response.status_code}")
-        logging.critical(response.text)
-
-
-class Device:
-    def __init__(
-            self,
-            device_id: str, 
-            serialNo: str, 
-            activationKey: str, 
-            cert_path: str, 
-            private_key_path:str, 
-            test_mode:bool =True, 
-            deviceModelName: str='Server', 
-            deviceModelVersion:str = 'v1',
-            company_name:str ="NexusClient"
-        ):
-        self.companyName: str = company_name
-        self.deviceID: int = device_id
-        self.deviceModelName =deviceModelName
-        self.deviceModelVersion = deviceModelVersion
-        self.certPath: str = cert_path
-        self.keyPath: str = private_key_path
-        
-        
-        if test_mode:
-            self.test_mode = True
-            self.base_url: str = 'https://fdmsapitest.zimra.co.zw/Device/v1/'
-            self.qrUrl:str = 'https://fdmstest.zimra.co.zw/'
-            # Updated 2026: Standard VAT is now 15.5% (ID 515), Exempt is ID 3 and 15% is invalid
-            self.applicableTaxes: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
-        else:
-            self.test_mode = False
-            self.base_url: str = 'https://fdmsapi.zimra.co.zw/Device/v1/'
-            self.qrUrl:str = 'https://fdms.zimra.co.zw/'
-            # Updated 2026: Standard VAT is now 15.5% (ID 515), Exempt is ID 3 and 15% is invalid
-            self.applicableTaxes: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
-
-        self.deviceBaseUrl = f'{self.base_url}{self.deviceID}'
-        
-        self.serialNo = serialNo
-        self.activationKey = activationKey
-
-
-    def insert_receiptDeviceSignature(self, receiptData: OrderedDict, previous_hash=None)-> OrderedDict:
-        """
-        this is the final nail in the coffin before sending receipt to zimra
-        """
-
-        receiptTaxes = receiptData["receiptTaxes"]
-        logging.info(f"Library Info: Receipt Taxes: {receiptTaxes}")
-        concatenated_receipt_taxes = self.concatenate_receipt_taxes(receiptTaxes=receiptTaxes)  
-        if previous_hash:
-            string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}{previous_hash}"
-            logging.info(f"Library Info: string to sign: {string_to_sign}")
-        else:
-            string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}"
-            logging.info(f"Library Info: string to sign: {string_to_sign}")
-            
-=======
             
         Returns:
             Decimal: The VAT amount, rounded to 2 decimal places
@@ -654,8 +475,7 @@ class Device:
         else:
             string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}"
             logging.info(f"Library Info: string to sign: {string_to_sign}")
-            
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
         hash_value = self.get_hash(string_to_sign)
         signature = self.sign_data(string_to_sign)
         receiptData["receiptDeviceSignature"] = {
@@ -803,10 +623,9 @@ class Device:
         response = requests.get(
             url,
             cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
+
             timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
             headers = {
                 'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
                 'DeviceModelVersion': self.deviceModelVersion
@@ -869,10 +688,9 @@ class Device:
                 url,
                 headers=headers, 
                 cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
-            timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
+                timeout=ZIMRA_HTTP_TIMEOUT,
+
                 json=data,
             )
             response.raise_for_status() 
@@ -903,10 +721,9 @@ class Device:
         response = requests.get(
             url,
             cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
+
             timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
             headers = {
                 'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
                 'DeviceModelVersion': self.deviceModelVersion
@@ -930,10 +747,9 @@ class Device:
         response = requests.post(
             url,
             cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
+
             timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
             headers=headers
         )
         if response.status_code == 200:
@@ -956,11 +772,9 @@ class Device:
             'operationID': '0HN4FDK6T1CNI:00000001'
         }
         '''
-<<<<<<< HEAD
-        fiscalDayOpened = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-=======
+
         fiscalDayOpened = zimra_now().strftime('%Y-%m-%dT%H:%M:%S')
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
         #check if the day is closed
         status = self.getStatus()
         if status['fiscalDayStatus'] != 'FiscalDayClosed':
@@ -990,11 +804,11 @@ class Device:
             response = requests.post(
                 url, 
                 cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
-            timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
+                timeout=ZIMRA_HTTP_TIMEOUT,
+                
                 headers=headers, 
+                
                 json=payload
                 )
             response.raise_for_status()  # Will raise an HTTPError for bad responses
@@ -1536,11 +1350,11 @@ class Device:
         response = requests.post(
             url,
             cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
+
             timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
             headers=headers,
+            
             json=payload
         )
         
@@ -1551,11 +1365,8 @@ class Device:
             # raise an Exception if the response is not 200
             response_object = {response.status_code: response.text}
             return response_object
-            
-<<<<<<< HEAD
-=======
-            
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+        
+
         
     def generate_qr_code(self, signature: str, receipt_global_no, receipt_date=datetime.now().date()):
         """
@@ -1725,11 +1536,11 @@ class Device:
             response = requests.post(
                 url, 
                 headers=headers,
+
                 cert=(self.certPath, self.keyPath),
-<<<<<<< HEAD
-=======
-            timeout=ZIMRA_HTTP_TIMEOUT,
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
+                timeout=ZIMRA_HTTP_TIMEOUT,
+
                 json=payload
             )
             logging.info(f"Response from Zimra======: {response.json()}")

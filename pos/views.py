@@ -1059,7 +1059,7 @@ def check_out(request):
                 "unit_price": str(cart_item.unit_price),
                 "quantity": str(cart_item.quantity),
                 "tax_percent": float(tax_percentage),
-                "hs_code": getattr(cart_item.stock.product, 'product_code', '04021099') or '04021099',
+                "hs_code": getattr(cart_item.stock.product.zimra_hs_code, 'product_code', '04021099') or '04021099',
             })
 
         total_cost = subtotal - discount
@@ -1089,8 +1089,9 @@ def check_out(request):
         # a QR. The sale still goes through the books.
         local_qr_string = ""
         if fiscalization_paused:
-            custome_status, message = print_receipt(sale_transaction.recipt_number, " (BYPASS)", qr_data=local_qr_string)
-            print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data=local_qr_string)
+            qr_data = local_qr_string
+            custome_status, message = print_receipt(sale_transaction.recipt_number, "RECEIPT", qr_data)
+            print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data)
             return JsonResponse({
                 "custome_status": custome_status or "",
                 "message": (
@@ -1235,8 +1236,9 @@ def check_out(request):
         # Execute Print Out with Offline Generated QR Codes
         # ---------------------------------------------------------
         # Pass the pre-computed local_qr_string directly to your print script layers
-        custome_status, message = print_receipt(sale_transaction.recipt_number, " ", qr_data=local_qr_string)
-        print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data=local_qr_string)
+        qr_data = local_qr_string
+        custome_status, message = print_receipt(sale_transaction.recipt_number, " ", qr_data)
+        print_receipt(sale_transaction.recipt_number, "(COPY)", qr_data)
 
         if custome_status == "":
             message = "Transaction successful"
@@ -1455,8 +1457,9 @@ def load_receipt_payment_portions_data(request):
 def reprint_user_last_receipt(request):
     sale_transaction = SaleTransaction.objects.filter(created_by=request.user).last()
     if sale_transaction:
-        custome_status, message = print_receipt(sale_transaction.recipt_number, " ")
-        print_receipt(sale_transaction.recipt_number, "(COPY)")
+        qr_data = ""
+        custome_status, message = print_receipt(sale_transaction.recipt_number, " ", qr_data)
+        print_receipt(sale_transaction.recipt_number, " ", qr_data)
         return JsonResponse({"custome_status":custome_status, "message":message})
     else:
         return JsonResponse({"custome_status":"Error", "message":"No receipt found for this user."})

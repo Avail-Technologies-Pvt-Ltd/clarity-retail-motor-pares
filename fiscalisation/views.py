@@ -328,7 +328,7 @@ def get_status(request):
     try:
 
         response = device.getStatus()
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
 
         return JsonResponse({
             "success": True,
@@ -344,8 +344,7 @@ def get_status(request):
 
 
 # -----------------------------------------
-<<<<<<< HEAD
-=======
+
 # OPEN FISCAL DAY
 # -----------------------------------------
 
@@ -427,7 +426,7 @@ def open_day(request):
 
 
 # -----------------------------------------
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
 # TEST RECEIPT
 # -----------------------------------------
 
@@ -448,11 +447,8 @@ def test_receipt(request):
 
             "invoiceNo": "INV-001",
 
-<<<<<<< HEAD
-            "receiptDate": datetime.now().strftime(
-=======
             "receiptDate": zimra_now().strftime(
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
                 '%Y-%m-%dT%H:%M:%S'
             ),
 
@@ -489,76 +485,6 @@ def test_receipt(request):
 
             ]
         }
-<<<<<<< HEAD
-
-        prepared_receipt = device.prepareReceipt(
-            mock_receipt
-        )
-
-        response = device.submitReceipt(
-            prepared_receipt
-        )
-
-        return JsonResponse({
-            "success": True,
-            "prepared_receipt": prepared_receipt,
-            "zimra_response": response
-        })
-
-    except Exception as e:
-
-        return JsonResponse({
-            "success": False,
-            "error": str(e)
-        }, status=500)
-
-
-# -----------------------------------------
-# CLOSE DAY
-# -----------------------------------------
-
-@csrf_exempt
-def close_day(request):
-
-    try:
-
-        response = device.closeDay(
-
-            fiscalDayNo=1,
-
-            fiscalDayDate=datetime.now().strftime('%Y-%m-%d'),
-
-            lastReceiptCounterValue=1,
-
-            fiscalDayCounters=[
-
-                {
-                    "fiscalCounterType": "SaleByTax",
-
-                    "fiscalCounterCurrency": "USD",
-
-                    "fiscalCounterTaxPercent": 15.5,
-
-                    "fiscalCounterTaxID": 515,
-
-                    "fiscalCounterValue": 900.00
-                }
-
-            ]
-        )
-
-        return JsonResponse({
-            "success": True,
-            "response": response
-        })
-
-    except Exception as e:
-
-        return JsonResponse({
-            "success": False,
-            "error": str(e)
-        }, status=500)
-=======
 
         prepared_receipt = device.prepareReceipt(
             mock_receipt
@@ -1283,4 +1209,4 @@ def device_delete(request, pk):
     invalidate_device_cache()
     messages.success(request, f"Deleted {name}.")
     return redirect(reverse('fiscal_device_list'))
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+

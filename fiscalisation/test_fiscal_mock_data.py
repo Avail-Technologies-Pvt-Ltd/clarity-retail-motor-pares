@@ -31,7 +31,7 @@ from services import (
 )
 
 
->>>>>>> b7021b1903dd515c5dc82b4bfe13ca2982497309
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
