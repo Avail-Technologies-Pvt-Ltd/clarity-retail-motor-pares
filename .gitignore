@@ -2,7 +2,7 @@
 tokens
 venv/
 .venv/
-.env
+#.env
 updates/
 tmp/
 tests/
