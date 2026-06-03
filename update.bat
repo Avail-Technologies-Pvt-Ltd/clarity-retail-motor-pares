@@ -25,7 +25,7 @@ REM ============================================================
 REM 2. Pull latest code from GitHub
 REM ============================================================
 echo [2/6] Pulling latest code from GitHub...
-git pull origin Motor-Spares
+git pull origin master
 if errorlevel 1 (
     echo ERROR: Failed to pull updates
     pause

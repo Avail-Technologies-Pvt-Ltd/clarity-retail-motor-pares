@@ -39,9 +39,9 @@ REM 3. Clone or update repository
 REM ============================================================
 echo [3/8] Getting code from GitHub...
 if exist ".git" (
-    git pull origin Motor-Spares
+    git pull origin master
 ) else (
-    git clone -b Motor-Spares https://github.com/Recusants/CLARITY-POS.git .
+    git clone -b master https://github.com/Recusants/CLARITY-RETAIL-LIVE-FISCAL.git .
 )
 if errorlevel 1 (
     echo ERROR: Failed to get code from GitHub
