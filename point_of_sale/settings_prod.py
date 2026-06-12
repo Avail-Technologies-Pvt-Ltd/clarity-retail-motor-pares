@@ -12,6 +12,23 @@ try:
 except ImportError:
     pass
 
+SECRET_KEY = os.environ.get('SENTRY_DSN')
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        
+        # Performance Monitoring: Capture 20% of transactions
+        traces_sample_rate=SENTRY_TRACES_RATE * 2,
+        
+        # Profiling: Capture 10% of transactions
+        profiles_sample_rate=SENTRY_TRACES_RATE,
+        
+        # Associate user info (like IDs/usernames) with errors
+        send_default_pii=True,
+    )
+
+
 # Use PostgreSQL
 DATABASES = {
     'default': {

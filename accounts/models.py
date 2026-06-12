@@ -59,11 +59,11 @@ class Branch(models.Model):
 	
 	# Status
 	is_active = models.BooleanField(default=True)
+	is_local = models.BooleanField(default=True)
 	
 	# Sync
 	branch_id = models.CharField(max_length=100, default='', blank=True, null=True) #uuid from central server
 	branch_verification_key = models.CharField(max_length=300, default="")
-	branch_name = models.CharField(max_length=100, blank=True, null=True)
 	sync_url = models.CharField(max_length=300, default="")
 	last_sync_time = models.CharField(max_length=300, default="")
 	last_sync_user = models.CharField(max_length=300, default="")
@@ -79,7 +79,7 @@ class Branch(models.Model):
 			
 	
 	def __str__(self):
-		return f"{self.name} ({self.id})"
+		return f"{self.branch_name} ({self.id})"
 
 
 
@@ -193,9 +193,9 @@ class CustomerAccount(models.Model):
 	balance = models.IntegerField(default=0)
 	credit_limit = models.IntegerField(default=0)
 
-	tin_number = models.CharField(max_length=30,blank=True, null=True, default='')
-	prz_number = models.CharField(max_length=30,blank=True, null=True, default='')
-	vat_number = models.CharField(max_length=30,blank=True, null=True, default='')
+	tin_number = models.CharField(max_length=30,blank=True, null=True)
+	prz_number = models.CharField(max_length=30,blank=True, null=True)
+	vat_number = models.CharField(max_length=30,blank=True, null=True)
 
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	created_at = models.DateTimeField(auto_now_add=True)

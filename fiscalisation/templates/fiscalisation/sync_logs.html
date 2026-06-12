@@ -1,0 +1,28 @@
+{% extends "fiscalisation/base.html" %}
+
+{% block title %}Sync Logs{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <h5><i class="fas fa-history"></i> Sync Logs</h5>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>Time</th><th>Success</th><th>Synced</th><th>Failed</th><th>Duration</th><th>Error</th></tr></thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.attempt_time|date:"Y-m-d H:i:s" }}</td>
+                    <td>{% if log.success %}<span class="badge bg-success">Success</span>{% else %}<span class="badge bg-danger">Failed</span>{% endif %}</td>
+                    <td class="text-success">{{ log.synced_count }}</td>
+                    <td class="text-danger">{{ log.failed_count }}</td>
+                    <td>{{ log.duration_ms|default:"—" }} ms</td>
+                    <td>{% if log.error_message %}<small class="text-danger">{{ log.error_message|truncatechars:50 }}</small>{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">No sync logs yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

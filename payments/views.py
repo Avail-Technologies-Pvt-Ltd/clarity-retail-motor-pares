@@ -248,7 +248,8 @@ def get_expense_type_details(request):
 
 def reprint_receipt(request):
     receipt_number = request.GET.get('receipt_number')
-    print_receipt(receipt_number, "(REPRINT COPY)")
+    qr_code = ""
+    print_receipt(receipt_number, "(REPRINT COPY)", qr_code)
 
     return JsonResponse({"message": "Print job successfully!"})
 

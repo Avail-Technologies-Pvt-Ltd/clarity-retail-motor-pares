@@ -1,35 +1,20 @@
-import os
-import sys
-
+# fiscalisation/apps.py
 from django.apps import AppConfig
+import os
 
 
 class FiscalisationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'fiscalisation'
+    verbose_name = 'Fiscalisation Management'
 
     def ready(self):
-        # Skip the scheduler during management commands (migrate, shell, test,
-        # collectstatic, etc.) — those shouldn't be dragging a background
-        # thread along. Production WSGI (waitress / run.py) and `runserver`
-        # both end up here without a skip-list match.
-        argv = sys.argv
-        skip = any(cmd in argv for cmd in (
-            'migrate', 'makemigrations', 'shell', 'test', 'collectstatic',
-            'createsuperuser', 'showmigrations', 'sqlmigrate', 'check',
-            'dumpdata', 'loaddata', 'sync_pending_receipts',
-        ))
-        if skip:
-            return
-        # Django's autoreloader forks a child on `runserver`; only start the
-        # scheduler in the child (where RUN_MAIN=true), not the parent.
-        if 'runserver' in argv and os.environ.get('RUN_MAIN') != 'true':
-            return
-
-        try:
-            from .scheduler import start_scheduler
-            start_scheduler()
-        except Exception as e:
-            # Don't take the whole app down if APScheduler bootstrap fails.
-            import logging
-            logging.getLogger(__name__).warning("Scheduler did not start: %s", e)
+        if os.environ.get('RUN_MAIN') or not os.environ.get('DJANGO_AUTORELOAD'):
+            try:
+                from fiscalisation.scheduler import start_background_sync
+                from fiscalisation.models import FiscalisationSettings
+                settings = FiscalisationSettings.get_settings()
+                start_background_sync(interval_seconds=settings.sync_interval_seconds)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(f"Background sync could not start: {e}")

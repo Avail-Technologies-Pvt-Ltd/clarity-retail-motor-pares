@@ -1122,7 +1122,14 @@
                 },
                 success: function(responseData){
                     //alert("Done...")
-                    if (responseData.custome_status == "Error"){
+                    if (responseData.message.includes("Fiscalisation is paused")){
+                        swal({
+                            title: "Warning",
+                            text: responseData.message,
+                            type: "warning"
+                        });
+
+                    }else if (responseData.custome_status == "Error"){
                         swal({
                             title: "Error",
                             text: responseData.message,

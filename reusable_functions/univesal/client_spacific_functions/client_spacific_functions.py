@@ -123,7 +123,7 @@ def print_qrcode(printer_name, qr_string):
         box_size=10,
         border=2
     )
-    qr.add_data(data_string)
+    qr.add_data(qr_string)
     qr.make(fit=True)
     
     # Convert QR to image
@@ -150,6 +150,8 @@ def print_qrcode(printer_name, qr_string):
     hDC.EndPage()
     hDC.EndDoc()
     hDC.DeleteDC()
+
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PR")
     
     # Clean up temp file (optional)
     import os
@@ -168,7 +170,7 @@ def print_qrcode(printer_name, qr_string):
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
-def print_out_credit_note_bulk(recipt_number, credit_note_id, receipt_purpose):
+def print_out_credit_note_bulk(recipt_number, credit_note_id, receipt_purpose, qr_code, fiscal_device_id):
     try:
         sale_transaction = SaleTransaction.objects.get(recipt_number=recipt_number)
 
@@ -237,7 +239,6 @@ def print_out_credit_note_bulk(recipt_number, credit_note_id, receipt_purpose):
 
 
     returns_inn = ReturnInn.objects.filter(credit_note=credit_note)
-    print("::::::::::::::::::::::::::::::::::::::::::::::JJJJJJJJJ")
     print(returns_inn)
     for return_inn in returns_inn:
         returned_title_and_quantity = f"{return_inn.total_units} x ({str(return_inn.sale.stock.product.product_code)}) {str(return_inn.sale.stock.product.title)} "
@@ -270,6 +271,7 @@ Email    :{configuration.email}
 VAT          :{configuration.vat_number}
 TIN          :{configuration.tin_number}
 PRZ          :{configuration.prz_number}
+DEVICE ID    :{fiscal_device_id}
 Invoice     #:{sale_transaction.ultimate_recipt_number}
 CREDIT NOTE #:{credit_note.ultimate_credit_note_number}
 ----------------------------------------------
@@ -342,6 +344,9 @@ Sales Rep: {credit_note.created_by.first_name.title()} {credit_note.created_by.l
 
         try:
             hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
+            # -----------------------------------------------------------------------------
+            # -----PRINT TEXT BEFORE LOGO
+            # -----------------------------------------------------------------------------
             try:
                 win32print.StartPagePrinter(hPrinter)
                 win32print.WritePrinter(hPrinter, before_logo)
@@ -356,12 +361,47 @@ Sales Rep: {credit_note.created_by.first_name.title()} {credit_note.created_by.l
             finally:
                 win32print.EndDocPrinter(hPrinter)
 
+            # -----------------------------------------------------------------------------
+            # -----PRINT LOGO
+            # -----------------------------------------------------------------------------
             print_logo(printer_name)
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT BODY
+            # -----------------------------------------------------------------------------
 
             hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
             try:
                 win32print.WritePrinter(hPrinter, raw_data)
                 win32print.EndPagePrinter(hPrinter)
+                # win32print.WritePrinter(hPrinter, c_shap_cut_command)
+
+            except Exception as e:
+                
+                #message.warning(request, f"Error! {e}")
+                print(f"Error! {e}")
+                message = f"Error printing! {e}"
+                custome_status = "Error"
+                return custome_status, message
+            finally:
+                win32print.EndDocPrinter(hPrinter)
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT QR
+            # -----------------------------------------------------------------------------
+
+            if qr_code:
+                print_qrcode(printer_name, qr_code)
+
+            # -----------------------------------------------------------------------------
+            # -----CUT
+            # -----------------------------------------------------------------------------
+
+            
+            hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
+            try:
+                # win32print.WritePrinter(hPrinter, raw_data)
+                # win32print.EndPagePrinter(hPrinter)
                 win32print.WritePrinter(hPrinter, c_shap_cut_command)
 
             except Exception as e:
@@ -414,7 +454,7 @@ Sales Rep: {credit_note.created_by.first_name.title()} {credit_note.created_by.l
 
 
 
-def print_credit_note(return_inn_id, receipt_purpose):
+def print_credit_note(return_inn_id, receipt_purpose): # this is dead weight, died centuries ago.
     try:
         return_inn = ReturnInn.objects.get(id=int(return_inn_id))
         sale_transaction = return_inn.sale.sale_transaction
@@ -423,12 +463,6 @@ def print_credit_note(return_inn_id, receipt_purpose):
         custome_status = "Error"
         message = f"{e}"
         return custome_status, message
-
-
-
-  
-
-  
 
     print('----------------------------->>>')
     discount = sale_transaction.discount
@@ -552,6 +586,9 @@ Sales Rep: {return_inn.created_by.first_name.title()} {return_inn.created_by.las
 
         try:
             hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
+            # -----------------------------------------------------------------------------
+            # -----PRINT TEXT BEFORE LOGO
+            # -----------------------------------------------------------------------------
             try:
                 win32print.StartPagePrinter(hPrinter)
                 win32print.WritePrinter(hPrinter, before_logo)
@@ -566,13 +603,22 @@ Sales Rep: {return_inn.created_by.first_name.title()} {return_inn.created_by.las
             finally:
                 win32print.EndDocPrinter(hPrinter)
 
+            # -----------------------------------------------------------------------------
+            # -----PRINT LOGO
+            # -----------------------------------------------------------------------------
+
             print_logo(printer_name)
+
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT BODY
+            # -----------------------------------------------------------------------------
 
             hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
             try:
                 win32print.WritePrinter(hPrinter, raw_data)
                 win32print.EndPagePrinter(hPrinter)
-                win32print.WritePrinter(hPrinter, c_shap_cut_command)
+                # win32print.WritePrinter(hPrinter, c_shap_cut_command)
 
             except Exception as e:
                 
@@ -583,6 +629,33 @@ Sales Rep: {return_inn.created_by.first_name.title()} {return_inn.created_by.las
                 return custome_status, message
             finally:
                 win32print.EndDocPrinter(hPrinter)
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT QR
+            # -----------------------------------------------------------------------------
+
+            if qr_code:
+                print_qrcode(printer_name, qr_code)
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT TEXT BEFORE LOGO
+            # -----------------------------------------------------------------------------
+            hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
+            try:
+                win32print.WritePrinter(hPrinter, raw_data)
+                win32print.EndPagePrinter(hPrinter)
+                # win32print.WritePrinter(hPrinter, c_shap_cut_command)
+
+            except Exception as e:
+                
+                #message.warning(request, f"Error! {e}")
+                print(f"Error! {e}")
+                message = f"Error printing! {e}"
+                custome_status = "Error"
+                return custome_status, message
+            finally:
+                win32print.EndDocPrinter(hPrinter)
+
 
                 
         except Exception as e:
@@ -852,7 +925,7 @@ ZiG   : 09026668530014
         return title, type, message
 
 
-def print_receipt(sale_transaction_id, receipt_purpose, qr_code):
+def print_receipt(sale_transaction_id, receipt_purpose, qr_code, fiscal_device_id):
     try:
         sale_transaction = SaleTransaction.objects.get(recipt_number=int(sale_transaction_id))
     except Exception as e:
@@ -900,12 +973,14 @@ def print_receipt(sale_transaction_id, receipt_purpose, qr_code):
 
 {custome_wraper(configuration.address)}
 {custome_wraper(configuration.tel)}
+Local Invoice
 Email    :{configuration.email}
 ----------------------------------------------
 VAT      :{configuration.vat_number}
 TIN      :{configuration.tin_number}
 PRZ      :{configuration.prz_number}
-Invoice #: {sale_transaction.ultimate_recipt_number}
+INVOICE #:{sale_transaction.ultimate_recipt_number}
+DEVICE   :{fiscal_device_id}
 ----------------------------------------------
                     BUYER
 Buyer Name   :{sale_transaction.buyer_name}
@@ -955,11 +1030,37 @@ Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.cr
         raw_type = "XPS_PASS" if printer_driver["Version"] == 4 else "RAW"
 
         try:
-            hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
+            hJob = win32print.StartDocPrinter(hPrinter, 1, ("INVOICE RECEIPT", None, raw_type))
+            # -----------------------------------------------------------------------------
+            # -----PRINT TEXT BEFORE LOGO
+            # -----------------------------------------------------------------------------
             try:
                 win32print.StartPagePrinter(hPrinter)
                 win32print.WritePrinter(hPrinter, before_logo)
                 
+            except Exception as e:
+                message = f"Error printing! {e}"
+                custome_status = "Error"
+                return custome_status, message
+            finally:
+                win32print.EndDocPrinter(hPrinter)
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT LOGO
+            # -----------------------------------------------------------------------------
+            print_logo(printer_name)
+
+
+
+            # -----------------------------------------------------------------------------
+            # -----PRINT TEXT BODY
+            # -----------------------------------------------------------------------------
+            hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
+            try:
+                win32print.WritePrinter(hPrinter, raw_data)
+                win32print.EndPagePrinter(hPrinter)
+                # win32print.WritePrinter(hPrinter, c_shap_cut_command)
+
             except Exception as e:
                 
                 #message.warning(request, f"Error! {e}")
@@ -967,15 +1068,22 @@ Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.cr
                 message = f"Error printing! {e}"
                 custome_status = "Error"
                 return custome_status, message
+
             finally:
                 win32print.EndDocPrinter(hPrinter)
 
-            print_logo(printer_name)
 
+            # -----------------------------------------------------------------------------
+            # -----PRINT QR CODE
+            # -----------------------------------------------------------------------------
+            if qr_code:
+                print_qrcode(printer_name, qr_code)
+            
+            # -----------------------------------------------------------------------------
+            # -----CUT
+            # -----------------------------------------------------------------------------
             hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
             try:
-                win32print.WritePrinter(hPrinter, raw_data)
-                win32print.EndPagePrinter(hPrinter)
                 win32print.WritePrinter(hPrinter, c_shap_cut_command)
 
             except Exception as e:
@@ -985,6 +1093,7 @@ Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.cr
                 message = f"Error printing! {e}"
                 custome_status = "Error"
                 return custome_status, message
+
             finally:
                 win32print.EndDocPrinter(hPrinter)
 

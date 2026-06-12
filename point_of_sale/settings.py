@@ -9,8 +9,10 @@ from pathlib import Path
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # SECURITY WARNING: keep secret key in environment variable
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key')
+
 
 # Debug - will be overridden in dev/prod
 DEBUG = True

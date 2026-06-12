@@ -1,164 +1,262 @@
+# fiscalisation/models.py
 from django.db import models
-from django.utils.timezone import now
-
-class FiscalDevice(models.Model):
-    """Stores environmental secrets and properties for virtual devices."""
-    device_id = models.CharField(max_length=50, unique=True)
-    serial_no = models.CharField(max_length=100)
-    activation_key = models.CharField(max_length=100)
-    company_name = models.CharField(max_length=200, blank=True)
-    is_test_mode = models.BooleanField(default=True)
-    is_active = models.BooleanField(default=True)
-    
-    # Paths for dynamic multi-device certificate loading
-    cert_path = models.CharField(max_length=255, default="fiscalisation/certs/certificate.crt")
-    private_key_path = models.CharField(max_length=255, default="fiscalisation/certs/decrypted_key.key")
-    
-    registered_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"{self.company_name} TILL ({self.device_id})"
+from django.utils import timezone
+from decimal import Decimal
 
 
-class FiscalState(models.Model):
-    """Maintains active state parameters required to chain hashes locally."""
-    device = models.OneToOneField(FiscalDevice, on_delete=models.CASCADE, related_name="state")
-    fiscal_day_no = models.IntegerField(default=1)
-    receipt_counter = models.IntegerField(default=0)  # Resets to 0 on openDay
-    receipt_global_no = models.IntegerField(default=0)  # Continuous increment tracking
-    is_day_open = models.BooleanField(default=False)
-    current_day_date = models.DateField(null=True, blank=True)
-    day_opened_at = models.DateTimeField(null=True, blank=True,
-        help_text="Wall-clock timestamp when openDay succeeded. Used to "
-                  "compute hours-open and warn before ZIMRA's max-hours cap.")
-    last_receipt_hash = models.CharField(max_length=255, blank=True, null=True)
+class FiscalisationSettings(models.Model):
+    """Global settings for fiscalisation"""
+    
+    fiscalisation_enabled = models.BooleanField(default=True)
+    paused_at = models.DateTimeField(null=True, blank=True)
+    paused_by = models.CharField(max_length=100, blank=True)
+    pause_reason = models.TextField(blank=True)
+    
+    # Binary API Settings
+    api_base_url = models.CharField(max_length=200, default="https://Zimratest.samcima.com/api/Zimra")
+    qr_url = models.CharField(max_length=200, default="https://fdmstest.zimra.co.zw", help_text="QR URL from ZIMRA getConfig")
+    device_id = models.CharField(max_length=50, blank=True, help_text="Your ZIMRA Device ID")
+    machine_code = models.CharField(max_length=50, blank=True, help_text="Machine code provided by Binary Software")
+    api_password = models.CharField(max_length=100, blank=True, help_text="Password provided by Binary Software")
+    
+    # Sync settings
+    sync_interval_seconds = models.IntegerField(default=30)
+    max_retry_count = models.IntegerField(default=5)
+    retry_delay_seconds = models.IntegerField(default=60)
+    
+    auto_resume_on_success = models.BooleanField(default=True)
+    
+    admin_email = models.EmailField(blank=True)
+    admin_phone = models.CharField(max_length=20, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name_plural = "Fiscal States"
+        verbose_name = "Fiscalisation Settings"
+        verbose_name_plural = "Fiscalisation Settings"
     
-    def reset_for_new_day(self, next_day_no, day_date):
-        """Prepares state variables when openDay succeeds.
-
-        Clears last_receipt_hash because the receipt-signature chain RESETS
-        at each fiscal day (spec section 12.2.1: previousReceiptHash is not
-        used when receipt is first in fiscal day).
-        """
-        from .services import zimra_now
-        self.fiscal_day_no = next_day_no
-        self.receipt_counter = 0
-        self.last_receipt_hash = None
-        self.is_day_open = True
-        self.current_day_date = day_date
-        self.day_opened_at = zimra_now()
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(id=1)
+        return settings
+    
+    def is_fiscalisation_active(self):
+        return self.fiscalisation_enabled
+    
+    def pause(self, reason="", user=""):
+        self.fiscalisation_enabled = False
+        self.paused_at = timezone.now()
+        self.paused_by = user
+        self.pause_reason = reason
         self.save()
-
+    
+    def resume(self):
+        self.fiscalisation_enabled = True
+        self.paused_at = None
+        self.paused_by = ""
+        self.pause_reason = ""
+        self.save()
+    
     def __str__(self):
-        return f"Device {self.device.device_id} | Day {self.fiscal_day_no} - {'OPEN' if self.is_day_open else 'CLOSED'}"
+        return f"Fiscalisation Settings (Active: {self.fiscalisation_enabled})"
+
+
+class FiscalReceiptSequence(models.Model):
+    fiscal_receipt_number = models.IntegerField(default=0)
+    fiscal_receipt_global_no = models.IntegerField(default=0)
+    last_fiscal_day = models.DateField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name = "Fiscal Receipt Sequence"
+        verbose_name_plural = "Fiscal Receipt Sequences"
+    
+    @classmethod
+    def get_next_number(cls):
+        sequence, created = cls.objects.get_or_create(id=1)
+        today = timezone.now().date()
+        
+        if sequence.last_fiscal_day != today:
+            sequence.fiscal_receipt_number = 0
+            sequence.last_fiscal_day = today
+        
+        sequence.fiscal_receipt_number += 1
+        sequence.fiscal_receipt_global_no += 1
+        sequence.save()
+        
+        return {
+            'daily': sequence.fiscal_receipt_number,
+            'global': sequence.fiscal_receipt_global_no
+        }
+    
+    def __str__(self):
+        return f"Sequence: Daily #{self.fiscal_receipt_number}, Global #{self.fiscal_receipt_global_no}"
 
 
 class FiscalReceipt(models.Model):
-    """Manages the lifecycle of generated invoices from local print to sync."""
-    SYNC_CHOICES = [
-        ('PENDING', 'Pending Sync'),
-        ('SUCCESS', 'Synced to ZIMRA'),
-        ('FAILED', 'Rejected by ZIMRA'),
-    ]
-    RECEIPT_TYPES = [
-        ('FISCALINVOICE', 'Fiscal Invoice'),
-        ('CREDITNOTE', 'Credit Note'),
-        ('DEBITNOTE', 'Debit Note'),
+    STATUS_PENDING = 'PENDING'
+    STATUS_SYNCED = 'SYNCED'
+    STATUS_FAILED = 'FAILED'
+    STATUS_BYPASSED = 'BYPASSED'
+    STATUS_VOID = 'VOID'
+    
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending Sync'),
+        (STATUS_SYNCED, 'Synced to ZIMRA'),
+        (STATUS_FAILED, 'Failed - Needs Retry'),
+        (STATUS_BYPASSED, 'Bypassed - Fiscalisation was off'),
+        (STATUS_VOID, 'Voided'),
     ]
     
+    TYPE_INVOICE = 'FISCALINVOICE'
+    TYPE_CREDIT_NOTE = 'CREDITNOTE'
+    TYPE_DEBIT_NOTE = 'DEBITNOTE'
+    
+    TYPE_CHOICES = [
+        (TYPE_INVOICE, 'Fiscal Invoice'),
+        (TYPE_CREDIT_NOTE, 'Credit Note'),
+        (TYPE_DEBIT_NOTE, 'Debit Note'),
+    ]
+    
+    # ========== Link to your existing system ==========
+    internal_sale_id = models.IntegerField(null=True, blank=True)
+    internal_invoice_id = models.IntegerField(null=True, blank=True)
+    internal_invoice_number = models.CharField(max_length=50)
+    
+    # ========== Fiscal receipt own sequence ==========
+    fiscal_receipt_number = models.IntegerField(null=True, blank=True)
+    fiscal_receipt_global_no = models.IntegerField(null=True, blank=True)
+    
+    # ========== Receipt Data ==========
+    receipt_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_INVOICE)
+    currency = models.CharField(max_length=3, default="USD")
+    transaction_date = models.DateField()
+    transaction_time = models.CharField(max_length=20)
+    subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    tax_breakdown = models.JSONField(default=dict)
+    
+    # Payment details
+    payment_method = models.CharField(max_length=50, default="Cash")
+    payment_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    payments = models.JSONField(default=list, blank=True, help_text="List of payment methods and amounts")
+    
+    # Buyer information
+    buyer_name = models.CharField(max_length=250, blank=True)
+    buyer_tin = models.CharField(max_length=50, blank=True)
+    buyer_vat = models.CharField(max_length=50, blank=True)
+    buyer_address = models.TextField(blank=True)
+    buyer_phone = models.CharField(max_length=50, blank=True)
+    buyer_email = models.EmailField(blank=True)
+    
+    # For credit/debit notes
+    original_fiscal_receipt = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='credit_notes')
+    original_invoice_number = models.CharField(max_length=50, blank=True)
+    
+    # Line Items
+    line_items = models.JSONField(default=list)
+    
+    # Binary API Response
+    binary_response = models.JSONField(default=dict, blank=True)
+    qr_code_url = models.URLField(max_length=500, blank=True)
+    
+    # Status Tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    retry_count = models.IntegerField(default=0)
+    last_error = models.TextField(blank=True)
+    last_sync_attempt = models.DateTimeField(null=True, blank=True)
 
-    fiscal_state = models.ForeignKey(FiscalState, on_delete=models.CASCADE, related_name="receipts")
-    fiscal_day_no = models.IntegerField()
-    receipt_global_no = models.IntegerField()
-    receipt_counter = models.IntegerField()
-    receipt_type = models.CharField(max_length=20, choices=RECEIPT_TYPES, default='FISCALINVOICE')
+    # Add to FiscalReceipt model:
+    device_signature_hash = models.TextField(blank=True, null=True)
+    device_signature = models.TextField(blank=True, null=True)
     
-    # Links to your main business tables
-    invoice_no = models.CharField(max_length=100, unique=True, help_text="Local SaleTransaction ID reference")
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    
-    # Offline Fingerprints for immediate thermal print rendering
-    local_hash = models.CharField(max_length=255)
-    local_signature = models.TextField()
-    qr_code_string = models.TextField(help_text="Raw verification URL data used for offline QR prints")
-    
-    # The pre-signed package prepared for background sync workers
-    prepared_payload = models.JSONField(help_text="The exact JSON payload built by prepareReceipt")
-    
-    # Post-Sync records returned from ZIMRA
-    sync_status = models.CharField(max_length=15, choices=SYNC_CHOICES, default='PENDING')
-    zimra_receipt_id = models.IntegerField(null=True, blank=True)
-    zimra_response_log = models.JSONField(null=True, blank=True)
-    
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Inv {self.invoice_no} | Global #{self.receipt_global_no} [{self.sync_status}]"
-
-
-class FiscalSettings(models.Model):
-    """Operational toggles for the fiscalisation pipeline. Singleton — exactly
-    one row, accessed via FiscalSettings.get().
-
-    Why a separate table instead of a flag on FiscalDevice: the pause is a
-    process-level switch (affects every checkout, every device) and we want
-    an audit trail of who flipped it and why. The reseller's CSO can resume
-    fiscalisation in 1 click from the dashboard once the underlying ZIMRA /
-    network issue is fixed.
-    """
-    PAUSE_REASON_CHOICES = [
-        ('zimra_down', 'ZIMRA / FDMS unreachable'),
-        ('cert_expired', 'Certificate expired or invalid'),
-        ('device_not_configured', 'Device not yet configured'),
-        ('maintenance', 'Scheduled maintenance'),
-        ('other', 'Other (see notes)'),
-    ]
-    singleton_id = models.PositiveSmallIntegerField(primary_key=True, default=1)
-    fiscalization_paused = models.BooleanField(default=False)
-    paused_at = models.DateTimeField(null=True, blank=True)
-    paused_reason = models.CharField(max_length=32, choices=PAUSE_REASON_CHOICES, blank=True, default='')
-    paused_notes = models.TextField(blank=True, default='',
-        help_text="Free-text reason — shown on the dashboard banner.")
     updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name_plural = "Fiscal Settings"
-
-    def save(self, *args, **kwargs):
-        self.singleton_id = 1
-        super().save(*args, **kwargs)
-
-    @classmethod
-    def get(cls):
-        obj, _ = cls.objects.get_or_create(singleton_id=1)
-        return obj
-
-    def __str__(self):
-        return f"Fiscal Settings (paused={self.fiscalization_paused})"
-
-
-
-class FiscalDaySummary(models.Model):
-    """Saves Z-Report parameters to handle day closing securely."""
-    fiscal_state = models.ForeignKey(FiscalState, on_delete=models.CASCADE)
-    fiscal_day_no = models.IntegerField()
-    day_date = models.DateField()
-    total_receipts_processed = models.IntegerField(default=0)
-    total_sales_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    
-    # Stores compiled tax breakdowns required for closeDay arrays
-    closing_counters_payload = models.JSONField(null=True, blank=True)
-    closing_response = models.JSONField(null=True, blank=True)
-    is_closed_successfully = models.BooleanField(default=False)
-    closed_at = models.DateTimeField(auto_now_add=True)
+    synced_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
-        unique_together = ['fiscal_state', 'fiscal_day_no']
-        verbose_name_plural = "Fiscal Day Summaries"
-
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'retry_count']),
+            models.Index(fields=['internal_invoice_number']),
+            models.Index(fields=['fiscal_receipt_number']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['status']),
+        ]
+    
     def __str__(self):
-        return f"Day {self.fiscal_day_no} Summary - Closed: {self.is_closed_successfully}"
+        return f"Fiscal #{self.fiscal_receipt_number or '?'} - Internal: {self.internal_invoice_number} - {self.status}"
+    
+    @property
+    def display_receipt_number(self):
+        if self.fiscal_receipt_number:
+            return str(self.fiscal_receipt_number).zfill(10)
+        return "PENDING"
+    
+    def can_retry(self):
+        return self.status in [self.STATUS_FAILED, self.STATUS_PENDING] and self.retry_count < 5
+    
+    def mark_synced(self, qr_url, response_data):
+        self.status = self.STATUS_SYNCED
+        self.qr_code_url = qr_url
+        self.binary_response = response_data
+        self.synced_at = timezone.now()
+        self.last_error = ""
+        self.save()
+    
+    def mark_failed(self, error_message):
+        self.status = self.STATUS_FAILED
+        self.retry_count += 1
+        self.last_error = error_message
+        self.last_sync_attempt = timezone.now()
+        self.save()
+    
+    def mark_bypassed(self):
+        self.status = self.STATUS_BYPASSED
+        self.save()
+    
+    def get_payments_list(self):
+        if isinstance(self.payments, list):
+            return self.payments
+        return []
+    
+    def get_total_paid(self):
+        total = sum(p.get('amount', 0) for p in self.get_payments_list())
+        return Decimal(str(total))
+
+
+class SyncQueue(models.Model):
+    fiscal_receipt = models.ForeignKey(FiscalReceipt, on_delete=models.CASCADE)
+    priority = models.IntegerField(default=0)
+    scheduled_for = models.DateTimeField(default=timezone.now)
+    attempts = models.IntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-priority', 'scheduled_for']
+        indexes = [models.Index(fields=['scheduled_for', 'locked_until'])]
+    
+    def __str__(self):
+        return f"Queue: Receipt #{self.fiscal_receipt_id} - Priority {self.priority}"
+
+
+class SyncLog(models.Model):
+    fiscal_receipt = models.ForeignKey(FiscalReceipt, on_delete=models.CASCADE, null=True, blank=True)
+    attempt_time = models.DateTimeField(auto_now_add=True)
+    success = models.BooleanField(default=False)
+    synced_count = models.IntegerField(default=0)
+    failed_count = models.IntegerField(default=0)
+    response_code = models.IntegerField(null=True, blank=True)
+    response_body = models.TextField(blank=True)
+    error_message = models.TextField(blank=True)
+    duration_ms = models.IntegerField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-attempt_time']
+        indexes = [models.Index(fields=['attempt_time'])]
+    
+    def __str__(self):
+        return f"Sync at {self.attempt_time}: {self.synced_count} synced, {self.failed_count} failed"

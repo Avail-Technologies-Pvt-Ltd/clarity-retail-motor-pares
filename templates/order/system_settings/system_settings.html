@@ -1,0 +1,1017 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Clarity POS | System Settings</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a1428;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
+        .app-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-header {
+            flex-shrink: 0;
+            background: #0f1e2f;
+            border-bottom: 1px solid #1e3a5f;
+            padding: 0 2rem;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-area h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff, #90caf9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .app-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .nav-sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, #0b2b4f 0%, #07233e 100%);
+            border-right: 1px solid #1e4a76;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            scrollbar-width: thin;
+        }
+
+        .nav-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .nav-sidebar::-webkit-scrollbar-track {
+            background: #0a2a44;
+        }
+
+        .nav-sidebar::-webkit-scrollbar-thumb {
+            background: #2f6ea2;
+            border-radius: 10px;
+        }
+
+        .nav-menu {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-link-side {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            border-radius: 16px;
+            color: #cae3ff;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .nav-link-side i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link-side:hover {
+            background: #1e5782;
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .nav-link-side.active {
+            background: #1976c4;
+            color: white;
+            box-shadow: 0 6px 14px rgba(0, 35, 70, 0.4);
+        }
+
+        .section-title-nav {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c9bc2;
+            padding: 16px 20px 8px 20px;
+            font-weight: 600;
+        }
+
+        .content-panel {
+            flex: 1;
+            overflow-y: auto;
+            background: #f0f4f9;
+            padding: 28px 32px;
+            scrollbar-width: thin;
+        }
+
+        .content-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content-panel::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        .content-panel::-webkit-scrollbar-thumb {
+            background: #8aa9c9;
+            border-radius: 10px;
+        }
+
+        .settings-section {
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .settings-section.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 28px;
+            border: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+
+        .card-header-modern {
+            padding: 1.3rem 2rem;
+            background: white;
+            border-bottom: 1px solid #edf2f7;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #0f2b40;
+        }
+
+        .card-body-modern {
+            padding: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #2c4e6e;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 14px;
+            border: 1.5px solid #e2edf7;
+            padding: 0.6rem 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #1976c4;
+            box-shadow: 0 0 0 3px rgba(25, 118, 196, 0.1);
+        }
+
+        .btn-primary-save {
+            background: #0f5b8c;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 24px;
+            font-weight: 600;
+            background: linear-gradient(100deg, #136b9e, #0a4b73);
+            transition: all 0.2s;
+        }
+
+        .btn-primary-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(0, 70, 110, 0.2);
+        }
+
+        .subscription-history-item {
+            border-left: 3px solid #1976c4;
+            padding: 12px 16px;
+            background: #f9fbfd;
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+
+        .update-log-entry {
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .update-log-entry:last-child {
+            border-bottom: none;
+        }
+        .update-log-entry li {
+            margin-bottom: 6px;
+            color: #4a5568;
+            line-height: 1.4;
+        }
+        .version-badge {
+            background: #1976c4;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .loading-spinner-sm {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #e2edf7;
+            border-top-color: #1976c4;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .system-info-row {
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+        }
+        .system-info-row strong {
+            color: #1e4a76;
+            min-width: 180px;
+            display: inline-block;
+        }
+        .printer-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-left: 3px solid #2ecc71;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 180px;
+            color: #1e4a76;
+        }
+        .info-value {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="app-header">
+        <div class="logo-area">
+            <h2><i class="fas fa-cubes me-2"></i><a style="text-decoration: none;" href="{% url 'home' %}"> Clarity POS</a> · System Settings</h2>
+        </div>
+        <div class="header-actions">
+            <i class="fas fa-sync-alt me-3"></i>
+            <i class="fas fa-user-shield"></i>
+        </div>
+    </div>
+
+    <div class="app-main">
+        <!-- Sidebar Navigation -->
+        <div class="nav-sidebar">
+            <div class="section-title-nav"><i class="fas fa-user-circle me-1"></i> USER & COMPANY</div>
+            <ul class="nav-menu">
+                <li class="nav-item" style="display: none;">
+                    <div class="nav-link-side" data-section="profile">
+                        <i class="fas fa-id-card"></i> My Profile
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-link-side active" data-section="branch">
+                        <i class="fas fa-store"></i> Local Branch
+                    </div>
+                </li>
+                <li class="nav-item"><div class="nav-link-side" data-section="clientsetting"><i class="fas fa-building"></i> Client Settings</div></li>
+                <li class="nav-item"><div class="nav-link-side" data-section="printer"><i class="fas fa-print"></i> Printers</div></li>
+            </ul>
+            <div class="section-title-nav"><i class="fas fa-cog me-1"></i> SYSTEM & SUBSCRIPTION</div>
+            <ul class="nav-menu">
+                <li class="nav-item"><div class="nav-link-side" data-section="system"><i class="fas fa-info-circle"></i> System Details</div></li>
+                <li class="nav-item"><div class="nav-link-side" data-section="subscription"><i class="fas fa-ticket-alt"></i> Subscription</div></li>
+            </ul>
+            <div class="mt-auto p-3 text-center" style="color:#6f9ac2; font-size:11px;">
+                <i class="fas fa-database"></i> Clarity POS • Enterprise
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-panel">
+            <!-- ========== PROFILE SECTION ========== -->
+            <div id="profile-section" class="settings-section">
+                <div class="settings-card">
+                    <div class="card-header-modern"><i class="fas fa-user-edit me-2"></i>User Profile</div>
+                    <div class="card-body-modern">
+                        <form id="userProfileForm">
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Username</label><input type="text" class="form-control" id="profile-username" value="{{ user.username }}"></div>
+                                <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" id="profile-email" value="{{ user.email }}"></div>
+                                <div class="col-md-6"><label class="form-label">Phone Number</label><input type="text" class="form-control" id="profile-phone" value="{{ user.phone_number|default:'' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Address</label><input type="text" class="form-control" id="profile-address" value="{{ user.address|default:'' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Roles</label>
+                                    <select class="form-select" id="profile-roles">
+                                        <option value="Sales Rep" {% if user.roles == "Sales Rep" %}selected{% endif %}>Sales Rep</option>
+                                        <option value="Supervisor" {% if user.roles == "Supervisor" %}selected{% endif %}>Supervisor</option>
+                                        <option value="Data Analyst" {% if user.roles == "Data Analyst" %}selected{% endif %}>Data Analyst</option>
+                                        <option value="Supervisor, Sales Rep" {% if user.roles == "Supervisor, Sales Rep" %}selected{% endif %}>Supervisor, Sales Rep</option>
+                                        <option value="Data Analyst, Sales Rep" {% if user.roles == "Data Analyst, Sales Rep" %}selected{% endif %}>Data Analyst, Sales Rep</option>
+                                        <option value="Data Analyst, Supervisor" {% if user.roles == "Data Analyst, Supervisor" %}selected{% endif %}>Data Analyst, Supervisor</option>
+                                        <option value="Data Analyst, Supervisor, Sales Rep" {% if user.roles == "Data Analyst, Supervisor, Sales Rep" %}selected{% endif %}>Data Analyst, Supervisor, Sales Rep</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6"><label class="form-label">Status</label>
+                                    <select class="form-select" id="profile-status">
+                                        <option value="true" {% if user.status %}selected{% endif %}>Active</option>
+                                        <option value="false" {% if not user.status %}selected{% endif %}>Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-12"><label class="form-label">E-signature Link</label><input type="text" class="form-control" id="profile-signature" value="{{ user.e_signature_link|default:'' }}"></div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-end"><button type="button" class="btn btn-primary-save" id="updateProfileBtn"><i class="fas fa-save me-2"></i>Update Profile</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== BRANCH SECTION - EDITABLE LOCAL BRANCH ========== -->
+            <div id="branch-section" class="settings-section active-section">
+                <div class="settings-card">
+                    <div class="card-header-modern"><i class="fas fa-store me-2"></i>Local Branch Settings</div>
+                    <div class="card-body-modern">
+                        <div class="alert alert-info rounded-4 mb-4">
+                            <i class="fas fa-info-circle me-2"></i> 
+                            This is your <strong>local branch</strong> configuration. Update your branch details below.
+                        </div>
+                        
+                        {% if branch %}
+                        <form id="branchForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Branch Name *</label>
+                                    <input type="text" class="form-control" id="branch_name" value="{{ branch.branch_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Branch Code</label>
+                                    <input type="text" class="form-control" value="{{ branch.code }}" readonly disabled>
+                                    <small class="text-muted">Auto-generated from branch type</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Manager</label>
+                                    <input type="text" class="form-control" id="manager" value="{{ branch.manager|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" class="form-control" id="phone" value="{{ branch.phone|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" value="{{ branch.email|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="address" value="{{ branch.address|default:'' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-control" id="city" value="{{ branch.city|default:'' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Country</label>
+                                    <input type="text" class="form-control" id="country" value="{{ branch.country|default:'ZW' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-select" id="type" disabled>
+                                        <option value="STORE" {% if branch.type == "STORE" %}selected{% endif %}>STORE</option>
+                                        <option value="WAREHOUSE" {% if branch.type == "WAREHOUSE" %}selected{% endif %}>WAREHOUSE</option>
+                                        <option value="HEADQUARTERS" {% if branch.type == "HEADQUARTERS" %}selected{% endif %}>HEADQUARTERS</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Sync URL</label>
+                                    <input type="text" class="form-control" id="sync_url" value="{{ branch.sync_url|default:'' }}" readonly>
+                                    <small class="text-muted">URL for syncing with central server</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" id="is_active" disabled>
+                                        <option value="true" {% if branch.is_active %}selected{% endif %}>Active</option>
+                                        <option value="false" {% if not branch.is_active %}selected{% endif %}>Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <div class="alert alert-secondary">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            <strong>Branch ID (UUID):</strong> {{ branch.branch_id|default:"Not synced yet" }}<br>
+                                            <strong>Last Sync:</strong> {{ branch.last_sync_time|default:"Never" }} by {{ branch.last_sync_user|default:"N/A" }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-primary-save" id="updateBranchBtn">
+                                        <i class="fas fa-save me-2"></i>Update Local Branch
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>No local branch configured!</strong><br>
+                            Please create your local branch configuration below.
+                        </div>
+                        <form id="createBranchForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Branch Name *</label>
+                                    <input type="text" class="form-control" id="new_branch_name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Manager</label>
+                                    <input type="text" class="form-control" id="new_manager">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" class="form-control" id="new_phone">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="new_email">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="new_address">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-control" id="new_city">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Country</label>
+                                    <input type="text" class="form-control" id="new_country" value="ZW">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-select" id="new_type">
+                                        <option value="STORE">STORE</option>
+                                        <option value="WAREHOUSE">WAREHOUSE</option>
+                                        <option value="HEADQUARTERS">HEADQUARTERS</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-primary-save" id="createBranchBtn">
+                                        <i class="fas fa-plus me-2"></i>Create Local Branch
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== CLIENT SETTINGS SECTION ========== -->
+            <div id="clientsetting-section" class="settings-section">
+                <div class="settings-card">
+                    <div class="card-header-modern"><i class="fas fa-building me-2"></i>Client Configuration</div>
+                    <div class="card-body-modern">
+                        <form id="clientSettingForm">
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Company Name</label><input type="text" class="form-control" id="client_company" value="{{ client_setting.company_name|default:'' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Configuration Name</label><input type="text" class="form-control" id="client_config_name" value="{{ client_setting.configuration_name|default:'' }}"></div>
+                                <div class="col-md-4"><label class="form-label">TIN Number</label><input type="text" class="form-control" id="client_tin" value="{{ client_setting.tin_number|default:'' }}"></div>
+                                <div class="col-md-4"><label class="form-label">VAT Number</label><input type="text" class="form-control" id="client_vat" value="{{ client_setting.vat_number|default:'' }}"></div>
+                                <div class="col-md-4"><label class="form-label">PRZ Number</label><input type="text" class="form-control" id="client_prz" value="{{ client_setting.prz_number|default:'' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Invoice Prefix</label><input type="text" class="form-control" id="client_invoice_prefix" value="{{ client_setting.invoice_number_prefix|default:'INV-' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Company Registration</label><input type="text" class="form-control" id="client_registration" value="{{ client_setting.company_registration|default:'' }}"></div>
+                                <div class="col-12"><label class="form-label">Address</label><input type="text" class="form-control" id="client_address" value="{{ client_setting.address|default:'' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Bank Name</label><input type="text" class="form-control" id="client_bank" value="{{ client_setting.bank_1_bank_name|default:'' }}"></div>
+                                <div class="col-md-6"><label class="form-label">Account Name</label><input type="text" class="form-control" id="client_account_name" value="{{ client_setting.bank_1_account_name|default:'' }}"></div>
+                                <div class="col-12"><label class="form-label">Thank You Message</label><textarea class="form-control" id="client_thanks" rows="2">{{ client_setting.thank_you_message|default:'' }}</textarea></div>
+                            </div>
+                            <div class="mt-4"><button type="button" class="btn btn-primary-save" id="updateClientSettingBtn"><i class="fas fa-save me-2"></i>Save Client Settings</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== PRINTER SECTION ========== -->
+            <div id="printer-section" class="settings-section">
+                <div class="settings-card">
+                    <div class="card-header-modern"><i class="fas fa-print me-2"></i>Printer Configuration</div>
+                    <div class="card-body-modern">
+                        <form id="printerForm">
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Printer Name</label><input type="text" class="form-control" id="printer_name" placeholder="E.g., EPSON TM-T88"></div>
+                                <div class="col-md-6"><label class="form-label">Client Node</label><input type="text" class="form-control" id="client_node" placeholder="Main Terminal / Kitchen"></div>
+                                <div class="col-12"><button type="button" class="btn btn-primary-save" id="addPrinterBtn"><i class="fas fa-plus me-2"></i>Add Printer</button></div>
+                            </div>
+                        </form>
+                        <hr class="my-4">
+                        <h6><i class="fas fa-list me-2"></i>Configured Printers</h6>
+                        <div id="printersList" class="mt-3">
+                            {% if printers %}
+                                {% for printer in printers %}
+                                <div class="printer-item">
+                                    <div>
+                                        <strong><i class="fas fa-print me-2"></i>{{ printer.printer_name }}</strong><br>
+                                        <small class="text-muted">Node: {{ printer.client_node }} | Status: {% if printer.status %}Active{% else %}Inactive{% endif %}</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deletePrinter({{ printer.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">No printers configured. Add your first printer above.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== SYSTEM DETAILS SECTION ========== -->
+            <div id="system-section" class="settings-section">
+                <div class="settings-card">
+                    <div class="card-header-modern"><i class="fas fa-code-branch me-2"></i>System Information</div>
+                    <div class="card-body-modern">
+                        <div id="systemInfoContainer">
+                            <div class="text-muted"><span class="loading-spinner-sm"></span> Loading system information...</div>
+                        </div>
+                        <hr>
+                        <h6><i class="fas fa-list-ul me-2"></i>Version Update Log</h6>
+                        <div id="updateLogContainer" style="max-height: 400px; overflow-y: auto; background: #fafcff; border-radius: 20px; padding: 6px 12px;">
+                            <div class="text-muted text-center py-3"><span class="loading-spinner-sm"></span> Loading changelog from updates.txt ...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== SUBSCRIPTION SECTION ========== -->
+            <div id="subscription-section" class="settings-section">
+                <div class="settings-card">
+                    <div class="card-header-modern"><i class="fas fa-key me-2"></i>Subscription Management</div>
+                    <div class="card-body-modern">
+                        <div class="alert alert-primary rounded-4">Enter a valid subscription key to activate or extend your plan</div>
+                        <div class="input-group mb-4">
+                            <input type="text" class="form-control" id="subscriptionKeyInput" placeholder="Enter subscription key">
+                            <button class="btn btn-primary-save" id="activateSubscriptionBtn">Activate Key</button>
+                        </div>
+                        <h6>📜 Current Subscription Status</h6>
+                        <div id="subscriptionStatus" class="mb-4">
+                            {% if subscription_status.expiration_date != "N/A" %}
+                            <div class="subscription-history-item">
+                                <strong>Plan:</strong> {{ subscription_status.duration }}<br>
+                                <strong>Active from:</strong> {{ subscription_status.active_date }}<br>
+                                <strong>Expires on:</strong> {{ subscription_status.expiration_date }}<br>
+                                <strong>Purchased on:</strong> {{ subscription_status.date }}
+                            </div>
+                            {% else %}
+                            <div class="text-muted">No active subscription. Enter a key above to activate.</div>
+                            {% endif %}
+                        </div>
+                        <h6>📋 Subscription History</h6>
+                        <div id="subscriptionHistoryList">
+                            {% for payment in old_payments %}
+                            <div class="subscription-history-item">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                <strong>{{ payment.duration }}</strong> – 
+                                {{ payment.date_from|date:"Y-m-d" }} to {{ payment.date_to|date:"Y-m-d" }}
+                                {% if forloop.first %}<span class="badge bg-success ms-2">Current</span>{% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="text-muted">No subscription history found.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== SIDEBAR NAVIGATION ==========
+const navLinks = document.querySelectorAll('.nav-link-side');
+const sections = document.querySelectorAll('.settings-section');
+
+function switchToSection(sectionId) {
+    sections.forEach(section => section.classList.remove('active-section'));
+    const activeSection = document.getElementById(`${sectionId}-section`);
+    if (activeSection) activeSection.classList.add('active-section');
+    navLinks.forEach(link => {
+        const linkSection = link.getAttribute('data-section');
+        if (linkSection === sectionId) link.classList.add('active');
+        else link.classList.remove('active');
+    });
+    if (sectionId === 'system') loadUpdateLog();
+}
+
+navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+        const sectionName = this.getAttribute('data-section');
+        if (sectionName) switchToSection(sectionName);
+    });
+});
+
+// ========== DEFAULT METADATA ==========
+var defaultMetadata = {
+    version: '2.4.1 (Enterprise)',
+    developed_by: 'Avail Technologies (PVT) Ltd',
+    software: 'Clarity POS - Inventory Management System',
+    technologies: 'PostgreSQL, Redis, Python 3.11, Django, Bootstrap 5, JavaScript, AJAX, HTML5, CSS3, Sentry'
+};
+
+// ========== LOAD UPDATE LOG FROM TXT FILE ==========
+function loadUpdateLog() {
+    $.ajax({
+        url: "{% url 'api_get_update_log' %}",
+        method: 'GET',
+        success: function(responseData) {
+            var container = document.getElementById('updateLogContainer');
+            if(responseData.custome_status === "Success" && responseData.content) {
+                var parsed = parseUpdateLogWithMetadata(responseData.content);
+                updateSystemInfoDisplay(parsed.metadata);
+                container.innerHTML = parsed.changelogHtml;
+            } else {
+                container.innerHTML = '<div class="alert alert-warning m-3">updates.txt file not found in root directory.</div>';
+                updateSystemInfoDisplay(defaultMetadata);
+            }
+        },
+        error: function() {
+            document.getElementById('updateLogContainer').innerHTML = '<div class="alert alert-warning m-3">Unable to load updates.txt. Please create this file in your project root.</div>';
+            updateSystemInfoDisplay(defaultMetadata);
+        }
+    });
+}
+
+function parseUpdateLogWithMetadata(rawText) {
+    var lines = rawText.split(/\r?\n/);
+    var metadata = {};
+    var changelogHtml = '<div class="p-2">';
+    var currentVersion = '';
+    var currentDate = '';
+    var currentBullets = [];
+    var inChangelog = false;
+    
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line === "") continue;
+        
+        if (line.includes(':') && !line.match(/^\[?\d/)) {
+            var colonIndex = line.indexOf(':');
+            var key = line.substring(0, colonIndex).trim().toLowerCase().replace(/ /g, '_');
+            var value = line.substring(colonIndex + 1).trim();
+            if (key === 'version') metadata.version = value;
+            else if (key === 'developed_by') metadata.developed_by = value;
+            else if (key === 'software') metadata.software = value;
+            else if (key === 'technologies') metadata.technologies = value;
+            continue;
+        }
+        
+        var versionMatch = line.match(/^\[?([0-9]+\.[0-9]+\.[0-9]+)\]?\s*[-–]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/);
+        if (!versionMatch) {
+            versionMatch = line.match(/^([0-9]+\.[0-9]+\.[0-9]+)\s*\(([0-9]{4}-[0-9]{2}-[0-9]{2})\)/);
+        }
+        
+        if (versionMatch) {
+            if (currentVersion && currentBullets.length > 0) {
+                changelogHtml += renderVersionBlock(currentVersion, currentDate, currentBullets);
+            }
+            currentVersion = versionMatch[1];
+            currentDate = versionMatch[2];
+            currentBullets = [];
+            inChangelog = true;
+        }
+        else if (inChangelog && (line.startsWith('-') || line.startsWith('•') || line.startsWith('*'))) {
+            var bulletText = line.replace(/^[-•*]\s*/, '');
+            if (bulletText.trim()) {
+                currentBullets.push(bulletText);
+            }
+        }
+    }
+    
+    if (currentVersion && currentBullets.length > 0) {
+        changelogHtml += renderVersionBlock(currentVersion, currentDate, currentBullets);
+    }
+    
+    if (changelogHtml === '<div class="p-2">') {
+        changelogHtml += '<div class="text-muted text-center py-3">No changelog entries found in updates.txt</div>';
+    }
+    changelogHtml += '</div>';
+    
+    var finalMetadata = {
+        version: metadata.version || defaultMetadata.version,
+        developed_by: metadata.developed_by || defaultMetadata.developed_by,
+        software: metadata.software || defaultMetadata.software,
+        technologies: metadata.technologies || defaultMetadata.technologies
+    };
+    
+    return { metadata: finalMetadata, changelogHtml: changelogHtml };
+}
+
+function renderVersionBlock(version, date, bullets) {
+    var bulletHtml = '';
+    for (var i = 0; i < bullets.length; i++) {
+        bulletHtml += '<li><i class="fas fa-caret-right text-primary me-2"></i>' + escapeHtml(bullets[i]) + '</li>';
+    }
+    return `
+        <div class="update-log-entry mb-3 pb-2">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <span class="version-badge">v${escapeHtml(version)}</span>
+                <span class="text-muted small"><i class="far fa-calendar-alt me-1"></i>${escapeHtml(date)}</span>
+            </div>
+            <ul class="list-unstyled ms-2 mb-0" style="font-size: 0.85rem;">${bulletHtml}</ul>
+        </div>
+    `;
+}
+
+function updateSystemInfoDisplay(metadata) {
+    var systemInfoHtml = `
+        <div class="system-info-row"><strong>Version:</strong> ${escapeHtml(metadata.version)}</div>
+        <div class="system-info-row"><strong>Developed by:</strong> ${escapeHtml(metadata.developed_by)}</div>
+        <div class="system-info-row"><strong>Software:</strong> ${escapeHtml(metadata.software)}</div>
+        <div class="system-info-row"><strong>Technologies:</strong> ${escapeHtml(metadata.technologies)}</div>
+    `;
+    var systemInfoContainer = document.getElementById('systemInfoContainer');
+    if (systemInfoContainer) systemInfoContainer.innerHTML = systemInfoHtml;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if(m === '&') return '&amp;';
+        if(m === '<') return '&lt;';
+        if(m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// ========== USER PROFILE FUNCTIONS ==========
+function updateUserProfile() {
+    var userData = {
+        username: document.getElementById('profile-username').value,
+        email: document.getElementById('profile-email').value,
+        phone_number: document.getElementById('profile-phone').value,
+        address: document.getElementById('profile-address').value,
+        roles: document.getElementById('profile-roles').value,
+        status: document.getElementById('profile-status').value === 'true',
+        e_signature_link: document.getElementById('profile-signature').value
+    };
+    $.ajax({
+        url: "{% url 'api_update_user_profile' %}",
+        data: userData,
+        success: function(responseData) {
+            if(responseData.custome_status === "Error") {
+                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+            } else {
+                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+            }
+        },
+        error: function() {
+            Swal.fire({title: "Error", text: "Request failed", icon: "error"});
+        }
+    });
+}
+
+// ========== BRANCH FUNCTIONS ==========
+function updateBranch() {
+    var branchData = {
+        branch_name: document.getElementById('branch_name').value,
+        manager: document.getElementById('manager').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        country: document.getElementById('country').value,
+        type: document.getElementById('type').value,
+        sync_url: document.getElementById('sync_url')?.value || '',
+        is_active: document.getElementById('is_active')?.value === 'true'
+    };
+    
+    if (!branchData.branch_name) {
+        Swal.fire({title: "Error", text: "Branch name is required", icon: "error"});
+        return;
+    }
+    
+    $.ajax({
+        url: "{% url 'api_update_branch' %}",
+        data: branchData,
+        success: function(responseData) {
+            if(responseData.custome_status === "Error") {
+                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+            } else {
+                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+                setTimeout(function() { location.reload(); }, 1500);
+            }
+        },
+        error: function() {
+            Swal.fire({title: "Error", text: "Branch update failed", icon: "error"});
+        }
+    });
+}
+
+function createBranch() {
+    var branchData = {
+        branch_name: document.getElementById('new_branch_name').value,
+        manager: document.getElementById('new_manager').value,
+        phone: document.getElementById('new_phone').value,
+        email: document.getElementById('new_email').value,
+        address: document.getElementById('new_address').value,
+        city: document.getElementById('new_city').value,
+        country: document.getElementById('new_country').value,
+        type: document.getElementById('new_type').value
+    };
+    
+    if (!branchData.branch_name) {
+        Swal.fire({title: "Error", text: "Branch name is required", icon: "error"});
+        return;
+    }
+    
+    $.ajax({
+        url: "{% url 'api_create_branch' %}",
+        data: branchData,
+        success: function(responseData) {
+            if(responseData.custome_status === "Error") {
+                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+            } else {
+                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+                setTimeout(function() { location.reload(); }, 1500);
+            }
+        },
+        error: function() {
+            Swal.fire({title: "Error", text: "Branch creation failed", icon: "error"});
+        }
+    });
+}
+
+// ========== CLIENT SETTINGS FUNCTIONS ==========
+function updateClientSetting() {
+    var clientData = {
+        company_name: document.getElementById('client_company').value,
+        configuration_name: document.getElementById('client_config_name').value,
+        tin_number: document.getElementById('client_tin').value,
+        vat_number: document.getElementById('client_vat').value,
+        prz_number: document.getElementById('client_prz').value,
+        invoice_number_prefix: document.getElementById('client_invoice_prefix').value,
+        address: document.getElementById('client_address').value,
+        bank_1_bank_name: document.getElementById('client_bank').value,
+        bank_1_account_name: document.getElementById('client_account_name').value,
+        thank_you_message: document.getElementById('client_thanks').value,
+        company_registration: document.getElementById('client_registration').value
+    };
+    $.ajax({
+        url: "{% url 'api_update_client_setting' %}",
+        data: clientData,
+        success: function(responseData) {
+            if(responseData.custome_status === "Error") {
+                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+            } else {
+                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+            }
+        },
+        error: function() {
+            Swal.fire({title: "Error", text: "Save failed", icon: "error"});
+        }
+    });
+}
+
+// ========== PRINTER FUNCTIONS ==========
+function addPrinter() {
+    var printerData = {
+        printer_name: document.getElementById('printer_name').value,
+        client_node: document.getElementById('client_node').value
+    };
+    
+    if (!printerData.printer_name) {
+        Swal.fire({title: "Error", text: "Printer name is required", icon: "error"});
+        return;
+    }
+    
+    $.ajax({
+        url: "{% url 'api_update_printer' %}",
+        data: printerData,
+        success: function(responseData) {
+            if(responseData.custome_status === "Error") {
+                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+            } else {
+                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+                setTimeout(function() { location.reload(); }, 1500);
+            }
+        },
+        error: function() {
+            Swal.fire({title: "Error", text: "Printer save failed", icon: "error"});
+        }
+    });
+}
+
+function deletePrinter(printerId) {
+    Swal.fire({
+        title: 'Delete Printer?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "{% url 'api_delete_printer' %}",
+                data: { printer_id: printerId },
+                success: function(responseData) {
+                    if(responseData.custome_status === "Error") {
+                        Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+                    } else {
+                        Swal.fire({title: "Deleted", text: responseData.message, icon: "success"});
+                        setTimeout(function() { location.reload(); }, 1500);
+                    }
+                },
+                error: function() {
+                    Swal.fire({title: "Error", text: "Delete failed", icon: "error"});
+                }
+            });
+        }
+    });
+}
+
+// ========== SUBSCRIPTION FUNCTIONS ==========
+function activateSubscription() {
+    var key = document.getElementById('subscriptionKeyInput').value.trim();
+    if(!key) {
+        Swal.fire({title: "Error", text: "Please enter a subscription key", icon: "error"});
+        return;
+    }
+    $.ajax({
+        url: "{% url 'api_activate_subscription' %}",
+        data: { subscription_key: key },
+        success: function(responseData) {
+            if(responseData.custome_status === "Error") {
+                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+            } else {
+                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+                setTimeout(function() { location.reload(); }, 1500);
+            }
+        },
+        error: function() {
+            Swal.fire({title: "Error", text: "Activation failed", icon: "error"});
+        }
+    });
+}
+
+// ========== ATTACH EVENT LISTENERS ==========
+document.getElementById('updateProfileBtn')?.addEventListener('click', updateUserProfile);
+document.getElementById('updateBranchBtn')?.addEventListener('click', updateBranch);
+document.getElementById('createBranchBtn')?.addEventListener('click', createBranch);
+document.getElementById('updateClientSettingBtn')?.addEventListener('click', updateClientSetting);
+document.getElementById('addPrinterBtn')?.addEventListener('click', addPrinter);
+document.getElementById('activateSubscriptionBtn')?.addEventListener('click', activateSubscription);
+</script>
+</body>
+</html>

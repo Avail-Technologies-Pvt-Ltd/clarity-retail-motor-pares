@@ -1,1 +1,0 @@
-USE_TZ = False in settings

@@ -1,0 +1,17 @@
+# METADATA
+Version: 1.5.1 (Enterprise)
+Developed by: Avail Technologies (PVT) Ltd
+Software: Clarity POS - Inventory Management System
+Technologies: PostgreSQL, Redis, Python 3.11, Django 4.2, Bootstrap 5, JavaScript, AJAX, HTML5, CSS3, Sentry
+
+# CHANGELOG
+================================
+
+[1.5.1] - 2026-06-10
+--------------------
+- Created a new settings page, combining all the settings in one place
+- Switched to Binary fiscalisation 
+
+[1.5.0] - 2026-06-10
+--------------------
+- Not loged

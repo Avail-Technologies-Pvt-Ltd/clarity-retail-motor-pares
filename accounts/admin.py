@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Supplier, ClientSetting, Manufacturer, Note, PrinterCase, CustomerAccount
+from .models import *
 
 # Registering  models.
 class UserAdmin(admin.ModelAdmin):
@@ -30,6 +30,7 @@ class CustomerAccountAdmin(admin.ModelAdmin):
 	list_display = ['company_name','balance','credit_limit']
 
 
+admin.site.register(Branch)
 admin.site.register(User, UserAdmin)
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(ClientSetting, ClientSettingAdmin)

@@ -1,1558 +1,717 @@
-import os
-import math
-import decimal
-from decimal import Decimal
-from decimal import Decimal, ROUND_UP, ROUND_DOWN, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, ROUND_HALF_DOWN, ROUND_HALF_EVEN
-from bson import ObjectId
-import requests
-import datetime
-import logging
-from datetime import datetime
+# fiscalisation/services.py - Updated with ALWAYS print payload
+
 import json
-import hashlib
-import base64
-from collections import OrderedDict, defaultdict
-from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.backends import default_backend
-from Crypto.Signature import pkcs1_15
-from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA256
-from cryptography.hazmat.primitives.asymmetric import rsa
+import requests
+import logging
+from datetime import date
+from decimal import Decimal
+from typing import Dict, Optional, List
+from django.utils import timezone
+from django.db import transaction
 
-logging.basicConfig(level=logging.INFO)
+from .models import (
+    FiscalisationSettings, 
+    FiscalReceipt, 
+    FiscalReceiptSequence, 
+    SyncQueue,
+    SyncLog
+)
 
-'''
-DISCLAIMER: THE FOLLOWING SOFTWARE IS DAUNTING AND VERY COMPLICATED. THIS FOLLOWS THE LAW COMPLEXITY ALWAYS INCREASES.
-EVEN IN OUR ATTEMPTS TO DECREASE IT, 
-
-
-
-Fiscal Device Gateway API can be accessed using HTTPS protocol via mTLS. 
-All Fiscal Device Gateway API methods except registerDevice and getServerCertificate use CLIENT AUTHENTICATION CERTIFICATE
-which is issued by FDMS.
-'''
-__all__ = [
-    'register_new_device',
-    'tax_calculator',
-    'Device',
-    'ZimraServerError',
-    'zimra_now',
-    'validate_receipt_for_zimra',
-]
+logger = logging.getLogger(__name__)
 
 
-# Set of MoneyType codes ZIMRA accepts (spec section 4.4.5).
-ZIMRA_MONEY_TYPE_CODES = {0, 1, 2, 3, 4, 5, 6}
-
-
-def validate_receipt_for_zimra(receipt_data, applicable_taxes, tax_inclusive=True):
-    """Run the basic ZIMRA receipt-shape checks BEFORE signing/submitting.
-
-    Catches the validation rules that the FDMS will otherwise reject after the
-    fact (RCPT016-RCPT019, RCPT039, RCPT040, plus tax-id and money-type
-    sanity). Returns a list of human-readable error strings; an empty list
-    means the receipt is structurally sound for submission. The library's
-    prepareReceipt also auto-reconciles the payment total, but other
-    mismatches will still trip ZIMRA, so we surface them at the till.
-    """
-    from decimal import Decimal
-
-    errors = []
-
-    lines = receipt_data.get('receiptLines') or []
-    if not lines:
-        errors.append("RCPT016: at least one receipt line is required.")
-        return errors  # rest of the checks are meaningless without lines
-
-    payments = receipt_data.get('receiptPayments') or []
-    if not payments:
-        errors.append("RCPT018: at least one payment line is required.")
-
-    valid_tax_keys = set(applicable_taxes.keys())
-    for i, ln in enumerate(lines, start=1):
-        tp = ln.get('tax_percent')
-        if tp is None:
-            errors.append(f"Line {i}: tax_percent is required.")
-            continue
-        if isinstance(tp, str) and tp.lower() in ('e', 'exempt'):
-            if 'exempt' not in valid_tax_keys:
-                errors.append(f"Line {i}: exempt is not in this device's applicableTaxes; refresh getConfig.")
-            continue
+class BinaryAPIClient:
+    """Client for Binary Software API"""
+    
+    def __init__(self):
+        self.settings = FiscalisationSettings.get_settings()
+        self.base_url = self.settings.api_base_url.rstrip('/')
+        self.device_id = self.settings.device_id
+        self.machine_code = self.settings.machine_code
+        self.api_password = self.settings.api_password
+    
+    def _make_request(self, method, endpoint, params=None, data=None):
+        if endpoint.startswith('/'):
+            url = f"{self.base_url}{endpoint}"
+        else:
+            url = f"{self.base_url}/{endpoint}"
+        
+        print(f"\n{'='*80}")
+        print(f"API REQUEST: {method} {url}")
+        print(f"{'='*80}")
+        
+        if data:
+            print(f"\n📤 PAYLOAD BEING SENT:")
+            print(json.dumps(data, indent=2))
+        
         try:
-            tp_val = float(tp)
-        except (TypeError, ValueError):
-            errors.append(f"Line {i}: tax_percent '{tp}' is not numeric.")
-            continue
-        if tp_val not in valid_tax_keys and int(tp_val) not in valid_tax_keys:
-            errors.append(
-                f"Line {i}: tax_percent {tp_val} is not in device's applicableTaxes "
-                f"({sorted(k for k in valid_tax_keys if k != 'exempt')}). Refresh getConfig if rates changed."
-            )
-
-    for i, p in enumerate(payments, start=1):
-        mtc = p.get('moneyTypeCode')
-        try:
-            if mtc is None or int(mtc) not in ZIMRA_MONEY_TYPE_CODES:
-                errors.append(f"Payment {i}: moneyTypeCode '{mtc}' is not in ZIMRA's valid set 0-6.")
-        except (TypeError, ValueError):
-            errors.append(f"Payment {i}: moneyTypeCode '{mtc}' is not an integer.")
-
-    if tax_inclusive:
-        try:
-            line_sum = sum(
-                Decimal(str(ln.get('unit_price', 0))) * Decimal(str(ln.get('quantity', 0)))
-                for ln in lines
-            )
+            if method.upper() == 'GET':
+                response = requests.get(url, params=params, timeout=30)
+            else:
+                response = requests.post(url, params=params, json=data, timeout=30)
+            
+            print(f"\n📥 RESPONSE:")
+            print(f"  Status Code: {response.status_code}")
+            
+            response_text = response.text.strip()
+            
+            if response.status_code == 200:
+                print(f"  ✅ SUCCESS")
+                print(f"  Response: {response_text}")
+                return response_text
+            else:
+                print(f"  ❌ ERROR - Status {response.status_code}")
+                print(f"  Response: {response_text[:500]}")
+                try:
+                    return response.json()
+                except:
+                    return {'error': response_text, 'status_code': response.status_code}
+                    
         except Exception as e:
-            errors.append(f"Could not sum receipt lines: {e}")
-            line_sum = None
-
-        if line_sum is not None:
-            try:
-                pay_sum = sum(Decimal(str(p.get('paymentAmount', 0))) for p in payments)
-            except Exception as e:
-                errors.append(f"Could not sum payments: {e}")
-                pay_sum = None
-            if pay_sum is not None and abs(pay_sum - line_sum) > Decimal('0.01'):
-                errors.append(
-                    f"RCPT039: payment total ({pay_sum}) does not match line sum ({line_sum})."
-                )
-
-            rtype = (receipt_data.get('receiptType') or '').upper()
-            if rtype in ('FISCALINVOICE', 'DEBITNOTE') and line_sum <= 0:
-                errors.append(f"RCPT040: receipt total ({line_sum}) must be > 0 for {rtype}.")
-            if rtype == 'CREDITNOTE' and line_sum >= 0:
-                errors.append(f"RCPT040: receipt total ({line_sum}) must be < 0 for CREDITNOTE.")
-
-    if not (receipt_data.get('invoiceNo') or '').strip():
-        errors.append("RCPT013: invoiceNo is required.")
-
-    return errors
-
-
-# Global default timeout for ALL ZIMRA HTTP calls (seconds).
-# Without this, requests can hang indefinitely on bad connectivity, blocking
-# the POS thread forever. 30s is generous for a single API call; failure to
-# respond in that window means we leave the receipt PENDING and the sync
-# worker retries later.
-ZIMRA_HTTP_TIMEOUT = 30
-
-
-# Zimbabwe operates on CAT (UTC+2, no DST). Receipt dates and fiscal-day
-# dates MUST be in Zimbabwean local time per ZIMRA spec section 12.2.1,
-# regardless of what TZ the Django process is running in. Using a naive
-# datetime.now() is unsafe because Django can pin the process TZ to UTC.
-try:
-    from zoneinfo import ZoneInfo
-    _ZIMBABWE_TZ = ZoneInfo('Africa/Harare')
-except Exception:  # pragma: no cover — fallback if tzdata not available
-    from datetime import timezone, timedelta
-    _ZIMBABWE_TZ = timezone(timedelta(hours=2), name='CAT')
-
-
-def zimra_now():
-    """Return current Zimbabwe local time as a naive datetime.
-
-    Naive (no tzinfo) because the ZIMRA spec format is YYYY-MM-DDTHH:mm:ss
-    with no offset — they treat it as local time implicitly.
-    """
-    return datetime.now(_ZIMBABWE_TZ).replace(tzinfo=None)
-
-
-class ZimraServerError(Exception):
-    """Raised when the Zimra server returns an error."""
+            print(f"  ❌ REQUEST ERROR: {e}")
+            return {'error': str(e)}
     
-    def __init__(self, status_code, message):
-        self.status_code = status_code  # Store the status code for further use
-        # Initialize the Exception base class with the error message
-        super().__init__(f"ZimraServerError {status_code}: {message}")
-     
-
-def convert_objectid_to_str(data):
-    if isinstance(data, dict):
-        return {k: str(v) if isinstance(v, ObjectId) else v for k, v in data.items()}
-    return data
-
+    def get_status(self) -> Dict:
+        return self._make_request('GET', '/GetZimraStatus', params={"DeviceID": self.device_id})
+    
+    def get_config_tax(self) -> Dict:
+        return self._make_request('GET', '/GetConfigTax', params={"DeviceID": self.device_id})
+    
+    def submit_invoice(self, invoice_data: Dict) -> str:
+        """Submit invoice to Binary API - returns QR code URL string"""
+        return self._make_request('POST', '/ThePost', data=invoice_data)
 
 
-def preprocess_receipt(receipt_data:dict) -> dict:
-    """
-    Preprocesses the receipt data to ensure it is in the correct format.
 
-    For each line of receipt line, unit_price, quantity and line_total price are converted strings
-
-    However, for accuracy, unit_price and quantity are converted to Decimal objects for the calculation of line_total.
-    The line_total is calculated as quantity * unit_price but we need to ensure it is a string upon return.
-
-    The output of this function can be fed directly to device.prepareReceipt() function as the receiptData parameter.
-
-    this function should be called after parse_document, processing continues in generate_receipt function
-    """
-    from decimal import Decimal, ROUND_HALF_UP
-    receipt_lines = receipt_data.get("receiptLines", [])
-    if receipt_lines:
-        for line in receipt_data.get("receiptLines", []):
-
-            # basic string conversion (sanitization)
-
-            line["unit_price"] = str(line["unit_price"])
-            unit_price = Decimal(line["unit_price"])
-
-
-            line["quantity"] = str(line["quantity"])
-            quantity = Decimal(line["quantity"])
+class FiscalisationService:
+    """Main service for fiscalisation operations"""
+    
+    def __init__(self):
+        self.settings = FiscalisationSettings.get_settings()
+        self.api_client = BinaryAPIClient()
+    
+    def is_fiscalisation_active(self) -> bool:
+        return self.settings.is_fiscalisation_active()
+    
+    def pause_fiscalisation(self, reason="", user=""):
+        self.settings.pause(reason, user)
+    
+    def resume_fiscalisation(self):
+        self.settings.resume()
+    
+    @transaction.atomic
+    def create_fiscal_receipt(self, 
+                          internal_invoice_id: int,
+                          internal_invoice_number: str,
+                          total_amount: Decimal,
+                          payment_method: str,
+                          line_items: List[Dict],
+                          payments: List[Dict] = None,
+                          payment_amount: Decimal = None,
+                          transaction_date: date = None,
+                          transaction_time: str = None,
+                          currency: str = "USD",
+                          buyer_info: Dict = None,
+                          receipt_type: str = "FISCALINVOICE",
+                          original_invoice_number: str = None,
+                          internal_sale_id: int = None) -> FiscalReceipt:
+        
+        next_numbers = FiscalReceiptSequence.get_next_number()
+        
+        if not transaction_date:
+            transaction_date = timezone.now().date()
+        if not transaction_time:
+            transaction_time = timezone.now().strftime('%H:%M:%S')
+        
+        # Handle payments
+        if payments and len(payments) > 0:
+            first_payment = payments[0]
+            payment_method = first_payment.get('method', payment_method)
+            payment_amount = Decimal(str(first_payment.get('amount', total_amount)))
+        elif payment_amount is None:
+            payment_amount = total_amount
+        
+        tax_breakdown = self._calculate_tax_breakdown(line_items)
+        
+        receipt = FiscalReceipt(
+            internal_sale_id=internal_sale_id,
+            internal_invoice_id=internal_invoice_id,
+            internal_invoice_number=internal_invoice_number,
+            fiscal_receipt_number=next_numbers['daily'],
+            fiscal_receipt_global_no=next_numbers['global'],
+            receipt_type=receipt_type,
+            currency=currency,
+            transaction_date=transaction_date,
+            transaction_time=transaction_time,
+            total_amount=total_amount,
+            subtotal=tax_breakdown.get('subtotal', 0),
+            tax_amount=tax_breakdown.get('total_tax', 0),
+            tax_breakdown=tax_breakdown,
+            payment_method=payment_method,
+            payment_amount=payment_amount,
+            payments=payments or [],
+            line_items=line_items,
+            original_invoice_number=original_invoice_number or "",
+        )
+        
+        if buyer_info:
+            receipt.buyer_name = buyer_info.get('name', '')
+            receipt.buyer_tin = buyer_info.get('tin', '')
+            receipt.buyer_vat = buyer_info.get('vat', '')
+            receipt.buyer_address = buyer_info.get('address', '')
+            receipt.buyer_phone = buyer_info.get('phone', '')
+            receipt.buyer_email = buyer_info.get('email', '')
+        
+        if not self.is_fiscalisation_active():
+            receipt.status = FiscalReceipt.STATUS_BYPASSED
+        
+        receipt.save()
+        
+        if self.is_fiscalisation_active() and receipt_type == "FISCALINVOICE":
+            self.add_to_sync_queue(receipt)
+        
+        return receipt
+    
+    def add_to_sync_queue(self, receipt: FiscalReceipt, priority: int = 0):
+        SyncQueue.objects.create(fiscal_receipt=receipt, priority=priority, scheduled_for=timezone.now())
+    
+    def _calculate_tax_breakdown(self, line_items: List[Dict]) -> Dict:
+        tax_groups = {}
+        subtotal = Decimal('0')
+        
+        for item in line_items:
+            item_total = Decimal(str(item.get('total', 0)))
+            tax_percent = Decimal(str(item.get('tax_percentage', 0)))
             
-            # line_total is calculated as quantity * unit_price but we need to ensure it is a string
-            line["line_total"] = str((quantity * unit_price).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-        
-        # now calculate and set the paymount amount
-        receipt_data["receiptPayments"][0]["paymentAmount"] = float(sum(Decimal(line["line_total"]) for line in receipt_lines))
-        return receipt_data
-    else:
-        raise ValueError("No receipt lines found in the receipt data.")
-
-def preprocess_tax_exclusivereceipt(receipt_data:dict) -> dict:
-    """
-    Preprocesses the receipt data to ensure it is in the correct format.
-
-    For each line of receipt line, unit_price, quantity and line_total price are converted strings
-
-    However, for accuracy, unit_price and quantity are converted to Decimal objects for the calculation of line_total.
-    The line_total is calculated as quantity * unit_price but we need to ensure it is a string upon return.
-
-    The output of this function can be fed directly to device.prepareReceipt() function as the receiptData parameter.
-
-    this function should be called after parse_document, processing continues in generate_receipt function
-    """
-    from decimal import Decimal, ROUND_HALF_UP
-    receipt_lines = receipt_data.get("receiptLines", [])
-    if receipt_lines:
-        for line in receipt_data.get("receiptLines", []):
-
-            # basic string conversion (sanitization)
-
-            line["unit_price"] = str(line["unit_price"])
-            unit_price = Decimal(line["unit_price"])
-
-
-            line["quantity"] = str(line["quantity"])
-            quantity = Decimal(line["quantity"])
+            # Update old 15% to 15.5%
+            if tax_percent == 15:
+                tax_percent = Decimal('15.5')
             
-            # line_total is calculated as quantity * unit_price but we need to ensure it is a string
-            line["line_total"] = str((quantity * unit_price).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-        
-        return receipt_data
-    else:
-        raise ValueError("No receipt lines found in the receipt data.")
-
-
-def tax_calculator(sale_amount, tax_rate):
-        """
-        Calculate VAT amount from a price that already includes VAT.
-        Uses Decimal to avoid floating point precision errors.
-        
-        Formula: VAT = total_amount - (total_amount / (1 + tax_rate/100))
-                = total_amount * (tax_rate/100) / (1 + tax_rate/100)
-        
-        Args:
-            total_amount (float or Decimal): The total amount including VAT
-            tax_rate (float or Decimal): The tax rate as a percentage (e.g., 20 for 20%)
-
+            subtotal += item_total
             
-        Returns:
-            Decimal: The VAT amount, rounded to 2 decimal places
-        """
-        # Set decimal precision
-        decimal.getcontext().prec = 28
+            tax_key = float(tax_percent)
+            if tax_key not in tax_groups:
+                tax_groups[tax_key] = {'sales_total': Decimal('0'), 'tax_amount': Decimal('0')}
+            
+            tax_groups[tax_key]['sales_total'] += item_total
+            if tax_percent > 0:
+                tax_amount = item_total * (tax_percent / (100 + tax_percent))
+                tax_groups[tax_key]['tax_amount'] += tax_amount
         
-        # Convert inputs to Decimal to avoid floating point errors
-        total_decimal = Decimal(str(sale_amount))
-        rate_decimal = Decimal(str(tax_rate))
+        return {
+            'subtotal': float(subtotal),
+            'total_tax': float(sum(g['tax_amount'] for g in tax_groups.values())),
+            'tax_groups': {str(k): {'sales_total': float(v['sales_total']), 'tax_amount': float(v['tax_amount'])} 
+                          for k, v in tax_groups.items()}
+        }
+    
+    # def prepare_binary_payload_old(self, receipt: FiscalReceipt) -> Dict:
+    #     """Prepare payload matching Binary Software API exactly"""
         
-        # Calculate the divisor (1 + tax_rate/100)
-        divisor = Decimal('1') + (rate_decimal / Decimal('100'))
+    #     print(f"\n{'='*80}")
+    #     print(f"📝 PREPARING PAYLOAD FOR RECEIPT #{receipt.id}")
+    #     print(f"{'='*80}")
+    #     print(f"  Internal Invoice #: {receipt.internal_invoice_number}")
+    #     print(f"  Total Amount: {receipt.total_amount}")
+    #     print(f"  Payment Method: {receipt.payment_method}")
+    #     print(f"  Payment Amount: {receipt.payment_amount}")
         
-        # Calculate pre-tax amount
-        pre_tax = total_decimal / divisor
+    #     # Calculate tax totals
+    #     tax_15_sales_total = Decimal('0')
+    #     tax_15_amount = Decimal('0')
+    #     zero_perc_sales_total = Decimal('0')
+    #     zero_perc_tax_amt = Decimal('0')
         
-        # Calculate VAT (total - pre_tax)
-        vat_amount = total_decimal - pre_tax
+    #     for tax_percent_str, group in receipt.tax_breakdown.get('tax_groups', {}).items():
+    #         tax_percent = float(tax_percent_str)
+    #         sales_total = Decimal(str(group.get('sales_total', 0)))
+    #         tax_amount = Decimal(str(group.get('tax_amount', 0)))
+            
+    #         if abs(tax_percent - 15.5) < 0.01:
+    #             tax_15_sales_total += sales_total
+    #             tax_15_amount += tax_amount
+    #         elif tax_percent == 0:
+    #             zero_perc_sales_total += sales_total
+    #             zero_perc_tax_amt += tax_amount
         
-        # Round to 2 decimal places (rounding HALF_UP as per your accepted code)
-        return float(vat_amount.quantize(Decimal('0.01'), rounding=decimal.ROUND_HALF_UP))
-
-def register_new_device(
-    
-    fiscal_device_serial_no:str, 
-    device_id:str,
-    activation_key:str, 
-    model_name:str = 'Server',
-    folder_name:str = 'prod', 
-    certificate_filename:str='certificate', 
-    private_key_filename:str='decrypted_key',
-    prod:bool = False
-    ):
-    '''
-    Parameters:
-    
-    folder_name: string (name of the prospective folder to save the certificate and file)
-    
-    fiscal_device_serial_no: string 
-    
-    device_id: string (should be 0 padded 10 digit string but confirm with Zimra first after the debacle with Kolfhurst)
-    
-    activation_key: str (should be 0 padded 8 digit string. For example: '00398834')
-    
-    certificate_filename: string (prospective file name for the certificate)
-    
-    private_key_filename: (prospective file name for the private key)
-    
-    prod: bool  (True for production, False for testing)
-
-    
-    todo: create a pfx along so that output is just sent to Mr Kashiri's system
-    '''
-    if not os.path.exists(f'{folder_name}'):
-        os.makedirs(f'{folder_name}')
-
-    # Format Device serial number and device ID
-    formatted_device_id = device_id.zfill(10)
-
-
-    # Generate RSA private key (2048 bits)
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-        backend=default_backend()
-    )
-
-    # Save the private key to a PEM file
-    private_key_pem = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption()
-    )
-
-    with open(f"{folder_name}/{private_key_filename}.key", "wb") as key_file:
-        key_file.write(private_key_pem)
-        logging.info(f"Private key saved to {folder_name}/{private_key_filename}.key")
-
-    # Define the Common Name (CN) based on the format
-    common_name = f'ZIMRA-{fiscal_device_serial_no}-{formatted_device_id}'
-
-    # Generate CSR with the required Subject fields
-    csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, common_name),
-    ])).sign(private_key, hashes.SHA256(), default_backend())
-
-    # Serialize CSR to PEM format
-    csr_pem = csr.public_bytes(serialization.Encoding.PEM).decode('utf-8')
-    if prod:
-        url = f'https://fdmsapi.zimra.co.zw/Public/v1/{device_id}/RegisterDevice'
-    else:
-        url = f'https://fdmsapitest.zimra.co.zw/Public/v1/{device_id}/RegisterDevice'
-
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-        'DeviceModelName': model_name,
-        'DeviceModelVersion': '1.0'
-    }
-
-    payload = {
-        'activationKey': activation_key,
-        'certificateRequest': csr_pem,
-    }
-
-    response = requests.post(url, json=payload, headers=headers, timeout=ZIMRA_HTTP_TIMEOUT)
-
-    if response.status_code == 200:
-        logging.info("Request was successful!")
-        response_json = response.json()
-        certificate_pem = response_json['certificate']
-
-        # Save the certificate to a PEM file
-        with open(f"{folder_name}/{certificate_filename}.crt", "w") as cert_file:
-            cert_file.write(certificate_pem)
-            logging.info(f"Certificate saved to {folder_name}/{certificate_filename}.crt")
+    #     # ReceiptDetail - ARRAY of objects
+    #     receipt_details = []
+    #     for idx, item in enumerate(receipt.line_items):
+    #         detail = {
+    #             "LineDescription": item.get('description', ''),
+    #             "UnitPrice": f"{Decimal(str(item.get('unit_price', 0))):.2f}",
+    #             "Quantity": f"{Decimal(str(item.get('quantity', 0))):.2f}",
+    #             "Total": f"{Decimal(str(item.get('total', 0))):.2f}",
+    #             "IntTaxCode": item.get('int_tax_code', 3),
+    #             "StrTaxCode": item.get('str_tax_code', 'C'),
+    #             "TaxPercentage": f"{Decimal(str(item.get('tax_percentage', 0))):.2f}",
+    #             "receiptLineHSCode": item.get('hs_code', '95069100')
+    #         }
+    #         receipt_details.append(detail)
         
-    else:
-        logging.fatal(f"Request failed with status code {response.status_code}")
-        logging.critical(response.text)
+    #     # TheHeader - ARRAY with correct field names
+    #     header = [{
+    #         "DocType": receipt.receipt_type,
+    #         "DeviceId": self.settings.device_id,
+    #         "InvNumber": str(receipt.internal_invoice_id),
+    #         "DocCurrency": receipt.currency,
+    #         "myYYY_MM_DDdate": receipt.transaction_date.strftime('%Y-%m-%d'),
+    #         "My24hrTimeformatwithSeconds": receipt.transaction_time,
+    #         "DocumentTotal": f"{receipt.total_amount:.2f}",
+    #         "nontaxible_salesAmtTotal": "0.00",
+    #         "ZeroPer_Taxamt": f"{zero_perc_tax_amt:.2f}",
+    #         "ZeroPerc_SalesAmtTotal": f"{zero_perc_sales_total:.2f}",
+    #         "TaxAmt15Perc": f"{tax_15_amount:.2f}",
+    #         "Tax15Perc_SalesTotal": f"{tax_15_sales_total:.2f}",
+    #         "InvoicenumbertoCredit_debit": "0",
+    #         "machinecode": self.settings.machine_code,
+    #         "ThePassword": self.settings.api_password,
+    #     }]
+        
+    #     # Add buyer info if present
+    #     if receipt.buyer_name:
+    #         header[0]["buyerRegisterName"] = receipt.buyer_name[:200]
+    #         header[0]["buyerTIN"] = receipt.buyer_tin[:50] if receipt.buyer_tin else ""
+    #         if receipt.buyer_vat:
+    #             header[0]["VATNumber"] = receipt.buyer_vat[:50]
+    #         if receipt.buyer_address:
+    #             header[0]["province"] = "Harare"
+    #             header[0]["city"] = "Harare"
+    #             header[0]["street"] = receipt.buyer_address[:100]
+    #             header[0]["houseno"] = "1"
+    #         if receipt.buyer_phone:
+    #             header[0]["phoneNo"] = receipt.buyer_phone[:20]
+    #         if receipt.buyer_email:
+    #             header[0]["email"] = receipt.buyer_email[:100]
+        
+    #     # For credit notes
+    #     if receipt.receipt_type == FiscalReceipt.TYPE_CREDIT_NOTE and receipt.original_invoice_number:
+    #         header[0]["InvoicenumbertoCredit_debit"] = receipt.original_invoice_number
+        
+    #     # paymentline - ARRAY of objects
+    #     if receipt.payments and len(receipt.payments) > 0:
+    #         payment_line = []
+    #         for p in receipt.payments:
+    #             payment_line.append({
+    #                 "PaymentMethodName": p.get('method', 'CASH').upper(),
+    #                 "PaymentAmt": f"{Decimal(str(p.get('amount', 0))):.2f}"
+    #             })
+    #     else:
+    #         payment_line = [{
+    #             "PaymentMethodName": receipt.payment_method.upper(),
+    #             "PaymentAmt": f"{receipt.payment_amount:.2f}"
+    #         }]
+        
+    #     # Complete payload
+    #     payload = {
+    #         "id": 0,
+    #         "ThePassword": None,
+    #         "Role": None,
+    #         "paymentline": payment_line,
+    #         "ReceiptDetail": receipt_details,
+    #         "TheHeader": header
+    #     }
+        
+    #     return payload
 
+    # fiscalisation/services.py - Update prepare_binary_payload
 
-class Device:
-    # Sensible defaults if the caller doesn't pass applicableTaxes.
-    # These should be considered placeholders — real tax IDs MUST come from the
-    # device's own getConfig response (call refreshApplicableTaxes()), because
-    # ZIMRA assigns different IDs per device / environment.
-    DEFAULT_APPLICABLE_TAXES: dict = {0: 2, 'exempt': 3, 5: 514, 15.5: 515}
-
-    def __init__(
-            self,
-            device_id: str,
-            serialNo: str,
-            activationKey: str,
-            cert_path: str,
-            private_key_path:str,
-            test_mode:bool =True,
-            deviceModelName: str='Server',
-            deviceModelVersion:str = 'v1',
-            company_name:str ="NexusClient",
-            applicableTaxes: dict = None,
-        ):
-        self.companyName: str = company_name
-        self.deviceID: int = device_id
-        self.deviceModelName =deviceModelName
-        self.deviceModelVersion = deviceModelVersion
-        self.certPath: str = cert_path
-        self.keyPath: str = private_key_path
-
-        if test_mode:
-            self.test_mode = True
-            self.base_url: str = 'https://fdmsapitest.zimra.co.zw/Device/v1/'
-            self.qrUrl:str = 'https://fdmstest.zimra.co.zw/'
-        else:
-            self.test_mode = False
-            self.base_url: str = 'https://fdmsapi.zimra.co.zw/Device/v1/'
-            self.qrUrl:str = 'https://fdms.zimra.co.zw/'
-
-        # Caller-supplied overrides win; otherwise fall back to defaults.
-        # Call refreshApplicableTaxes() after construction to sync with the
-        # actual taxes ZIMRA has registered for this device.
-        self.applicableTaxes: dict = dict(applicableTaxes) if applicableTaxes else dict(self.DEFAULT_APPLICABLE_TAXES)
-
-        self.deviceBaseUrl = f'{self.base_url}{self.deviceID}'
-
-        self.serialNo = serialNo
-        self.activationKey = activationKey
-
-    def refreshApplicableTaxes(self) -> dict:
-        """Re-fetch applicableTaxes from ZIMRA via getConfig and update self.applicableTaxes.
-
-        Returns the new dict, or raises if getConfig fails.
-
-        The dict is keyed the way prepareReceipt's receiptlinesfixer expects:
-        numeric tax_percent values (0, 5, 15.5, ...) map to integer taxID,
-        plus 'exempt' -> taxID for the exempt rate.
-        """
-        config = self.getConfig()
-        if not isinstance(config, dict) or 'applicableTaxes' not in config:
-            raise ValueError(f"getConfig returned no applicableTaxes: {config}")
-
-        new_taxes = {}
-        for t in config.get('applicableTaxes', []):
-            tax_id = t.get('taxID')
-            if tax_id is None:
-                continue
-            if 'taxPercent' in t:
-                key = float(t['taxPercent'])
-                # Use int key when value is whole (so {0: 513} not {0.0: 513})
-                if key == int(key):
-                    key = int(key)
-                new_taxes[key] = int(tax_id)
+    def prepare_binary_payload(self, receipt: FiscalReceipt) -> Dict:
+        """Prepare payload matching Binary Software API exactly"""
+        
+        # Calculate tax totals
+        tax_15_sales_total = Decimal('0')
+        tax_15_amount = Decimal('0')
+        zero_perc_sales_total = Decimal('0')
+        zero_perc_tax_amt = Decimal('0')
+        
+        for tax_percent_str, group in receipt.tax_breakdown.get('tax_groups', {}).items():
+            tax_percent = float(tax_percent_str)
+            sales_total = Decimal(str(group.get('sales_total', 0)))
+            tax_amount = Decimal(str(group.get('tax_amount', 0)))
+            
+            if abs(tax_percent - 15.5) < 0.01:
+                tax_15_sales_total += sales_total
+                tax_15_amount += tax_amount
+            elif tax_percent == 0:
+                zero_perc_sales_total += sales_total
+                zero_perc_tax_amt += tax_amount
+        
+        # ReceiptDetail - ARRAY of objects
+        receipt_details = []
+        for item in receipt.line_items:
+            receipt_details.append({
+                "LineDescription": item.get('description', ''),
+                "UnitPrice": f"{Decimal(str(item.get('unit_price', 0))):.2f}",
+                "Quantity": f"{Decimal(str(item.get('quantity', 0))):.2f}",
+                "Total": f"{Decimal(str(item.get('total', 0))):.2f}",
+                "IntTaxCode": item.get('int_tax_code', 2),
+                "StrTaxCode": item.get('str_tax_code', 'B'),
+                "TaxPercentage": f"{Decimal(str(item.get('tax_percentage', 0))):.2f}",
+                "receiptLineHSCode": item.get('hs_code', '95069100')
+            })
+        
+        # ============================================================
+        # TheHeader - with InvoicenumbertoCredit_debit for credit notes
+        # ============================================================
+        header = [{
+            "DocType": receipt.receipt_type,
+            "DeviceId": self.settings.device_id,
+            "InvNumber": str(receipt.internal_invoice_id),
+            "DocCurrency": receipt.currency,
+            "myYYY_MM_DDdate": receipt.transaction_date.strftime('%Y-%m-%d'),
+            "My24hrTimeformatwithSeconds": receipt.transaction_time,
+            "DocumentTotal": f"{receipt.total_amount:.2f}",
+            "nontaxible_salesAmtTotal": "0.00",
+            "ZeroPer_Taxamt": f"{zero_perc_tax_amt:.2f}",
+            "ZeroPerc_SalesAmtTotal": f"{zero_perc_sales_total:.2f}",
+            "TaxAmt15Perc": f"{tax_15_amount:.2f}",
+            "Tax15Perc_SalesTotal": f"{tax_15_sales_total:.2f}",
+            "machinecode": self.settings.machine_code,
+            "ThePassword": self.settings.api_password,
+        }]
+        
+        # ============================================================
+        # CRITICAL: Set InvoicenumbertoCredit_debit for credit notes
+        # ============================================================
+        if receipt.receipt_type == "CREDITNOTE":
+            if receipt.original_invoice_number and receipt.original_invoice_number != "0":
+                header[0]["InvoicenumbertoCredit_debit"] = receipt.original_invoice_number
+                print(f"Credit Note - Original Invoice: {receipt.original_invoice_number}")
             else:
-                # No taxPercent => exempt
-                new_taxes['exempt'] = int(tax_id)
-
-        self.applicableTaxes = new_taxes
-        return new_taxes
-
-
-    def insert_receiptDeviceSignature(self, receiptData: OrderedDict, previous_hash=None)-> OrderedDict:
-        """
-        this is the final nail in the coffin before sending receipt to zimra
-        """
-
-        receiptTaxes = receiptData["receiptTaxes"]
-        logging.info(f"Library Info: Receipt Taxes: {receiptTaxes}")
-        concatenated_receipt_taxes = self.concatenate_receipt_taxes(receiptTaxes=receiptTaxes)  
-        if previous_hash:
-            string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}{previous_hash}"
-            logging.info(f"Library Info: string to sign: {string_to_sign}")
+                # This should not happen - credit note must reference an original invoice
+                header[0]["InvoicenumbertoCredit_debit"] = "0"
+                print("WARNING: Credit note missing original_invoice_number!")
         else:
-            string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}"
-            logging.info(f"Library Info: string to sign: {string_to_sign}")
-
-        hash_value = self.get_hash(string_to_sign)
-        signature = self.sign_data(string_to_sign)
-        receiptData["receiptDeviceSignature"] = {
-            "hash": hash_value,
-            "signature": signature
-        }
+            # For regular invoices, set to "0"
+            header[0]["InvoicenumbertoCredit_debit"] = "0"
         
-        return receiptData
-
-
-    def tax_calculator(self, sale_amount, tax_rate):
-        """
-        Calculate VAT amount from a price that already includes VAT.
-        Uses Decimal to avoid floating point precision errors.
-        
-        Formula: VAT = total_amount - (total_amount / (1 + tax_rate/100))
-                = total_amount * (tax_rate/100) / (1 + tax_rate/100)
-        
-        Args:
-            total_amount (float or Decimal): The total amount including VAT
-            tax_rate (float or Decimal): The tax rate as a percentage (e.g., 20 for 20%)
+        # Add buyer info if present
+        if receipt.buyer_name:
+            header[0]["buyerRegisterName"] = receipt.buyer_name[:200]
+            header[0]["buyerTIN"] = receipt.buyer_tin[:50] if receipt.buyer_tin else None
+            header[0]["VATNumber"] = receipt.buyer_vat[:50] if receipt.buyer_vat else None
+            header[0]["phoneNo"] = receipt.buyer_phone[:20] if receipt.buyer_phone else None
+            header[0]["email"] = receipt.buyer_email[:100] if receipt.buyer_email else None
             
-        Returns:
-            Decimal: The VAT amount, rounded to 2 decimal places
-        """
-        # Set decimal precision
-        decimal.getcontext().prec = 28
+            if receipt.buyer_address:
+                header[0]["province"] = "Harare"
+                header[0]["city"] = "Harare"
+                header[0]["street"] = receipt.buyer_address[:100]
+                header[0]["houseNo"] = "1"
         
-        # Convert inputs to Decimal to avoid floating point errors
-        total_decimal = Decimal(str(sale_amount))
-        rate_decimal = Decimal(str(tax_rate))
-        
-        # Calculate the divisor (1 + tax_rate/100)
-        divisor = Decimal('1') + (rate_decimal / Decimal('100'))
-        
-        # Calculate pre-tax amount
-        pre_tax = total_decimal / divisor
-        
-        # Calculate VAT (total - pre_tax)
-        vat_amount = total_decimal - pre_tax
-        
-        # Round to 2 decimal places (rounding HALF_UP as per your accepted code)
-        return float(vat_amount.quantize(Decimal('0.01'), rounding=decimal.ROUND_HALF_UP))
-
-
-    def tax_exclusive_calculator(self, sale_amount, tax_rate):
-        """
-        Calculate VAT amount from a price that does not include VAT.
-        Uses Decimal to avoid floating point precision errors.
-
-        Formula: VAT = sale_amount * (tax_rate/100)
-
-        Args:
-            sale_amount (float or Decimal): The pre-tax amount
-            tax_rate (float or Decimal): The tax rate as a percentage (e.g., 20 for 20%)
-
-        Returns:
-            float: The VAT amount, rounded to 2 decimal places
-        """
-        # Set decimal precision
-        decimal.getcontext().prec = 28
-
-        # Convert inputs to Decimal to avoid floating point errors
-        sale_decimal = Decimal(str(sale_amount))
-        rate_decimal = Decimal(str(tax_rate))
-        
-        # Calculate VAT using the tax-exclusive formula
-        vat_amount = sale_decimal * (rate_decimal / Decimal('100'))
-        
-        # Round to 2 decimal places (rounding HALF_UP as per your accepted code)
-        return float(vat_amount.quantize(Decimal('0.01'), rounding=decimal.ROUND_HALF_UP))
-
-    
-    def concatenate_receipt_taxes(self, receiptTaxes):
-        # Sort by taxID
-        receiptTaxes_sorted = sorted(receiptTaxes, key=lambda x: x['taxID'])
-        logging.info(f"Library Info: Receipt Taxes Sorted: {receiptTaxes_sorted}")
-        
-        concatenated_string = ''.join(
-            f"{(Decimal(tax['taxPercent']).quantize(Decimal('0.00'), rounding=None) if 'taxPercent' in tax else '')}"
-            f"{int((Decimal(tax['taxAmount']) * Decimal('100')).quantize(Decimal('1'), rounding=None))}"
-            f"{int((Decimal(tax['salesAmountWithTax']) * Decimal('100')).quantize(Decimal('1'), rounding=None))}"
-            for tax in receiptTaxes_sorted
-        )
-        
-        logging.info(f"Library Info: Concatenated Receipt Taxes: {concatenated_string}")
-        return concatenated_string
-
-
-
-    def get_hash(self, data:str)->str:
-        """Compute SHA256 hash and encode it in Base64."""
-        hash_object = hashlib.sha256(data.encode('utf-8'))
-        return base64.b64encode(hash_object.digest()).decode('utf-8')
-    
-    def sign_data(self, data:str)->str:
-        with open(self.keyPath, 'rb') as key_file:
-            private_key_pem = key_file.read()
-        key = RSA.import_key(private_key_pem)
-        h = SHA256.new(data.encode('utf-8'))
-        signature = pkcs1_15.new(key).sign(h)
-        return base64.b64encode(signature).decode('utf-8')
-    
-    def getConfig(self)->dict:
-        '''
-        this function should always be run to get the updated configuration including the taxes
-        
-        returns:
-        {
-            'taxPayerName': 'SAINTFORD VENTURES', 
-            'taxPayerTIN': '2000253679', 
-            'vatNumber': '220227652', 
-            'deviceSerialNo': '9029D38C011B', 
-            'deviceBranchName': 'SAINTFORD VENTURES (PVT) LTD', 
-            'deviceBranchAddress': {'province': 'Harare', 'street': 'Plymouth road', 'houseNo': '44', 'city': 'Harare'}, 
-            'deviceBranchContacts': {'phoneNo': '0776298764', 'email': 'saintfordventures@gmail.com'}, 
-            'deviceOperatingMode': 'Online', 
-            'taxPayerDayMaxHrs': 24, 
-            'applicableTaxes': [{
-                'taxName': 'Exempt', 
-                'validFrom': '2023-01-01T00:00:00', 
-                'taxID': 1
-                }, 
-                {'taxPercent': 0.0, 
-                'taxName': 'Zero rate 0%', 
-                'validFrom': '2023-01-01T00:00:00', 
-                'taxID': 2
-                }, 
-                {'taxPercent': 15.0, 
-                'taxName': 'Standard rated 15%', 
-                'validFrom': '2023-01-01T00:00:00', 
-                'taxID': 3}, 
-                {'taxPercent': 5.0, 
-                'taxName': 'Non-VAT Withholding Tax', 
-                'validFrom': '2024-01-01T00:00:00', 
-                'taxID': 514
-                }], 
-            'certificateValidTill': '2027-07-31T06:26:09', 
-            'qrUrl': 'https://fdmstest.zimra.co.zw', 
-            'taxpayerDayEndNotificationHrs': 2, 
-            'operationID': '0HN4FDK6SREE1:00000001'
-        }
-        ''' 
-        url = f'{self.deviceBaseUrl}/GetConfig'
-        response = requests.get(
-            url,
-            cert=(self.certPath, self.keyPath),
-
-            timeout=ZIMRA_HTTP_TIMEOUT,
-
-            headers = {
-                'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
-                'DeviceModelVersion': self.deviceModelVersion
-            }
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            return data
+        # paymentline - ARRAY of objects
+        if receipt.payments and len(receipt.payments) > 0:
+            payment_line = []
+            for p in receipt.payments:
+                payment_line.append({
+                    "PaymentMethodName": p.get('method', 'CASH').upper(),
+                    "PaymentAmt": f"{Decimal(str(p.get('amount', 0))):.2f}"
+                })
         else:
-            return(f"Error: {response.status_code} - {response.text}")
-
-    def renewCertificate(self):
-        '''
-        this function only works if there is an existing private key already
-        writes the certificate to companyname.crt & companyname.pem
-        '''
-
-        device_id = self.deviceID
-        serial_no = self.serialNo
-        device_id_padded = str(device_id).zfill(10)
-        cn_value = f"ZIMRA-{serial_no}-{device_id_padded}"
-
-        with open(self.keyPath, "rb") as key_file:
-            private_key = serialization.load_pem_private_key(
-                key_file.read(),
-                password=None,
-                backend=default_backend()
-            )
-
-        hash_algorithm = hashes.SHA256()
-
-        # Build the CSR
-        csr_builder = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
-            x509.NameAttribute(NameOID.COMMON_NAME, cn_value),
-
-        ]))
-
-        # Sign the CSR
-        csr = csr_builder.sign(private_key, hash_algorithm, default_backend())
-
-        # Serialize CSR to PEM format
-        csr_pem = csr.public_bytes(serialization.Encoding.PEM).decode('utf-8')
-
-        # Prepare the request data with additional fields
-        url = f'{self.deviceBaseUrl}/IssueCertificate'
-        headers = {
-            'DeviceModelName': self.deviceModelName,
-            'DeviceModelVersion': self.deviceModelVersion,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-        data = {
-            "certificateRequest": csr_pem,
-        }
-
-
-        try:
-            response = requests.post(
-                url,
-                headers=headers, 
-                cert=(self.certPath, self.keyPath),
-
-                timeout=ZIMRA_HTTP_TIMEOUT,
-
-                json=data,
-            )
-            response.raise_for_status() 
-            # Save the certificate to a file
-            with open(f'{self.company_name}.crt', 'w') as cert_file:
-                cert_file.write(response['certificate'])
-            return response['certificate']
-
-        except requests.exceptions.HTTPError as http_err:
-            # Print detailed error message from the response
-            error_response = response.json()
-            ret_statement = f"HTTP error occurred: {http_err}\n\nResponse: {error_response}"
-            return ret_statement
-
-        except Exception as err:
-            return(f"Other error occurred: {err}")
-
-    def getStatus(self)->dict:
-        '''
-        returns:
-        {
-            'fiscalDayNo': 1,
-            'fiscalDayStatus': 'FiscalDayClosed',
-        }
-
-        '''
-        url = f'{self.deviceBaseUrl}/GetStatus'
-        response = requests.get(
-            url,
-            cert=(self.certPath, self.keyPath),
-
-            timeout=ZIMRA_HTTP_TIMEOUT,
-
-            headers = {
-                'DeviceModelName': self.deviceModelName, #this matter a whole lot more than you think, change it and you will get a 403
-                'DeviceModelVersion': self.deviceModelVersion
-            }
-        )
-
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            data = {"Error": f"Error: {response.status_code} - {response.text}"}
-            return data
-
-    def ping(self)->dict:
-        url = f'{self.deviceBaseUrl}/Ping'
-        headers = {
-            'DeviceModelName': self.deviceModelName,
-            'DeviceModelVersion': self.deviceModelVersion,
-            'accept': 'application/json',
-        }
-        response = requests.post(
-            url,
-            cert=(self.certPath, self.keyPath),
-
-            timeout=ZIMRA_HTTP_TIMEOUT,
-
-            headers=headers
-        )
-        if response.status_code == 200:
-            logging.info("PING was successful!")
-            return response.json()
-        else:
-            return {"Error": f"{response.text}"}
-
-    def openDay(self, fiscalDayNo: int)->dict:
-        '''
-        Parameters:
-        fiscalDayNo: int
-        fiscalDayOpened: datetime.datetime, default=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        this function checks that the state of the day is closed first, then it sends a request to the server to open the day
+            payment_line = [{
+                "PaymentMethodName": receipt.payment_method.upper(),
+                "PaymentAmt": f"{receipt.payment_amount:.2f}"
+            }]
         
-        if successful, updates the fiscalDayNo with the response data and returns the following example data:
-        {
-            'fiscalDayNo': 2, 
-            'operationID': '0HN4FDK6T1CNI:00000001'
-        }
-        '''
-
-        fiscalDayOpened = zimra_now().strftime('%Y-%m-%dT%H:%M:%S')
-
-        #check if the day is closed
-        status = self.getStatus()
-        if status['fiscalDayStatus'] != 'FiscalDayClosed':
-            return {"error": f"Fiscal Day {status['lastFiscalDayNo']} is not closed"}
-        
-        #check if day being requested to be opened is later than the last day closed
-        try:
-            if fiscalDayNo <= status['lastFiscalDayNo']:
-                return {"error": f"Fiscal Day being opened: day {fiscalDayNo} is earlier than the last closed day: day {status['lastFiscalDayNo']}"}
-        except KeyError:
-            #device is brand new
-            pass
-            
-        url = f'{self.deviceBaseUrl}/OpenDay'
-        headers = {
-            'DeviceModelName': self.deviceModelName,
-            'DeviceModelVersion': self.deviceModelVersion,
-            'accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
+        # Complete payload
         payload = {
-            "fiscalDayNo": fiscalDayNo,
-            "fiscalDayOpened": fiscalDayOpened
+            "id": 0,
+            "ThePassword": None,
+            "Role": None,
+            "paymentline": payment_line,
+            "ReceiptDetail": receipt_details,
+            "TheHeader": header
         }
         
+        return payload
+
+
+
+    def sync_receipt(self, receipt: FiscalReceipt) -> bool:
+        if not self.is_fiscalisation_active():
+            print(f"\n⚠️ SKIPPING: Fiscalisation is paused for receipt #{receipt.id}")
+            return False
+        
+        print(f"\n{'#'*80}")
+        print(f"🔄 SYNCING RECEIPT #{receipt.id}")
+        print(f"📄 Internal Invoice: {receipt.internal_invoice_number}")
+        print(f"💰 Total Amount: {receipt.total_amount}")
+        print(f"{'#'*80}")
+        
+        # Prepare and print the payload
+        payload = self.prepare_binary_payload(receipt)
+        
+        print(f"\n{'='*80}")
+        print("📤 COMPLETE PAYLOAD BEING SUBMITTED TO BINARY API")
+        print(f"{'='*80}")
+        print(json.dumps(payload, indent=2))
+        print(f"{'='*80}\n")
+        
+        # Submit to API
+        response = self.api_client.submit_invoice(payload)
+        
+        # ============================================================
+        # CORRECT: Binary API returns a plain string URL on SUCCESS
+        # Example: "https://fdmstest.zimra.co.zw/0000035708100620260000000006D899FB0D9E4689BB"
+        # ANY string starting with 'http' is a SUCCESS
+        # ============================================================
+        
+        # Check if response is a string (plain text)
+        if isinstance(response, str):
+            # If it starts with 'http', it's a QR code URL = SUCCESS
+            if response.startswith('http'):
+                receipt.mark_synced(response, {'qr_url': response})
+                print(f"\n✅✅✅ SUCCESS! Receipt #{receipt.id} synced to ZIMRA ✅✅✅")
+                print(f"🔗 QR Code URL: {response}")
+                return True
+            else:
+                # Plain text but not a URL = ERROR
+                receipt.mark_failed(response)
+                print(f"\n❌ FAILED! Receipt #{receipt.id} could not be synced")
+                print(f"📛 Error: {response}")
+                return False
+        
+        # If response is a dict (error case from API)
+        elif isinstance(response, dict):
+            error_msg = response.get('error') or response.get('title') or str(response)
+            receipt.mark_failed(error_msg)
+            print(f"\n❌ FAILED! Receipt #{receipt.id} could not be synced")
+            print(f"📛 Error: {error_msg}")
+            if response.get('errors'):
+                print(f"Details: {json.dumps(response.get('errors'), indent=2)}")
+            return False
+        
+        # Unexpected response type
+        else:
+            receipt.mark_failed(f"Unexpected response: {response}")
+            print(f"\n❌ FAILED! Unexpected response type: {type(response)}")
+            print(f"Response: {response}")
+            return False
+
+    def sync_pending_receipts(self, limit: int = 100) -> Dict:
+        """Sync all pending receipts"""
+        
+        print(f"\n{'#'*80}")
+        print(f"📡 SYNCING PENDING RECEIPTS (Max: {limit})")
+        print(f"{'#'*80}")
+        
+        results = {'success': 0, 'failed': 0, 'total': 0}
+        
+        pending = list(FiscalReceipt.objects.filter(
+            status=FiscalReceipt.STATUS_PENDING,
+            retry_count__lt=self.settings.max_retry_count
+        ).order_by('created_at')[:limit])  # ← REMOVED one extra bracket here
+        
+        print(f"📊 Found {len(pending)} pending receipt(s) to sync\n")
+        
+        sync_log = SyncLog.objects.create(success=False)
+        start_time = timezone.now()
+        
+        for idx, receipt in enumerate(pending):
+            print(f"\n{'─'*40}")
+            print(f"Processing {idx+1} of {len(pending)}")
+            print(f"{'─'*40}")
+            
+            results['total'] += 1
+            if self.sync_receipt(receipt):
+                results['success'] += 1
+            else:
+                results['failed'] += 1
+        
+        sync_log.success = results['failed'] == 0
+        sync_log.synced_count = results['success']
+        sync_log.failed_count = results['failed']
+        sync_log.duration_ms = int((timezone.now() - start_time).total_seconds() * 1000)
+        sync_log.save()
+        
+        print(f"\n{'='*80}")
+        print(f"📊 SYNC COMPLETE")
+        print(f"{'='*80}")
+        print(f"  ✅ Success: {results['success']}")
+        print(f"  ❌ Failed: {results['failed']}")
+        print(f"  📝 Total: {results['total']}")
+        print(f"  ⏱️ Duration: {sync_log.duration_ms}ms")
+        print(f"{'='*80}\n")
+        
+        return results
+
+    
+    def get_pending_count(self) -> int:
+        return FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_PENDING).count()
+    
+    def get_failed_count(self) -> int:
+        return FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_FAILED).count()
+    
+    def get_bypassed_count(self) -> int:
+        return FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_BYPASSED).count()
+    
+    def get_synced_count(self) -> int:
+        return FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_SYNCED).count()
+    
+    def retry_failed_receipt(self, receipt_id: int) -> bool:
+        print(f"\n🔄 Retrying failed receipt #{receipt_id}")
         try:
-            response = requests.post(
-                url, 
-                cert=(self.certPath, self.keyPath),
-
-                timeout=ZIMRA_HTTP_TIMEOUT,
-                
-                headers=headers, 
-                
-                json=payload
-                )
-            response.raise_for_status()  # Will raise an HTTPError for bad responses
-            data = response.json()
-            return data
-
-        except requests.exceptions.RequestException as e:
-            return {"error": f"HTTP request failed: {e}"}
-        except ValueError:
-            return {"error": "Invalid JSON response"}
-
-    def prepareReceipt(
-            self, 
-            receiptData: dict, 
-            applicableTaxes: dict=None,
-            previousReceiptHash = None,
-            receiptPrintForm: str="Receipt48"
-        ) -> dict:
-        '''
-        Level: Critical
-        This function extracts required information from a receipt reliably and formats it 
-        for the submitReceipt method.
-        '''
-        if not applicableTaxes:
-            applicableTaxes = self.applicableTaxes
-        def receiptlinesfixer(receipt: dict) -> dict:
-            """
-            Fixes the receipt lines to conform with what the ZIMRA API accepts.
-            For exempt items (where tax_percent is provided as "E", "exempt", etc.),
-            the taxPercent field is omitted while still assigning the proper taxID.
-            """
-            def taxID(line):
-                # If the tax_percent indicates exemption
-                if isinstance(line['tax_percent'], str) and line['tax_percent'].lower() in ['e', 'exempt']:
-                    # Use applicableTaxes dict for exempt ID
-                    return self.applicableTaxes.get('exempt', 3)
-                # Otherwise, convert to float and assign tax IDs based on value.
-                tax_percent_val = float(line['tax_percent'])
-                if tax_percent_val == 0:
-                    return self.applicableTaxes.get(0, 2)
-                elif tax_percent_val == 5:
-                    return self.applicableTaxes.get(5, 514)
-                elif tax_percent_val == 15.5:
-                    # New 2026 standard rate
-                    return self.applicableTaxes.get(15.5, 515)
-                elif tax_percent_val == 15:
-                    # Legacy 15% - check if we have it, otherwise use 15.5%
-                    if 15 in self.applicableTaxes:
-                        return self.applicableTaxes.get(15, 3)
-                    else:
-                        # Fallback to 15.5% if 15% not available
-                        return self.applicableTaxes.get(15.5, 515)
-                else:
-                    raise ValueError(f"Invalid tax_percent value: {line['tax_percent']}")
-
-            receiptlines = receipt['receiptLines']
-            output_receipt_lines = []
-            
-            for i, line in enumerate(receiptlines):
-                # Determine if the line is exempt.
-                is_exempt = isinstance(line['tax_percent'], str) and line['tax_percent'].lower() in ['e', 'exempt']
-                fixed_line = {
-                    'receiptLineType': 'Sale',
-                    'receiptLineNo': i + 1,
-                    'receiptLineHSCode': line.get('hs_code', '04021099'),
-                    'receiptLineName': line['item_name'],
-                    'receiptLinePrice': line['unit_price'],
-                    'receiptLineQuantity': line['quantity'],
-                    'receiptLineTotal': float((Decimal(line['quantity']) * Decimal(line['unit_price'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)), #changed 
-                    'taxID': taxID(line)
-                }
-                if not is_exempt and line['tax_percent'] is not None:
-                    fixed_line['taxPercent'] = float(line['tax_percent'])
-
-                output_receipt_lines.append(fixed_line)
-                
-            receipt["receiptLines"] = output_receipt_lines
-            return receipt
-        def taxlines_fixer(receipt: OrderedDict) -> OrderedDict:
-            """
-            Inserts consolidated tax lines into the receipt after the receiptLines.
-            For receipt lines without a taxPercent field (exempt items), we treat the tax rate as 0.
-            In the resulting receiptTaxes, for exempt taxes (taxID == 1) the taxPercent key is omitted.
-            """
-            receipt_with_taxlines = OrderedDict()
-            for key, value in receipt.items():
-                receipt_with_taxlines[key] = value
-                if key == "receiptLines":
-                    tax_lines = defaultdict(lambda: {"taxAmount": 0, "salesAmountWithTax": 0})
-                    for item in receipt["receiptLines"]:
-                        # If taxPercent exists, use it; otherwise, it's exempt.
-                        if "taxPercent" in item:
-                            try:
-                                tax_percent = round(float(item["taxPercent"]), 2)
-                                grouping_key = (tax_percent, int(item["taxID"]))
-                            except ValueError:
-                                #tax is exempt and taxPercent should be removed
-                                grouping_key = ("exempt", int(item["taxID"]))
-                                tax_percent = 0  # For calculation purposes only.
-                        else:
-                            grouping_key = ("exempt", int(item["taxID"]))
-                            tax_percent = 0  # For calculation purposes only.
-                        tax_lines[grouping_key]["taxAmount"] += self.tax_calculator(
-                            item["receiptLineTotal"], tax_percent)
-                        tax_lines[grouping_key]["salesAmountWithTax"] += item["receiptLineTotal"]
-                        tax_lines[grouping_key]["taxID"] = int(item["taxID"])
-                        if "taxPercent" in item:
-                            tax_lines[grouping_key]["taxPercent"] = tax_percent
-                    receipt_with_taxlines["receiptTaxes"] = []
-                    for group_key, group_value in tax_lines.items():
-                        # group_key is either (numeric_tax, taxID) or ("exempt", taxID)
-                        tax_obj = {
-                            "taxID": group_value["taxID"],
-                            "taxAmount": self.tax_calculator(
-                                sale_amount=group_value["salesAmountWithTax"],
-                                tax_rate=0 if group_key[0] == "exempt" else group_key[0]
-                            ),
-                            "salesAmountWithTax": float(Decimal(group_value["salesAmountWithTax"]).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-                        }
-                        # Include taxPercent only if this is not an exempt grouping.
-                        if group_key[0] != "exempt":
-                            tax_obj["taxPercent"] = float("{:.2f}".format(group_key[0]))
-                        receipt_with_taxlines["receiptTaxes"].append(tax_obj)
-            return receipt_with_taxlines
-
-        def insert_receiptDeviceSignature(receiptData: OrderedDict, previous_hash=previousReceiptHash)-> OrderedDict:
-            """
-            this is the final nail in the coffin before sending receipt to zimra
-            """
- 
-            receiptTaxes = receiptData["receiptTaxes"]
-            logging.info(f"Library Info: Receipt Taxes: {receiptTaxes}")
-            concatenated_receipt_taxes = self.concatenate_receipt_taxes(receiptTaxes=receiptTaxes)  
-            if previous_hash:
-                string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}{previous_hash}"
-                logging.info(f"Library Info: string to sign: {string_to_sign}")
+            receipt = FiscalReceipt.objects.get(id=receipt_id)
+            if receipt.status == FiscalReceipt.STATUS_FAILED:
+                receipt.status = FiscalReceipt.STATUS_PENDING
+                receipt.retry_count = 0
+                receipt.last_error = ""
+                receipt.save()
+                self.add_to_sync_queue(receipt, priority=10)
+                print(f"  ✅ Receipt #{receipt_id} reset to PENDING and queued for retry")
+                return True
             else:
-                string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}"
-                logging.info(f"Library Info: string to sign: {string_to_sign}")
-                
-            hash_value = self.get_hash(string_to_sign)
-            signature = self.sign_data(string_to_sign)
-            receiptData["receiptDeviceSignature"] = {
-                "hash": hash_value,
-                "signature": signature
-            }
-            
-            return receiptData
-            
-        # Mandatory fields
-        mandatory_fields = [
-            "receiptType",        # "FISCALINVOICE" | "CREDITNOTE" | "DEBITNOTE"
-            "receiptCurrency",    # USD | ZWG
-            "receiptCounter",     # integer
-            "receiptGlobalNo",    # integer
-            "invoiceNo",          # unique string
-            "receiptDate",        # datetime (format as %Y-%m-%dT%H:%M:%S)
-            "receiptLines",       # items (list of sold items)
-            "receiptPayments",        # "CASH" | "CARD" and their totals (placed as objects)
-        ]
-
-        # Optional fields, can exist or not
-        optional_fields = [
-            "buyerData",          # Optional buyer info
-            "creditDebitNote",     # only mandatory credit/debit note
-            "receiptNotes"
-        ]
-
-        # Extracting mandatory fields, raising an error if missing
-        prepared_receipt = OrderedDict()
-        if receiptData['receiptType'].lower() in ['creditnote', 'debitnote']:
-            mandatory_fields.append('receiptNotes')
-            mandatory_fields.append('creditDebitNote')
-        
-        for field in mandatory_fields:
-            if field not in receiptData:
-                raise ValueError(f"Library Error: Missing mandatory field: {field}")
-            
-            prepared_receipt[field] = receiptData[field]
-
-        # Formatting receiptDate to the required format
-        if isinstance(prepared_receipt['receiptDate'], datetime):
-            prepared_receipt['receiptDate'] = prepared_receipt['receiptDate'].strftime('%Y-%m-%dT%H:%M:%S')
-        elif isinstance(prepared_receipt['receiptDate'], str):
-            # Check if the date is in the correct format
-            try:
-                # Parse and format back to ensure consistent output
-                prepared_receipt['receiptDate'] = datetime.strptime(prepared_receipt['receiptDate'], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-            except ValueError:
-                # Handle cases with milliseconds (e.g., "2024-11-06T15:47:14.495Z")
-                try:
-                    prepared_receipt['receiptDate'] = datetime.strptime(prepared_receipt['receiptDate'][:-5], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-                    logging.info(f"Library Info: Manually formatted date: {prepared_receipt['receiptDate']}")
-                except ValueError:
-                    raise ValueError("Library Error: Invalid receiptDate format. Must match 'YYYY-MM-DDTHH:MM:SS' or similar.")
-        else:
-            raise ValueError("Library Error: Invalid receiptDate format. Must be a string or datetime object.")
-
-        # Set receiptPrintForm from the function parameter
-        prepared_receipt['receiptPrintForm'] = receiptPrintForm
-
-        # Insert receiptLinesTaxInclusive right after receiptDate
-        prepared_receipt['receiptLinesTaxInclusive'] = True
-
-        # Compute the total
-        prepared_receipt['receiptTotal'] = sum((float((Decimal(line['quantity']) * Decimal(line['unit_price'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))) for line in receiptData['receiptLines'])
-            
-
-
-        # Extracting optional fields if present
-        for field in optional_fields:
-            if field in receiptData:
-                prepared_receipt[field] = receiptData[field]
-
-        # Reorder the dictionary to place receiptLinesTaxInclusive after receiptDate
-        
-        # THE MAGIC IS HAPPENING HERE
-        reordered_receipt = OrderedDict()
-        for key in list(prepared_receipt.keys()):
-            reordered_receipt[key] = prepared_receipt[key]
-            if key == "receiptDate":
-                reordered_receipt["receiptLinesTaxInclusive"] = True
-        reordered_receipt = receiptlinesfixer(reordered_receipt)
-        reordered_receipt = taxlines_fixer(receipt=reordered_receipt)
-        
-        
-        # check for floating point errors in receiptTotal and paymentAmount and round to 2 decimal places
-        #where is payment amount coming from?
-
-        reordered_receipt['receiptTotal'] = float(Decimal(reordered_receipt['receiptTotal']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-        reordered_receipt['receiptPayments'][0]['paymentAmount'] = float(Decimal(reordered_receipt['receiptPayments'][0]['paymentAmount']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-        if reordered_receipt['receiptTotal'] != reordered_receipt['receiptPayments'][0]['paymentAmount']:
-            logging.info(f"Library Error: calculated Receipt total ({reordered_receipt['receiptTotal']}) does not match provided payment amount ({reordered_receipt['receiptPayments'][0]['paymentAmount']}).\n fixing that though")
-            reordered_receipt['receiptTotal'] = float(Decimal(reordered_receipt['receiptTotal']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-            reordered_receipt['receiptPayments'][0]['paymentAmount'] = reordered_receipt['receiptTotal']
-            logging.info(f"Library Info:due to trust issues Receipt total fixed to {reordered_receipt['receiptTotal']} which was CALCULATED")
-        reordered_receipt = insert_receiptDeviceSignature(receiptData=reordered_receipt)
-        return reordered_receipt
-
-
-    def prepareReceiptTaxExclusive(
-        self, 
-        receiptData: dict, 
-        applicableTaxes: dict = None,
-        previousReceiptHash = None,
-        receiptPrintForm: str = "Receipt48") -> dict:
-        '''
-        Level: Critical
-        This function extracts required information from a receipt (with tax exclusive pricing)
-        and formats it for the submitReceipt method.
-        '''
-        if not applicableTaxes:
-            applicableTaxes = self.applicableTaxes
-
-        def receiptlinesfixer(receipt: dict) -> dict:
-            """
-            Fixes the receipt lines to conform with what the ZIMRA API accepts.
-            For exempt items (where tax_percent is provided as "E", "exempt", etc.),
-            the taxPercent field is omitted while still assigning the proper taxID.
-            """
-            def taxID(line):
-                # If the tax_percent indicates exemption
-                if isinstance(line['tax_percent'], str) and line['tax_percent'].lower() in ['e', 'exempt']:
-                    if self.test_mode:
-                        return 1
-                    else:
-                        return 3
-                # Otherwise, convert to float and assign tax IDs based on value.
-                tax_percent_val = float(line['tax_percent'])
-                if tax_percent_val == 0:
-                    return applicableTaxes.get(0, 2)
-                elif tax_percent_val == 5:
-                    return applicableTaxes.get(5, 514)
-                elif tax_percent_val == 15:
-                    # Legacy 15% - check if we have it, otherwise use 15.5%
-                    if 15 in self.applicableTaxes:
-                        return self.applicableTaxes.get(15, 3)
-                    else:
-                        # Fallback to 15.5% if 15% not available
-                        return self.applicableTaxes.get(15.5, 515)
-                elif tax_percent_val == 15.5:
-                    # New 2026 standard rate
-                    return applicableTaxes.get(15.5, 515)
-                else:
-                    raise ValueError(f"Invalid tax_percent value: {line['tax_percent']}")
-
-            receiptlines = receipt['receiptLines']
-            output_receipt_lines = []
-            
-            for i, line in enumerate(receiptlines):
-                # Determine if the line is exempt.
-                is_exempt = isinstance(line['tax_percent'], str) and line['tax_percent'].lower() in ['e', 'exempt']
-                # For tax exclusive, the receipt line total is the pre-tax total.
-                line_total = float((Decimal(str(line['quantity'])) * Decimal(str(line['unit_price']))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-                fixed_line = {
-                    'receiptLineType': 'Sale',
-                    'receiptLineNo': i + 1,
-                    'receiptLineHSCode': line.get('hs_code', '04021099'),
-                    'receiptLineName': line['item_name'],
-                    'receiptLinePrice': line['unit_price'],
-                    'receiptLineQuantity': line['quantity'],
-                    'receiptLineTotal': line_total,
-                    'taxID': taxID(line)
-                }
-                # Only add the taxPercent field if the item is not exempt AND tax_percent is not None.
-                if not is_exempt and line['tax_percent'] is not None:
-                    fixed_line['taxPercent'] = float(line['tax_percent'])
-                output_receipt_lines.append(fixed_line)
-                
-            receipt["receiptLines"] = output_receipt_lines
-            return receipt
-
-        def taxlines_fixer(receipt: OrderedDict) -> OrderedDict:
-            """
-            Inserts consolidated tax lines into the receipt after the receiptLines.
-            For receipt lines without a taxPercent field (exempt items), we treat the tax rate as 0.
-            In the resulting receiptTaxes, for exempt taxes (taxID == 1) the taxPercent key is omitted.
-            
-            FIX: Calculate VAT on the SUMMED TOTAL, not per-line, to avoid rounding errors.
-            Example: 4 items @ $0.87 = $3.48
-            - Per-line: $0.87 × 15.5% = $0.13 → 4 × $0.13 = $0.52 ❌
-            - On-total: $3.48 × 15.5% = $0.54 ✅
-            """
-            receipt_with_taxlines = OrderedDict()
-            for key, value in receipt.items():
-                receipt_with_taxlines[key] = value
-                if key == "receiptLines":
-                    # Initialize tax groups - only accumulate salesAmount, calculate tax later
-                    tax_lines = defaultdict(lambda: {"salesAmount": Decimal('0.00'), "taxID": None, "taxPercent": None})
-                    for item in receipt["receiptLines"]:
-                        # Use taxPercent if available; otherwise, treat as exempt.
-                        if "taxPercent" in item:
-                            try:
-                                tax_percent = round(float(item["taxPercent"]), 2)
-                                grouping_key = (tax_percent, int(item["taxID"]))
-                            except ValueError:
-                                grouping_key = ("exempt", int(item["taxID"]))
-                                tax_percent = 0  # For calculation purposes only.
-                        else:
-                            grouping_key = ("exempt", int(item["taxID"]))
-                            tax_percent = 0  # For calculation purposes only.
-
-                        # Accumulate the pre-tax line amount only (no per-line tax calculation)
-                        line_total = Decimal(str(item["receiptLineTotal"]))
-                        tax_lines[grouping_key]["salesAmount"] += line_total
-                        tax_lines[grouping_key]["taxID"] = int(item["taxID"])
-                        if "taxPercent" in item:
-                            tax_lines[grouping_key]["taxPercent"] = tax_percent
-
-                    receipt_with_taxlines["receiptTaxes"] = []
-                    for group_key, group_value in tax_lines.items():
-                        pre_tax_sales = group_value["salesAmount"]
-                        # FIX: Calculate VAT on the SUMMED TOTAL, not sum of per-line VAT
-                        effective_rate = 0 if group_key[0] == "exempt" else group_key[0]
-                        tax_amount = Decimal(str(self.tax_exclusive_calculator(
-                            sale_amount=float(pre_tax_sales),
-                            tax_rate=effective_rate
-                        )))
-                        # For tax exclusive receipts, sales amount with tax is the base plus its tax.
-                        sales_amount_with_tax = pre_tax_sales + tax_amount
-                        tax_obj = {
-                            "taxID": group_value["taxID"],
-                            "taxAmount": float(tax_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)),
-                            "salesAmountWithTax": float(sales_amount_with_tax.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-                        }
-                        # Include taxPercent only if this group is not an exempt grouping.
-                        if group_key[0] != "exempt":
-                            tax_obj["taxPercent"] = float("{:.2f}".format(group_key[0]))
-                        receipt_with_taxlines["receiptTaxes"].append(tax_obj)
-            return receipt_with_taxlines
-
-        def insert_receiptDeviceSignature(receiptData: OrderedDict, previous_hash=previousReceiptHash) -> OrderedDict:
-            """
-            Finalizes the receipt before sending it to ZIMRA by inserting the device signature.
-            """
-            receiptTaxes = receiptData["receiptTaxes"]
-            logging.info(f"Library Info: Receipt Taxes: {receiptTaxes}")
-            concatenated_receipt_taxes = self.concatenate_receipt_taxes(receiptTaxes=receiptTaxes)
-            if previous_hash:
-                string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}{previous_hash}"
-                logging.info(f"Library Info: string to sign: {string_to_sign}")
+                print(f"  ⚠️ Receipt #{receipt_id} status is {receipt.status}, cannot retry")
+                return False
+        except FiscalReceipt.DoesNotExist:
+            print(f"  ❌ Receipt #{receipt_id} not found")
+            return False
+    
+    def void_receipt(self, receipt_id: int) -> bool:
+        print(f"\n🗑️ Voiding receipt #{receipt_id}")
+        try:
+            receipt = FiscalReceipt.objects.get(id=receipt_id)
+            if receipt.status != FiscalReceipt.STATUS_SYNCED:
+                receipt.status = FiscalReceipt.STATUS_VOID
+                receipt.save()
+                print(f"  ✅ Receipt #{receipt_id} voided successfully")
+                return True
             else:
-                string_to_sign = f"{self.deviceID}{receiptData['receiptType'].upper()}{receiptData['receiptCurrency'].upper()}{receiptData['receiptGlobalNo']}{receiptData['receiptDate']}{int((Decimal(str(receiptData['receiptTotal'])) * Decimal('100')).quantize(Decimal('1')))}{concatenated_receipt_taxes}"
-                logging.info(f"Library Info: string to sign: {string_to_sign}")
-                
-            hash_value = self.get_hash(string_to_sign)
-            signature = self.sign_data(string_to_sign)
-            receiptData["receiptDeviceSignature"] = {
-                "hash": hash_value,
-                "signature": signature
-            }
-            return receiptData
-
-        # Mandatory fields
-        mandatory_fields = [
-            "receiptType",        # "FISCALINVOICE" | "CREDITNOTE" | "DEBITNOTE"
-            "receiptCurrency",    # e.g., USD | ZWG
-            "receiptCounter",     # integer
-            "receiptGlobalNo",    # integer
-            "invoiceNo",          # unique string
-            "receiptDate",        # datetime (formatted as %Y-%m-%dT%H:%M:%S)
-            "receiptLines",       # items (list of sold items)
-            "receiptPayments",    # e.g., "CASH" | "CARD" and their totals (as objects)
-        ]
-
-        # Optional fields
-        optional_fields = [
-            "buyerData",          # Optional buyer info
-            "creditDebitNote",    # Only mandatory for credit/debit notes
-            "receiptNotes"
-        ]
-
-        # For credit/debit notes, add extra mandatory fields.
-        prepared_receipt = OrderedDict()
-        if receiptData['receiptType'].lower() in ['creditnote', 'debitnote']:
-            mandatory_fields.append('receiptNotes')
-            mandatory_fields.append('creditDebitNote')
-
-        for field in mandatory_fields:
-            if field not in receiptData:
-                raise ValueError(f"Library Error: Missing mandatory field: {field}")
-            prepared_receipt[field] = receiptData[field]
-
-        # Formatting receiptDate to the required format.
-        if isinstance(prepared_receipt['receiptDate'], datetime):
-            prepared_receipt['receiptDate'] = prepared_receipt['receiptDate'].strftime('%Y-%m-%dT%H:%M:%S')
-        elif isinstance(prepared_receipt['receiptDate'], str):
-            try:
-                prepared_receipt['receiptDate'] = datetime.strptime(prepared_receipt['receiptDate'], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-            except ValueError:
-                try:
-                    prepared_receipt['receiptDate'] = datetime.strptime(prepared_receipt['receiptDate'][:-5], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-                    logging.info(f"Library Info: Manually formatted date: {prepared_receipt['receiptDate']}")
-                except ValueError:
-                    raise ValueError("Library Error: Invalid receiptDate format. Must match 'YYYY-MM-DDTHH:MM:SS' or similar.")
-        else:
-            raise ValueError("Library Error: Invalid receiptDate format. Must be a string or datetime object.")
-
-        # Set receiptPrintForm from the function parameter
-        prepared_receipt['receiptPrintForm'] = receiptPrintForm
-
-        # Mark receipt as tax exclusive.
-        prepared_receipt['receiptLinesTaxInclusive'] = False
-
-        # Compute the base total (pre-tax) for receipt lines.
-        base_total = sum(
-            float((Decimal(str(line['quantity'])) * Decimal(str(line['unit_price']))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-            for line in receiptData['receiptLines']
-        )
-        # Initially set receiptTotal to the base total.
-        prepared_receipt['receiptTotal'] = base_total
-
-        # Include optional fields if present.
-        for field in optional_fields:
-            if field in receiptData:
-                prepared_receipt[field] = receiptData[field]
-
-        # Reorder the dictionary to place receiptLinesTaxInclusive right after receiptDate.
-        reordered_receipt = OrderedDict()
-        for key in list(prepared_receipt.keys()):
-            reordered_receipt[key] = prepared_receipt[key]
-            if key == "receiptDate":
-                reordered_receipt["receiptLinesTaxInclusive"] = False
-
-        # Fix receipt lines.
-        reordered_receipt = receiptlinesfixer(reordered_receipt)
-        # Process tax lines using tax exclusive calculations.
-        reordered_receipt = taxlines_fixer(receipt=reordered_receipt)
-
-        # Now adjust the overall receipt total: add computed tax totals from receiptTaxes.
-        total_tax = sum(
-            Decimal(str(tax_line["taxAmount"]))
-            for tax_line in reordered_receipt.get("receiptTaxes", [])
-        )
-        receipt_total = Decimal(str(base_total)) + total_tax
-        reordered_receipt['receiptTotal'] = float(receipt_total.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-
-        # Also ensure payment amount is consistent.
-        payment_amount = Decimal(str(reordered_receipt['receiptPayments'][0]['paymentAmount']))
-        payment_amount = Decimal(str(reordered_receipt['receiptTotal']))
-        reordered_receipt['receiptPayments'][0]['paymentAmount'] = float(payment_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-
-        if reordered_receipt['receiptTotal'] != reordered_receipt['receiptPayments'][0]['paymentAmount']:
-            logging.info(f"Library Error: Calculated receipt total ({reordered_receipt['receiptTotal']}) does not match provided payment amount ({reordered_receipt['receiptPayments'][0]['paymentAmount']}). Adjusting accordingly.")
-            reordered_receipt['receiptTotal'] = float(receipt_total.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-            reordered_receipt['receiptPayments'][0]['paymentAmount'] = reordered_receipt['receiptTotal']
-            logging.info(f"Library Info: Receipt total fixed to {reordered_receipt['receiptTotal']} (calculated).")
-            
-        # Insert device signature.
-        reordered_receipt = insert_receiptDeviceSignature(receiptData=reordered_receipt)
-        return reordered_receipt
+                print(f"  ⚠️ Cannot void synced receipt #{receipt_id}")
+                return False
+        except FiscalReceipt.DoesNotExist:
+            print(f"  ❌ Receipt #{receipt_id} not found")
+            return False
 
 
 
 
-    def submitReceipt(self, receiptData:dict)->dict:
-        '''
-        Level: Critical
-        uses self.deviceID and receipt data to submit receipt
-        here is how it happens
-        the method takes in the receipt data computes the hash using required fields, signs the same fields using the device private key
-        after this (ideally it should check the signature before), it submits the receipt to the fdms server
-        '''
+    # Add this method to FiscalisationService class in fiscalisation/services.py
 
-        url = f'{self.deviceBaseUrl}/SubmitReceipt'
-        headers = {
-            'DeviceModelName': self.deviceModelName,
-            'DeviceModelVersion': self.deviceModelVersion,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-
-        fields = [
-            "receiptType", # string "FISCALINVOICE" | "CREDITNOTE" | "DEBITNOTE"
-            "receiptCurrency", # string USD|ZWG
-            "receiptCounter", # int
-            "receiptGlobalNo", # int
-            "invoiceNo", # unique string
-            "buyerData",
-            "receiptNotes",
-            "receiptDate", # datetime formatted by strftime('%Y-%m-%dT%H:%M:%S')
-            "creditDebitNote",
-            "receiptLinesTaxInclusive", # boolean
-            "receiptLines", # list of receiptlineType objects
-            "receiptTaxes", # list of tax objects
-            "receiptPayments", # list of payment objects
-            "receiptTotal", # float not in cents
-            "receiptPrintForm",
-            "receiptDeviceSignature" # string base64 encoded dictionary of hash and signature
-        ]
-
-        # Build the payload dynamically
-        payload = {
-            "Receipt": {key: receiptData[key] for key in fields if key in receiptData}
-        }
-        logging.info(f"==== RECEIPT SENT\n\n{(json.dumps(payload, indent=4))}")
-
-        
-        response = requests.post(
-            url,
-            cert=(self.certPath, self.keyPath),
-
-            timeout=ZIMRA_HTTP_TIMEOUT,
-
-            headers=headers,
-            
-            json=payload
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            # raise an Exception if the response is not 200
-            response_object = {response.status_code: response.text}
-            return response_object
-        
-
-        
-    def generate_qr_code(self, signature: str, receipt_global_no, receipt_date=datetime.now().date()):
+    def generate_receipt_signature(self, receipt: FiscalReceipt, previous_hash: str = None) -> Dict:
         """
-        Parameters:
-        signature(str): receipt signature
-        receipt_global_no(int): receipt global number
-        receipt_date = type(datetime.datetime.now().date())
+        Generate receipt signature according to ZIMRA spec Section 13.2.1
+        This is the same logic that was in device.prepareReceipt()
         """
-        import base64
         import hashlib
+        import base64
+        import os
+        
+        # ============================================================
+        # Step 1: Build the string to sign (per spec Section 13.2.1)
+        # Order: deviceID + receiptType + receiptCurrency + receiptGlobalNo + 
+        #        receiptDate + receiptTotal(in cents) + receiptTaxes + previousHash
+        # ============================================================
+        
+        # 1. deviceID
+        string_to_sign = str(self.settings.device_id)
+        
+        # 2. receiptType (UPPER CASE)
+        string_to_sign += receipt.receipt_type.upper()
+        
+        # 3. receiptCurrency (UPPER CASE)
+        string_to_sign += receipt.currency.upper()
+        
+        # 4. receiptGlobalNo
+        string_to_sign += str(receipt.fiscal_receipt_global_no)
+        
+        # 5. receiptDate (YYYY-MM-DDTHH:MM:SS)
+        receipt_date_str = f"{receipt.transaction_date.strftime('%Y-%m-%d')}T{receipt.transaction_time}"
+        string_to_sign += receipt_date_str
+        
+        # 6. receiptTotal IN CENTS (multiply by 100)
+        receipt_total_cents = int(abs(receipt.total_amount) * 100)  # Use absolute value for signature
+        string_to_sign += str(receipt_total_cents)
+        
+        # 7. receiptTaxes - concatenated: taxCode || taxPercent || taxAmount || salesAmountWithTax
+        # All amounts in cents
+        tax_items = []
+        for tax_percent_str, tax_group in receipt.tax_breakdown.get('tax_groups', {}).items():
+            tax_code = tax_group.get('tax_code', '')
+            tax_percent = tax_percent_str
+            tax_amount_cents = int(abs(tax_group.get('tax_amount', 0)) * 100)  # Use absolute value
+            sales_amount_cents = int(abs(tax_group.get('sales_total', 0)) * 100)  # Use absolute value
+            tax_items.append(f"{tax_code}{tax_percent}{tax_amount_cents}{sales_amount_cents}")
+        
+        # Sort taxes (required by spec)
+        tax_items.sort()
+        string_to_sign += ''.join(tax_items)
+        
+        # 8. previousReceiptHash (if exists)
+        if previous_hash:
+            string_to_sign += previous_hash
+        
+        print(f"String to sign: {string_to_sign}")
+        
+        # ============================================================
+        # Step 2: Generate SHA256 hash
+        # ============================================================
+        hash_bytes = hashlib.sha256(string_to_sign.encode()).digest()
+        hash_b64 = base64.b64encode(hash_bytes).decode()
+        
+        # ============================================================
+        # Step 3: Try to sign with private key if available
+        # ============================================================
+        signature_b64 = hash_b64  # Default to hash if no key
+        
+        try:
+            from fiscalisation.models import FiscalDevice
+            device = FiscalDevice.objects.filter(is_active=True).first()
+            if device and device.private_key_path:
+                from Crypto.Signature import pkcs1_15
+                from Crypto.PublicKey import RSA
+                from Crypto.Hash import SHA256
+                
+                if os.path.exists(device.private_key_path):
+                    with open(device.private_key_path, 'rb') as key_file:
+                        private_key = RSA.import_key(key_file.read())
+                    
+                    # Sign the string
+                    h = SHA256.new(string_to_sign.encode())
+                    signature = pkcs1_15.new(private_key).sign(h)
+                    signature_b64 = base64.b64encode(signature).decode()
+                    print("Signed with private key successfully")
+        except Exception as e:
+            print(f"Could not sign with private key: {e}, using hash as signature")
+        
+        return {
+            "hash": hash_b64,
+            "signature": signature_b64
+        }
 
 
-        def get_first16chars_of_signature(signature: str)->str:
-            """
-            Returns first 16 chars of the md5 hash of the signature by first converts from base64 to hex, then from hex to md5
-
-            Parameters: 
-            signature(str): receipt signature
-
-            Returns:
-            str: first 16 chars of the md5 hash of the signature
-            """
+    def generate_qr_code_from_signature(self, receipt: FiscalReceipt, signature_b64: str) -> str:
+        """
+        Generate QR code from signature - same as device.generate_qr_code()
+        According to ZIMRA spec Section 11
+        """
+        import hashlib
+        import base64
+        
+        def get_first16chars_of_signature(signature: str) -> str:
             if not isinstance(signature, str) or not signature:
-                raise ValueError("Input must be a non-empty string.")
-
+                raise ValueError("Signature must be a non-empty string.")
+            
             try:
-                # Decode Base64 string to bytes
                 byte_array = base64.b64decode(signature)
             except (ValueError, base64.binascii.Error) as e:
                 raise ValueError("Invalid Base64 string.") from e
-
-            # Convert bytes to a hexadecimal string
-            hex_str = byte_array.hex()
-
-            # Compute MD5 hash of the hexadecimal string
-            md5_hash = hashlib.md5(bytes.fromhex(hex_str)).hexdigest()
-
-            # Return the first 16 characters of the MD5 hash
-            return md5_hash[:16]
-
-        def generate_qr_code_string(device_id, receipt_date, receipt_global_no, receipt_device_signature, qr_url):
-            device_id = str(self.deviceID).zfill(10)
-            receipt_date = receipt_date.strftime('%d%m%Y')
-            receipt_global_no = str(receipt_global_no).zfill(10)
-            md5_hash = receipt_device_signature
-            qr_value = f"{qr_url}{device_id}{receipt_date}{receipt_global_no}{md5_hash}"
-            return qr_value
-
-        receipt_device_signature = get_first16chars_of_signature(signature) # signature fetched from dynamic source
-
-        qr_code_value = generate_qr_code_string(
-            device_id=self.deviceID, 
-            receipt_date=receipt_date, 
-            receipt_global_no=receipt_global_no, 
-            receipt_device_signature=receipt_device_signature, 
-            qr_url=self.qrUrl
-        )
-
-        return qr_code_value
-
-    def closeDay(self, fiscalDayNo: int, fiscalDayDate, lastReceiptCounterValue: int, fiscalDayCounters: list):
-        '''
-        #string_to_sign = f'{device_id}{fiscal_day_no}{fiscal_day_date}{fiscalCounterType|fiscalCounterCurrency|fiscalCounterTaxID}'
-        example, to close an empty day (day 17)for device 10626 on 2024-09-02:
-            string_to_implement = '10626172024-09-02'
-            hash = get_hash(string_to_implement)
-            signature = sign_data(data=hash, private_key_pem=private_key_pem)
-        '''
-        if lastReceiptCounterValue==None or fiscalDayCounters==None or fiscalDayCounters==[]:
-            lastReceiptCounterValue = 0
-            string_to_implement = f'{self.deviceID}{fiscalDayNo}{fiscalDayDate}'
-        
-        def generate_string(device_id, fiscal_day_no, fiscal_day_date, fiscal_day_counters):
-            # Mapping for fiscalCounterMoneyType
-            money_type_mapping = {
-                0: "CASH",
-                1: "CARD"
-            }
-            # Sort the fiscalDayCounters as per the rules
-            sorted_counters = sorted(
-                fiscal_day_counters,
-                key=lambda x: (
-                    # Priority based on fiscal counter type
-                    1 if x['fiscalCounterType'] == 'SaleByTax' else
-                    2 if x['fiscalCounterType'] == 'SaleTaxByTax' else
-                    3 if x['fiscalCounterType'] == 'CreditNoteByTax' else
-                    4 if x['fiscalCounterType'] == 'CreditNoteTaxByTax' else
-                    5 if x['fiscalCounterType'] == 'DebitNoteByTax' else
-                    6 if x['fiscalCounterType'] == 'DebitNoteTaxByTax' else
-                    7 if x['fiscalCounterType'] == 'BalanceByMoneyType' else 99,
-                    # Sort alphabetically by fiscal counter currency
-                    x['fiscalCounterCurrency'],
-                    # Sort by fiscal counter tax ID (if present) or fiscal counter money type
-                    x.get('fiscalCounterTaxID', ''),
-                    x.get('fiscalCounterMoneyType', '')
-                )
-            )
-            # Concatenate the sorted fiscalDayCounters
-            concatenated_counters = ''.join(
-                f"{counter['fiscalCounterType'].upper()}"
-                f"{counter['fiscalCounterCurrency'].upper()}"
-                f"{str(Decimal(counter['fiscalCounterTaxPercent']).quantize(Decimal('0.00'), rounding=ROUND_UP)) if counter.get('fiscalCounterTaxPercent') is not None else ''}"
-                f"{money_type_mapping.get(counter.get('fiscalCounterMoneyType'), '')}"  # Map money type to string
-                f"{int((Decimal(counter['fiscalCounterValue']) * Decimal('100')).quantize(Decimal('1'), rounding=None))}"
-                for counter in sorted_counters
-                if Decimal(counter['fiscalCounterValue']) != Decimal('0')
-            )
-            # Final string
-            logging.info(f"Concatenated Counters===================: {concatenated_counters}")
-            string_to_implement = f"{device_id}{fiscal_day_no}{fiscal_day_date}{concatenated_counters}"
-            return string_to_implement
-
-        def get_hash(request):
-            hash_object = hashlib.sha256(request.encode('utf-8'))
-            return base64.b64encode(hash_object.digest()).decode('utf-8')
-
-        def sign_data(data, private_key_pem):
-            if data is None:
-                data = ""
-            key = RSA.import_key(private_key_pem)
-            h = SHA256.new(data.encode('utf-8'))
-            signature = pkcs1_15.new(key).sign(h)
-            return base64.b64encode(signature).decode('utf-8')
-        
-        
-        fiscalDayCounters = convert_objectid_to_str(fiscalDayCounters)
-        if fiscalDayCounters!=[]:
-            string_to_implement = generate_string(self.deviceID, fiscalDayNo, fiscalDayDate, fiscalDayCounters)
-        else:
-            string_to_implement = f'{self.deviceID}{fiscalDayNo}{fiscalDayDate}'
-        
-        logging.info(f"STRING TO IMPLEMENT CLOSE DAY:------:{string_to_implement}")
-        hash_value = get_hash(string_to_implement)
-        with open(self.keyPath, 'rb') as key_file:
-            private_key_pem = key_file.read()
-        fDSSignature = sign_data(string_to_implement, private_key_pem)
-        
-        url = f'{self.deviceBaseUrl}/CloseDay'
-        headers = {
-            'accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-        if hasattr(self, 'deviceModelName'):
-            headers['DeviceModelName'] = self.deviceModelName
-        
-        if hasattr(self, 'deviceModelVersion'):
-            headers['DeviceModelVersion'] = self.deviceModelVersion
-
-        
-
-        payload = {
-            "deviceID": self.deviceID,
-            "fiscalDayNo": fiscalDayNo,
-            "fiscalDayCounters": fiscalDayCounters,
-            "fiscalDayDeviceSignature": {
-                "hash": hash_value,
-                "signature": fDSSignature
-            },
-            "receiptCounter": lastReceiptCounterValue
-        }
-
-        logging.info(f"CLOSE DAY Payload===================: {payload}")
-
-        
-
-        try:
-            response = requests.post(
-                url, 
-                headers=headers,
-
-                cert=(self.certPath, self.keyPath),
-
-                timeout=ZIMRA_HTTP_TIMEOUT,
-
-                json=payload
-            )
-            logging.info(f"Response from Zimra======: {response.json()}")
-            response.raise_for_status() 
-            data = response.json()
-            logging.info(string_to_implement)
-            return data
             
-
-        except requests.exceptions.RequestException as e:
-            return f"HTTP request failed: {e}"
-        except ValueError:
-            return f"Invalid JSON response"
+            hex_str = byte_array.hex()
+            md5_hash = hashlib.md5(bytes.fromhex(hex_str)).hexdigest().upper()
+            return md5_hash[:16]
         
-    
+        # Get qrUrl from settings
+        qr_url = self.settings.qr_url.rstrip('/') + '/'
+        
+        # Format components
+        device_id_str = str(self.settings.device_id).zfill(10)
+        receipt_date_str = receipt.transaction_date.strftime('%d%m%Y')
+        receipt_global_no_str = str(receipt.fiscal_receipt_global_no).zfill(10)
+        qr_data = get_first16chars_of_signature(signature_b64)
+        
+        # Build QR code
+        qr_code = f"{qr_url}{device_id_str}{receipt_date_str}{receipt_global_no_str}{qr_data}"
+        
+        return qr_code
