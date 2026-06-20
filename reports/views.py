@@ -1744,3 +1744,44 @@ def db_fix(request):
 			new_batch.save()
 			print(f"{counter} new_batch saved")	
 	return JsonResponse({"response":"Done"})
+
+
+
+
+
+
+
+
+
+def quick_print_test(request):
+    """Simplest working version"""
+    import win32ui
+    from PIL import Image, ImageWin
+    
+    printer_name = "POS-90"
+    
+    hDC = win32ui.CreateDC()
+    hDC.CreatePrinterDC(printer_name)
+    
+    hDC.StartDoc("Test")
+    hDC.StartPage()
+    
+    # Print text
+    font = win32ui.CreateFont({"name": "Arial", "height": 200})
+    hDC.SelectObject(font)
+    hDC.TextOut(100, 100, "Hello World")
+    hDC.TextOut(100, 300, "Line 2")
+    hDC.TextOut(100, 500, "Line 3")
+    
+    # Print image
+    img = Image.open("logo.png")
+    dib = ImageWin.Dib(img)
+    PHYSICALWIDTH = 110
+    printer_width = hDC.GetDeviceCaps(PHYSICALWIDTH)
+    dib.draw(hDC.GetHandleOutput(), (100, 700, printer_width - 100, 1000))
+    
+    hDC.EndPage()
+    hDC.EndDoc()
+    hDC.DeleteDC()
+    
+    return JsonResponse({"response": "Job sent"})

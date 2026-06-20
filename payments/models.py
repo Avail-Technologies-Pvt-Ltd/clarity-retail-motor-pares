@@ -126,7 +126,16 @@ class SaleTransaction(models.Model):
 	deleted = models.BooleanField(default=False)
 	open_state = models.BooleanField(default=True)
 
+	def dominant_payment_method(self):
+		payment_methods = Payment.objects.filter(payment_for="RECEIPT", payment_for_id=self.recipt_number)
+		if payment_methods:
+			return payment_methods.first().payment_method
+		else:
+			return PaymentMethod.objects.filter(shortcut="USD").first()
 
+		 
+
+	dominant_payment_method = property(dominant_payment_method)
 
 	def ultimate_recipt_number(self):
 		try:
@@ -157,7 +166,7 @@ class SaleTransaction(models.Model):
 			profit += float(sale.profit)
 			total_returned += sale.total_returned
 
-		total_cost += subtotal + VAT
+		total_cost += subtotal # + VAT
 
 		paid_value = 0
 		change_left = 0

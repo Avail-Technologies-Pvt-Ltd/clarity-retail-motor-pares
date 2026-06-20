@@ -46,7 +46,9 @@ urlpatterns = [
     path('sync_current_stock_data', views.sync_current_stock_data, name='sync_current_stock_data'),
     path('sync_data_for_day_end', views.sync_data_for_day_end, name='sync_data_for_day_end'),    
     path('sync_data_for_month_end', views.sync_data_for_month_end, name='sync_data_for_month_end'),    
-    path('sync_data_for_year_end', views.sync_data_for_year_end, name='sync_data_for_year_end'),  
+    path('sync_data_for_year_end', views.sync_data_for_year_end, name='sync_data_for_year_end'),
 
 
+
+    path('quick_print_test', views.quick_print_test, name='quick_print_test'),
 ]

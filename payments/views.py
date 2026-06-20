@@ -9,9 +9,12 @@ from rest_framework import status
 
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
+from reusable_functions.univesal.fiscalisation import get_fiscal_details
+
 from pos.models import *
 from enventory.models import *
 from accounts.models import *
+from fiscalisation.models import *
 from .models import *
 
 from datetime import datetime as datetime_
@@ -245,11 +248,12 @@ def get_expense_type_details(request):
     #     return JsonResponse({'custome_status': "Error", 'message': f"{ e }"})
 
 
-
 def reprint_receipt(request):
     receipt_number = request.GET.get('receipt_number')
-    qr_code = ""
-    print_receipt(receipt_number, "(REPRINT COPY)", qr_code)
+    fiscal_details = get_fiscal_details(receipt_number)
+    
+    print_receipt(receipt_number, " ", fiscal_details)
+    print_receipt(receipt_number, "(COPY)", fiscal_details)
 
     return JsonResponse({"message": "Print job successfully!"})
 

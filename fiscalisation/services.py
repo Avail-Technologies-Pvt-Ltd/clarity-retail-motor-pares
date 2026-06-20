@@ -205,116 +205,7 @@ class FiscalisationService:
                           for k, v in tax_groups.items()}
         }
     
-    # def prepare_binary_payload_old(self, receipt: FiscalReceipt) -> Dict:
-    #     """Prepare payload matching Binary Software API exactly"""
-        
-    #     print(f"\n{'='*80}")
-    #     print(f"📝 PREPARING PAYLOAD FOR RECEIPT #{receipt.id}")
-    #     print(f"{'='*80}")
-    #     print(f"  Internal Invoice #: {receipt.internal_invoice_number}")
-    #     print(f"  Total Amount: {receipt.total_amount}")
-    #     print(f"  Payment Method: {receipt.payment_method}")
-    #     print(f"  Payment Amount: {receipt.payment_amount}")
-        
-    #     # Calculate tax totals
-    #     tax_15_sales_total = Decimal('0')
-    #     tax_15_amount = Decimal('0')
-    #     zero_perc_sales_total = Decimal('0')
-    #     zero_perc_tax_amt = Decimal('0')
-        
-    #     for tax_percent_str, group in receipt.tax_breakdown.get('tax_groups', {}).items():
-    #         tax_percent = float(tax_percent_str)
-    #         sales_total = Decimal(str(group.get('sales_total', 0)))
-    #         tax_amount = Decimal(str(group.get('tax_amount', 0)))
-            
-    #         if abs(tax_percent - 15.5) < 0.01:
-    #             tax_15_sales_total += sales_total
-    #             tax_15_amount += tax_amount
-    #         elif tax_percent == 0:
-    #             zero_perc_sales_total += sales_total
-    #             zero_perc_tax_amt += tax_amount
-        
-    #     # ReceiptDetail - ARRAY of objects
-    #     receipt_details = []
-    #     for idx, item in enumerate(receipt.line_items):
-    #         detail = {
-    #             "LineDescription": item.get('description', ''),
-    #             "UnitPrice": f"{Decimal(str(item.get('unit_price', 0))):.2f}",
-    #             "Quantity": f"{Decimal(str(item.get('quantity', 0))):.2f}",
-    #             "Total": f"{Decimal(str(item.get('total', 0))):.2f}",
-    #             "IntTaxCode": item.get('int_tax_code', 3),
-    #             "StrTaxCode": item.get('str_tax_code', 'C'),
-    #             "TaxPercentage": f"{Decimal(str(item.get('tax_percentage', 0))):.2f}",
-    #             "receiptLineHSCode": item.get('hs_code', '95069100')
-    #         }
-    #         receipt_details.append(detail)
-        
-    #     # TheHeader - ARRAY with correct field names
-    #     header = [{
-    #         "DocType": receipt.receipt_type,
-    #         "DeviceId": self.settings.device_id,
-    #         "InvNumber": str(receipt.internal_invoice_id),
-    #         "DocCurrency": receipt.currency,
-    #         "myYYY_MM_DDdate": receipt.transaction_date.strftime('%Y-%m-%d'),
-    #         "My24hrTimeformatwithSeconds": receipt.transaction_time,
-    #         "DocumentTotal": f"{receipt.total_amount:.2f}",
-    #         "nontaxible_salesAmtTotal": "0.00",
-    #         "ZeroPer_Taxamt": f"{zero_perc_tax_amt:.2f}",
-    #         "ZeroPerc_SalesAmtTotal": f"{zero_perc_sales_total:.2f}",
-    #         "TaxAmt15Perc": f"{tax_15_amount:.2f}",
-    #         "Tax15Perc_SalesTotal": f"{tax_15_sales_total:.2f}",
-    #         "InvoicenumbertoCredit_debit": "0",
-    #         "machinecode": self.settings.machine_code,
-    #         "ThePassword": self.settings.api_password,
-    #     }]
-        
-    #     # Add buyer info if present
-    #     if receipt.buyer_name:
-    #         header[0]["buyerRegisterName"] = receipt.buyer_name[:200]
-    #         header[0]["buyerTIN"] = receipt.buyer_tin[:50] if receipt.buyer_tin else ""
-    #         if receipt.buyer_vat:
-    #             header[0]["VATNumber"] = receipt.buyer_vat[:50]
-    #         if receipt.buyer_address:
-    #             header[0]["province"] = "Harare"
-    #             header[0]["city"] = "Harare"
-    #             header[0]["street"] = receipt.buyer_address[:100]
-    #             header[0]["houseno"] = "1"
-    #         if receipt.buyer_phone:
-    #             header[0]["phoneNo"] = receipt.buyer_phone[:20]
-    #         if receipt.buyer_email:
-    #             header[0]["email"] = receipt.buyer_email[:100]
-        
-    #     # For credit notes
-    #     if receipt.receipt_type == FiscalReceipt.TYPE_CREDIT_NOTE and receipt.original_invoice_number:
-    #         header[0]["InvoicenumbertoCredit_debit"] = receipt.original_invoice_number
-        
-    #     # paymentline - ARRAY of objects
-    #     if receipt.payments and len(receipt.payments) > 0:
-    #         payment_line = []
-    #         for p in receipt.payments:
-    #             payment_line.append({
-    #                 "PaymentMethodName": p.get('method', 'CASH').upper(),
-    #                 "PaymentAmt": f"{Decimal(str(p.get('amount', 0))):.2f}"
-    #             })
-    #     else:
-    #         payment_line = [{
-    #             "PaymentMethodName": receipt.payment_method.upper(),
-    #             "PaymentAmt": f"{receipt.payment_amount:.2f}"
-    #         }]
-        
-    #     # Complete payload
-    #     payload = {
-    #         "id": 0,
-    #         "ThePassword": None,
-    #         "Role": None,
-    #         "paymentline": payment_line,
-    #         "ReceiptDetail": receipt_details,
-    #         "TheHeader": header
-    #     }
-        
-    #     return payload
-
-    # fiscalisation/services.py - Update prepare_binary_payload
+    
 
     def prepare_binary_payload(self, receipt: FiscalReceipt) -> Dict:
         """Prepare payload matching Binary Software API exactly"""
@@ -340,17 +231,22 @@ class FiscalisationService:
         # ReceiptDetail - ARRAY of objects
         receipt_details = []
         for item in receipt.line_items:
+            # Get tax values from item
+            int_tax_code = item.get('int_tax_code', 2)
+            str_tax_code = item.get('str_tax_code', 'B')
+            tax_percentage = item.get('tax_percentage', 0)
+            
             receipt_details.append({
                 "LineDescription": item.get('description', ''),
                 "UnitPrice": f"{Decimal(str(item.get('unit_price', 0))):.2f}",
                 "Quantity": f"{Decimal(str(item.get('quantity', 0))):.2f}",
                 "Total": f"{Decimal(str(item.get('total', 0))):.2f}",
-                "IntTaxCode": item.get('int_tax_code', 2),
-                "StrTaxCode": item.get('str_tax_code', 'B'),
-                "TaxPercentage": f"{Decimal(str(item.get('tax_percentage', 0))):.2f}",
+                "IntTaxCode": str(int_tax_code),  # ← FORCE TO INTEGER
+                "StrTaxCode": str(str_tax_code),  # Keep as string
+                "TaxPercentage": f"{Decimal(str(tax_percentage)):.2f}",
                 "receiptLineHSCode": item.get('hs_code', '95069100')
             })
-        
+
         # ============================================================
         # TheHeader - with InvoicenumbertoCredit_debit for credit notes
         # ============================================================

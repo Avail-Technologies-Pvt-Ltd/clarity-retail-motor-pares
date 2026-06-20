@@ -83,6 +83,80 @@ class Stock(models.Model):
 	updated_at = models.DateTimeField(auto_now=True)
 	deleted = models.BooleanField(default=False)
 
+	
+	@property
+	def vat_rate(self):
+		"""Get VAT rate from product's VAT code"""
+		if self.product and self.product.vat_code:
+			return self.product.vat_code.percentage
+		return 0
+	
+	@property
+	def vat_rate_decimal(self):
+		return self.vat_rate / 100
+	
+	@property
+	def tax_exclusive_price(self):
+		"""Price excluding VAT"""
+		if self.vat_rate == 0:
+			return self.selling_price
+		return self.selling_price / (1 + self.vat_rate_decimal)
+	
+	@property
+	def tax_inclusive_price(self):
+		"""Price including VAT (the selling price)"""
+		return self.selling_price
+	
+	@property
+	def vat_amount(self):
+		"""VAT amount in the selling price"""
+		return self.selling_price - self.tax_exclusive_price
+	
+	@property
+	def cost_price_excl_vat(self):
+		"""
+		Calculate cost price excluding VAT based on markup
+		Useful for margin calculations
+		"""
+		if self.markup:
+			return self.tax_exclusive_price / (1 + self.markup / 100)
+		return 0
+	
+	@property
+	def profit_margin(self):
+		"""
+		Calculate profit margin percentage
+		(Selling excl VAT - Cost) / Selling excl VAT * 100
+		"""
+		cost = self.cost_price_excl_vat
+		selling_excl = self.tax_exclusive_price
+		if cost > 0:
+			return ((selling_excl - cost) / selling_excl) * 100
+		return 0
+	
+	@property
+	def profit_amount(self):
+		"""Absolute profit amount per unit"""
+		return self.tax_exclusive_price - self.cost_price_excl_vat
+	
+	def get_price_for_display(self, include_vat=True):
+		"""Get price formatted for display"""
+		if include_vat:
+			return self.tax_inclusive_price
+		return self.tax_exclusive_price
+	
+	def get_vat_info(self):
+		"""Get complete VAT information for this stock item"""
+		return {
+			'vat_rate': self.vat_rate,
+			'vat_rate_decimal': self.vat_rate_decimal,
+			'price_incl_vat': self.tax_inclusive_price,
+			'price_excl_vat': self.tax_exclusive_price,
+			'vat_amount': self.vat_amount,
+			'vat_code': self.product.vat_code.code if self.product.vat_code else None
+		}
+
+
 	def avarage_unit_cost(self):
 		batchies = Batch.objects.filter(stock=self.id)
 		combined_unit_price = 0
@@ -651,7 +725,7 @@ class CreditNote(models.Model):
 
 	def ultimate_credit_note_number(self):
 		try:
-		    configuration = ClientSetting.objects.filter(deleted=False, status=True)[0]
+			configuration = ClientSetting.objects.filter(deleted=False, status=True)[0]
 		except Exception as e:
 			HttpResponseRedirect('client_settings_page')
 			

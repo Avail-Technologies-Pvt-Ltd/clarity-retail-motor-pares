@@ -1181,7 +1181,7 @@ def get_stock_details(request):
 
 
 
-# pos/views.py - Completely rewritten return_inn_sale_bulk
+# pos/views.py - Complete return_inn_sale_bulk (FIXED - fiscalise returns if original was fiscalised)
 
 import logging
 import json
@@ -1220,21 +1220,24 @@ def return_inn_sale_bulk(request):
         original_sale = SaleTransaction.objects.get(recipt_number=int(receipt_number))
         
         # ============================================================
-        # STEP 3: Get the corresponding FISCAL receipt for the original sale
+        # STEP 3: Check if the original sale was FISCALISED
         # ============================================================
         original_fiscal_receipt = FiscalReceipt.objects.filter(
             internal_invoice_number=str(receipt_number),
             receipt_type='FISCALINVOICE'
         ).first()
         
+        # Determine if we need to fiscalise this return
+        # Rule: If original sale was fiscalised, we MUST fiscalise the return
+        # regardless of whether fiscalisation is currently paused or active
+        should_fiscalise_return = original_fiscal_receipt is not None
+        
         fiscal_settings = FiscalisationSettings.get_settings()
         
-        if not original_fiscal_receipt and fiscal_settings.is_fiscalisation_active():
-            return JsonResponse({
-                "custome_status": "Error",
-                "message": "Original sale has no fiscal receipt. Cannot create fiscal credit note."
-            })
-
+        # If original was fiscalised but we can't find the receipt, warn but continue
+        if not original_fiscal_receipt:
+            print(f"WARNING: Original sale {receipt_number} was not fiscalised. Return will NOT be fiscalised.")
+        
         # ============================================================
         # STEP 4: Create Credit Note record
         # ============================================================
@@ -1260,7 +1263,7 @@ def return_inn_sale_bulk(request):
             refund_payment.payment_method = payment_method
             refund_payment.date = datetime.today()
             refund_payment.rate = payment_method.rate
-            refund_payment.amount_paid = amount_paid
+            refund_payment.amount_paid = refund_amount
             refund_payment.created_by = request.user
             refund_payment.save()
 
@@ -1271,6 +1274,7 @@ def return_inn_sale_bulk(request):
         credit_note_lines = []
         total_credit_excl_vat = Decimal('0')
         total_credit_vat = Decimal('0')
+        total_credit_incl_vat = Decimal('0')
         
         for sale_data in tableData:
             no_items_selected = False
@@ -1336,9 +1340,8 @@ def return_inn_sale_bulk(request):
                 sale.save()
             
             # ============================================================
-            # CRITICAL: Calculate tax exclusive price correctly
+            # Calculate prices INCLUDING VAT (matching check_out)
             # ============================================================
-            # sale.unit_price is the selling price INCLUDING VAT
             price_incl_vat = float(sale.unit_price)
             quantity = float(return_quantity)
             
@@ -1350,33 +1353,34 @@ def return_inn_sale_bulk(request):
                 if vat_percentage == 15:
                     vat_percentage = 15.5
             
-            # Calculate price EXCLUDING VAT
-            # Formula: price_excl = price_incl / (1 + vat_percentage/100)
+            # Calculate price EXCLUDING VAT (for internal tax calculation only)
             if vat_percentage > 0:
                 price_excl_vat = price_incl_vat / (1 + (vat_percentage / 100))
             else:
                 price_excl_vat = price_incl_vat
             
-            # Round to 2 decimal places for currency
             price_excl_vat = round(price_excl_vat, 2)
             
-            # Line total EXCLUDING VAT (this must equal quantity × price_excl_vat)
+            # Line totals
+            line_total_incl_vat = round(price_incl_vat * quantity, 2)
             line_total_excl_vat = round(price_excl_vat * quantity, 2)
-            
-            # Calculate VAT amount for this line
             vat_amount = round((price_incl_vat - price_excl_vat) * quantity, 2)
             
             # Accumulate totals
             total_credit_excl_vat += Decimal(str(line_total_excl_vat))
             total_credit_vat += Decimal(str(vat_amount))
+            total_credit_incl_vat += Decimal(str(line_total_incl_vat))
             
             # Determine tax codes for Binary API
             if vat_percentage == 15.5:
-                int_tax_code = 4
-                str_tax_code = "D"
+                int_tax_code = 517
+                str_tax_code = "C"
             elif vat_percentage == 5:
                 int_tax_code = 1
                 str_tax_code = "A"
+            elif vat_percentage == 0:
+                int_tax_code = 2
+                str_tax_code = "B"
             else:
                 int_tax_code = 2
                 str_tax_code = "B"
@@ -1387,36 +1391,26 @@ def return_inn_sale_bulk(request):
             if not hs_code:
                 hs_code = getattr(sale.stock.product, 'hs_code', '95069100')
             
-            # Debug output
-            print(f"\n=== Product: {sale.stock.product.title} ===")
-            print(f"  Price incl VAT: {price_incl_vat}")
-            print(f"  VAT%: {vat_percentage}")
-            print(f"  Price excl VAT: {price_excl_vat}")
-            print(f"  Quantity: {quantity}")
-            print(f"  Line Total excl VAT: {line_total_excl_vat}")
-            print(f"  VAT Amount: {vat_amount}")
-            print(f"  Line Total incl VAT: {line_total_excl_vat + vat_amount}")
-            
             # Add to credit note lines (NEGATIVE for credit note)
             credit_note_lines.append({
                 "description": sale.stock.product.title,
-                "unit_price": -price_excl_vat,
+                "unit_price": -price_incl_vat,
                 "quantity": quantity,
-                "total": -line_total_excl_vat,  # Must equal quantity × price_excl_vat
+                "total": -line_total_incl_vat,
                 "tax_percentage": vat_percentage,
                 "int_tax_code": int_tax_code,
                 "str_tax_code": str_tax_code,
                 "hs_code": hs_code,
             })
             
-            # Create ReturnInn record for your system
+            # Create ReturnInn record
             new_return_inn = ReturnInn()
             new_return_inn.credit_note = credit_note
             new_return_inn.sale = sale
             new_return_inn.stock = sale.stock
             new_return_inn.refund_amount = 0
             new_return_inn.total_units = return_quantity
-            new_return_inn.sale_value = line_total_excl_vat + vat_amount  # Total including VAT
+            new_return_inn.sale_value = line_total_incl_vat
             new_return_inn.created_by = request.user
             new_return_inn.save()
         
@@ -1427,12 +1421,14 @@ def return_inn_sale_bulk(request):
             })
         
         # ============================================================
-        # STEP 7: Create FISCAL CREDIT NOTE
+        # STEP 7: Create FISCAL CREDIT NOTE (ONLY if original was fiscalised)
         # ============================================================
         qr_url = ""
         fiscal_credit_note = None
         
-        if fiscal_settings.is_fiscalisation_active() and original_fiscal_receipt:
+        if should_fiscalise_return and original_fiscal_receipt:
+            print(f"Original sale {receipt_number} was fiscalised. Creating fiscal credit note...")
+            
             fiscal_service = FiscalisationService()
             
             # Prepare buyer info from original sale
@@ -1451,19 +1447,18 @@ def return_inn_sale_bulk(request):
             payment_method_name = payment_method.zimra_money_type_text.upper() if hasattr(payment_method, 'zimra_money_type_text') else "CASH"
             
             # Total including VAT (for refund amount)
-            total_with_vat = float(total_credit_excl_vat) + float(total_credit_vat)
+            total_with_vat = float(total_credit_incl_vat)
             
             print(f"\n=== Credit Note Summary ===")
-            print(f"  Total Excl VAT: {total_credit_excl_vat}")
-            print(f"  Total VAT: {total_credit_vat}")
             print(f"  Total Incl VAT: {total_with_vat}")
+            print(f"  Total VAT: {total_credit_vat}")
             print(f"  Amount Paid: {amount_paid}")
             
             # Create fiscal credit note
             fiscal_credit_note = fiscal_service.create_fiscal_receipt(
                 internal_invoice_id=credit_note.id,
                 internal_invoice_number=str(credit_note.sale_transaction.recipt_number),
-                total_amount=Decimal(str(-total_with_vat)),  # Negative total
+                total_amount=Decimal(str(-total_with_vat)),
                 payment_method=payment_method_name,
                 payment_amount=Decimal(str(-abs(float(amount_paid)))),
                 payments=[{
@@ -1507,20 +1502,26 @@ def return_inn_sale_bulk(request):
                     logger.error(f"Credit note sync failed: {e}")
             
             threading.Thread(target=sync_credit_note).start()
+            
+            print(f"✅ Fiscal credit note created for return of fiscalised sale {receipt_number}")
+            
+        else:
+            print(f"Original sale {receipt_number} was NOT fiscalised. Skipping fiscal credit note.")
         
         # ============================================================
         # STEP 8: Print credit note
         # ============================================================
-        fiscal_device_id = fiscal_settings.device_id
+        fiscal_device_id = fiscal_settings.device_id if should_fiscalise_return else None
         custome_status, message = print_out_credit_note_bulk(receipt_number, credit_note.id, " ", qr_url, fiscal_device_id)
-        # print_out_credit_note_bulk(receipt_number, credit_note.id, "COPY", qr_url, fiscal_device_id)
+        print_out_credit_note_bulk(receipt_number, credit_note.id, "COPY", qr_url, fiscal_device_id)
         
         return JsonResponse({
             "custome_status": "", 
             "message": f"Product(s) returned in stock successfully!<br>{message}",
             "return_inn_id": str(credit_note.id),
             "qr_code": qr_url,
-            "fiscal_credit_note_id": fiscal_credit_note.id if fiscal_credit_note else None
+            "fiscal_credit_note_id": fiscal_credit_note.id if fiscal_credit_note else None,
+            "was_fiscalised": should_fiscalise_return,
         })
         
     except Exception as e:
@@ -1529,9 +1530,6 @@ def return_inn_sale_bulk(request):
             "custome_status": "Error", 
             "message": str(e)
         })
-
-
-
 
 
 

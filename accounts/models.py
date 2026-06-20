@@ -131,8 +131,8 @@ class ClientSetting(models.Model):
 
 	company_registration = models.CharField(max_length=30)
 	email = models.TextField(max_length=255, blank=True, null=True)
-	# logo = models.ImageField(blank=True, upload_to='images/ClientSettings')
-	thank_you_message = models.TextField(max_length=1000, blank=True, null=True)
+	logo = models.ImageField(blank=True, upload_to='static/images/company')
+	thank_you_message = models.TextField(max_length=46, blank=True, null=True)
 	status = models.BooleanField(default=True)
 	online_update_minute_intervals = models.DecimalField(max_digits=10,decimal_places=0, default=5)
 	expiration_warning = models.DecimalField(max_digits=10,decimal_places=0)

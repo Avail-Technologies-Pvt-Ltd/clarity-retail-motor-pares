@@ -11,6 +11,7 @@ class FiscalisationSettings(models.Model):
     paused_at = models.DateTimeField(null=True, blank=True)
     paused_by = models.CharField(max_length=100, blank=True)
     pause_reason = models.TextField(blank=True)
+    allowed_currences = models.CharField(max_length=200, default="USD, ZWG")
     
     # Binary API Settings
     api_base_url = models.CharField(max_length=200, default="https://Zimratest.samcima.com/api/Zimra")
@@ -66,6 +67,7 @@ class FiscalReceiptSequence(models.Model):
     fiscal_receipt_number = models.IntegerField(default=0)
     fiscal_receipt_global_no = models.IntegerField(default=0)
     last_fiscal_day = models.DateField(null=True, blank=True)
+
     
     class Meta:
         verbose_name = "Fiscal Receipt Sequence"

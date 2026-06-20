@@ -87,6 +87,7 @@ def center_and_wrap(text, width=44):
     centeres_lines = [line.center(width) for line in wrapped_text]
     return centeres_lines
 
+
 def print_logo(printer_name):
     PHYSICALWIDTH = 30
     PHYSICALHEIGHT = 30
@@ -110,116 +111,57 @@ def print_logo(printer_name):
     hDC.DeleteDC ()
 
 
-# def print_logo(printer_name):
-#     """Print logo using win32ui"""
-#     import win32ui
-#     from PIL import Image, ImageWin
-    
-#     PHYSICALWIDTH = 30
-#     PHYSICALHEIGHT = 35
-    
-#     file_name = "logo.png"#configuration.logo
-    
-#     hDC = win32ui.CreateDC()
-#     hDC.CreatePrinterDC(printer_name)
-#     printer_size = hDC.GetDeviceCaps(PHYSICALWIDTH), hDC.GetDeviceCaps(PHYSICALHEIGHT)
-    
-#     bmp = Image.open(file_name)
-    
-#     hDC.StartDoc(file_name)
-#     hDC.StartPage()
-    
-#     dib = ImageWin.Dib(bmp)
-#     dib.draw(hDC.GetHandleOutput(), (80, 0, printer_size[0] + 200, printer_size[1] + 0))
-    
-#     hDC.EndPage()
-#     hDC.EndDoc()
-#     hDC.DeleteDC()
 
 
 def print_qrcode(printer_name, qr_string):
-    """Print QR code using win32ui"""
-    import win32ui
-    from PIL import Image, ImageWin
-    import qrcode
-    from io import BytesIO
-    
     PHYSICALWIDTH = 30
-    PHYSICALHEIGHT = 35
+    PHYSICALHEIGHT = 30
     
-    # Create QR code
-    qr = qrcode.QRCode(version=None, box_size=8, border=2)
+    # Create QR code from string
+    qr = qrcode.QRCode(
+        version=None,  # Auto-size
+        box_size=10,
+        border=2
+    )
     qr.add_data(qr_string)
     qr.make(fit=True)
+    
+    # Convert QR to image
     qr_img = qr.make_image(fill_color="black", back_color="white")
     
-    # Save to memory
-    img_buffer = BytesIO()
-    qr_img.save(img_buffer, format='PNG')
-    img_buffer.seek(0)
+    # Save temporarily or use directly in memory
+    temp_file = "temp_qr.png"
+    qr_img.save(temp_file)
     
+    # Print the QR code
     hDC = win32ui.CreateDC()
     hDC.CreatePrinterDC(printer_name)
     printer_size = hDC.GetDeviceCaps(PHYSICALWIDTH), hDC.GetDeviceCaps(PHYSICALHEIGHT)
     
-    bmp = Image.open(img_buffer)
+    bmp = Image.open(temp_file)
     
     hDC.StartDoc("QR Code")
     hDC.StartPage()
     
     dib = ImageWin.Dib(bmp)
+    # Adjust position and size as needed
     dib.draw(hDC.GetHandleOutput(), (80, 0, printer_size[0] + 200, printer_size[1] + 0))
     
     hDC.EndPage()
     hDC.EndDoc()
     hDC.DeleteDC()
 
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PR")
+    
+    # Clean up temp file (optional)
+    import os
+    os.remove(temp_file)
 
 # Usage example:
 # print_qrcode("Your_Printer_Name", "https://www.example.com")
 
 
 
-def print_logo_on_page(hDC, printer_name, logo_field):
-    """Print logo at top of page"""
-    from PIL import Image, ImageWin
-    
-    PHYSICALWIDTH = 110
-    printer_width = hDC.GetDeviceCaps(PHYSICALWIDTH)
-    
-    bmp = Image.open(logo_field.path)
-    dib = ImageWin.Dib(bmp)
-    
-    # Print at top with small margin
-    dib.draw(hDC.GetHandleOutput(), (80, 50, printer_width - 80, 350))
-
-    return "done"
-
-
-def print_qr_on_page(hDC, printer_name, qr_string):
-    """Print QR code at top of page"""
-    from PIL import Image, ImageWin
-    import qrcode
-    from io import BytesIO
-    
-    PHYSICALWIDTH = 110
-    printer_width = hDC.GetDeviceCaps(PHYSICALWIDTH)
-    
-    # Generate QR
-    qr = qrcode.QRCode(version=None, box_size=10, border=2)
-    qr.add_data(qr_string)
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="black", back_color="white")
-    
-    img_buffer = BytesIO()
-    qr_img.save(img_buffer, format='PNG')
-    img_buffer.seek(0)
-    
-    bmp = Image.open(img_buffer)
-    dib = ImageWin.Dib(bmp)
-    
-    # Print at top with small margin
-    dib.draw(hDC.GetHandleOutput(), (80, 50, printer_width - 80, 300))
 
 
 
@@ -983,451 +925,7 @@ ZiG   : 09026668530014
         return title, type, message
 
 
-def print_receipt_(sale_transaction_id, receipt_purpose, fiscal_details):
-    # fiscal_details structure:
-    # {
-    #     "is_fiscalised": True,
-    #     "url": "",
-    #     "fiscal_day": "",
-    #     "global_count": "",
-    #     "fiscal_count": "",
-    #     "validation_code": ""
-    # }
-
-    try:
-        printer_name = PrinterCase.objects.filter(status=True).first().printer_name
-    except Exception as e:
-        return JsonResponse({"title": "Error", "type": "error", "text": f"{e}"})
-
-    logo = configuration.logo
-
-    try:
-        sale_transaction = SaleTransaction.objects.get(recipt_number=int(sale_transaction_id))
-    except Exception as e:
-        print(e)
-        return JsonResponse({"custome_status": "Error", "message": f"{e}"})
-
-    subtotal = 0
-    VAT = 0
-    total_cost = 0
-    discount = sale_transaction.discount
-
-    payment_portions = Payment.objects.filter(payment_for="RECEIPT", payment_for_id=int(sale_transaction.recipt_number))
-    dominant_money_portion = payment_portions.first()
-    dominant_money_portion_rate = dominant_money_portion.rate
-    dominant_money_portion_shortcut = dominant_money_portion.payment_method.shortcut
-
-    payment_details = f"{'Method':<15}{'Currency':<15}{'Amount':>15}\n"
-    payment_details += "----------------------------------------------\n"
-
-    for payment_portion in payment_portions:
-        payment_details += (
-            f"{payment_portion.payment_method.zimra_money_type_text:<15}"
-            f"{payment_portion.payment_method.shortcut:<15}"
-            f"{str(payment_portion.amount_paid):>15}\n"
-        )
-
-    products_data = ""
-    sales = Sale.objects.filter(sale_transaction=int(sale_transaction.recipt_number))
-    for sale in sales:
-        subtotal += sale.quantity * sale.unit_price
-        VAT += (sale.stock.product.vat_code.percentage/100) * (sale.quantity * sale.unit_price)
-
-        title_and_quantity = f"{sale.quantity} x ({str(sale.stock.product.product_code)}) {str(sale.stock.product.title)} "
-        products_data += f"{title_and_quantity[:33]:<33}  {round(sale.selling_price * dominant_money_portion_rate,2) :>10}\n"
-
-    total_cost = (VAT + subtotal) - discount
-    
-    if receipt_purpose != " ":
-        before_logo = f'''----------------------------------------------
-            FISCAL TAX INVOICE
-----------------------------------------------
-{' '.join(center_and_wrap(receipt_purpose))}
-
-'''
-    else:
-        before_logo = f'''----------------------------------------------
-            FISCAL TAX INVOICE
-----------------------------------------------
-
-'''
-
-    recipt_text = f'''{' '.join(center_and_wrap(configuration.company_name))}\n
-
-{custome_wraper(configuration.address)}
-{custome_wraper(configuration.tel)}
-Local Invoice
-Email    :{configuration.email}
-----------------------------------------------
-VAT      :{configuration.vat_number}
-TIN      :{configuration.tin_number}
-PRZ      :{configuration.prz_number}
-INVOICE #:{sale_transaction.ultimate_recipt_number}
-----------------------------------------------
-                    BUYER
-Buyer Name   :{sale_transaction.buyer_name}
-Buyer TIN    :{sale_transaction.buyer_tin}
-Buyer VAT    :{sale_transaction.buyer_vat}
-Buyer Address:{custome_wraper(sale_transaction.buyer_address)}
-----------------------------------------------
-Date     : {str(sale_transaction.created_at)[:16]}
-Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.created_by.last_name.title()}
-----------------------------------------------
-{'Qty   Description':<34}{'Total Price':>10}
-
-{products_data}
-----------------------------------------------\n
-{dominant_money_portion_shortcut} transaction.
-{'Subtotal':<10}{round(subtotal * dominant_money_portion_rate, 2):>10}
-{'Discount':<10}{round(discount * dominant_money_portion_rate, 2):>10}
-{'VAT     ':<10}{round(VAT * dominant_money_portion_rate, 2):>10}\n
-----------------------------------------------
-{'Total   ':<10}{round(total_cost * dominant_money_portion_rate, 2):>10}
-``````````````````````````````````````````````\n
-
-----------------------------------------------
-                  PAYMENT
-{ payment_details}
-----------------------------------------------
-     
-{' '.join(center_and_wrap(configuration.thank_you_message))}  
-    
-                FISCAL DETAILS
-----------------------------------------------
-'''
-
-    fiscal_text = """        NETWORK ERROR WITH FISCAL DATA
-^^^ The invoice will be checked and submitted
-    """
-    
-    if fiscal_details['is_fiscalised'] == True:
-        fiscal_text = f"""
-Fiscal Day      : {fiscal_details['fiscal_day']}
-Global Count    : {fiscal_details['global_count']}
-Fiscal Count    : {fiscal_details['fiscal_count']}
-Validation Code : {fiscal_details['validation_code']}
-        """
-
-    print(before_logo)
-    print(recipt_text)
-    print(fiscal_text)
-
-    try:
-        printer_name = PrinterCase.objects.filter(status=True)[0].printer_name
-        
-        import win32print
-        import win32ui
-        from PIL import Image, ImageWin
-        import qrcode
-        from io import BytesIO
-        
-        hPrinter = win32print.OpenPrinter(printer_name)
-        
-        # Get raw type
-        drivers = win32print.EnumPrinterDrivers(None, None, 2)
-        printer_info = win32print.GetPrinter(hPrinter, 2)
-        raw_type = "RAW"
-        for driver in drivers:
-            if driver["Name"] == printer_info["pDriverName"]:
-                raw_type = "XPS_PASS" if driver["Version"] == 4 else "RAW"
-                break
-        
-        # ============================================================
-        # DOCUMENT 1: Text BEFORE Logo
-        # ============================================================
-        win32print.StartDocPrinter(hPrinter, 1, ("BEFORE LOGO", None, raw_type))
-        win32print.StartPagePrinter(hPrinter)
-        if before_logo:
-            win32print.WritePrinter(hPrinter, bytes(before_logo, "utf-8"))
-        win32print.EndPagePrinter(hPrinter)
-        win32print.EndDocPrinter(hPrinter)
-        
-        # ============================================================
-        # DOCUMENT 2: Logo
-        # ============================================================
-        print_logo(printer_name)
-        
-        # ============================================================
-        # DOCUMENT 3: Receipt Body
-        # ============================================================
-        if recipt_text:
-            win32print.StartDocPrinter(hPrinter, 1, ("RECEIPT BODY", None, raw_type))
-            win32print.StartPagePrinter(hPrinter)
-            win32print.WritePrinter(hPrinter, bytes(recipt_text, "utf-8"))
-            win32print.EndPagePrinter(hPrinter)
-            win32print.EndDocPrinter(hPrinter)
-        
-        # ============================================================
-        # DOCUMENT 4: QR Code + Fiscal Text (combined in same document)
-        # ============================================================
-        if fiscal_details.get('is_fiscalised') == True:
-            qr_code = fiscal_details.get('url', '')
-            print_qrcode(printer_name, qr_code)
-            
-            # if fiscal_text:
-            #     win32print.WritePrinter(hPrinter, bytes(fiscal_text, "utf-8"))
-            #     win32print.EndPagePrinter(hPrinter)
-            #     win32print.EndDocPrinter(hPrinter)
-        
-            
-        # -----------------------------------------------------------------------------
-        # -----CUT
-        # -----------------------------------------------------------------------------
-        hJob = win32print.StartDocPrinter(hPrinter, 1, ("test of raw data", None, raw_type))
-        try:
-            win32print.WritePrinter(hPrinter, c_shap_cut_command)
-
-        except Exception as e:
-            
-            #message.warning(request, f"Error! {e}")
-            print(f"Error! {e}")
-            message = f"Error printing! {e}"
-            custome_status = "Error"
-            return custome_status, message
-
-        finally:
-            win32print.EndDocPrinter(hPrinter)
-        
-    except Exception as e:
-        print(f"Error: {e}")
-        try:
-            win32print.ClosePrinter(hPrinter)
-        except:
-            pass
-        return "Error", str(e)
-    
-    
-def print_receipt(sale_transaction_id, receipt_purpose, fiscal_details):
-    try:
-        sale_transaction = SaleTransaction.objects.get(recipt_number=int(sale_transaction_id))
-    except Exception as e:
-        print(e)
-        custome_status = "Error"
-        message = f"{e}"
-        return custome_status, message
-
-    subtotal = 0
-    VAT = 0
-    total_cost = 0
-    discount = sale_transaction.discount
-
-    dominant_money_portion = Payment.objects.filter(payment_for="RECEIPT", payment_for_id=int(sale_transaction.recipt_number)).first()
-    if not dominant_money_portion:
-        custome_status = "Error"
-        message = "No payment found for this transaction"
-        return custome_status, message
-        
-    dominant_money_portion_rate = dominant_money_portion.rate
-    dominant_money_portion_shortcut = dominant_money_portion.payment_method.shortcut
-
-    # Build products data
-    products_data = ""
-    sales = Sale.objects.filter(sale_transaction=int(sale_transaction.recipt_number))
-    for sale in sales:
-        subtotal += sale.quantity * sale.unit_price
-        VAT += (sale.stock.product.vat_code.percentage/100) * (sale.quantity * sale.unit_price)
-
-        title_and_quantity = f"{sale.quantity} x ({str(sale.stock.product.product_code)}) {str(sale.stock.product.title)} "
-        products_data += f"{title_and_quantity[:33]:<33}  {round(sale.selling_price * dominant_money_portion_rate,2) :>10}\n"
-
-    total_cost = (VAT + subtotal) - discount
-    
-    # Build before_logo
-    if receipt_purpose != " ":
-        before_logo = f'''----------------------------------------------
-                 FISCAL TAX INVOICE
-----------------------------------------------
-{' '.join(center_and_wrap(receipt_purpose))}
-
-'''
-    else:
-        before_logo = f'''----------------------------------------------
-                 FISCAL TAX INVOICE
-----------------------------------------------
-
-'''
-
-    # Build receipt body
-    recipt_text = f'''{' '.join(center_and_wrap(configuration.company_name))}\n
-
-{custome_wraper(configuration.address)}
-{custome_wraper(configuration.tel)}
-Email    :{configuration.email}
-----------------------------------------------
-VAT      :{configuration.vat_number}
-TIN      :{configuration.tin_number}
-PRZ      :{configuration.prz_number}
-INVOICE #:{sale_transaction.ultimate_recipt_number}
-----------------------------------------------
-                    BUYER
-Buyer Name   :{sale_transaction.buyer_name}
-Buyer TIN    :{sale_transaction.buyer_tin}
-Buyer VAT    :{sale_transaction.buyer_vat}
-Buyer Address:{custome_wraper(sale_transaction.buyer_address)}
-----------------------------------------------
-Date     : {str(sale_transaction.created_at)[:16]}
-Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.created_by.last_name.title()}
-----------------------------------------------
-{'Qty   Description':<34}{'Total Price':>10}
-
-{products_data}
-----------------------------------------------\n
-{dominant_money_portion_shortcut} transaction.
-{'Subtotal':<10}{round(subtotal * dominant_money_portion_rate, 2):>10}
-{'Discount':<10}{round(discount * dominant_money_portion_rate, 2):>10}
-{'VAT     ':<10}{round(VAT * dominant_money_portion_rate, 2):>10}\n
-----------------------------------------------
-{'Total   ':<10}{round(total_cost * dominant_money_portion_rate, 2):>10}
-``````````````````````````````````````````````\n
-     
-{' '.join(center_and_wrap("YOUR CAR KNOWS THE BEST"))}  
-    '''
-
-    # Build fiscal text
-    if fiscal_details and fiscal_details.get('is_fiscalised') == True:
-        fiscal_text = f"""
-Fiscal Day      : {fiscal_details.get('fiscal_day', '')}
-Global Count    : {fiscal_details.get('global_count', '')}
-Fiscal Count    : {fiscal_details.get('fiscal_count', '')}
-Validation Code : {fiscal_details.get('validation_code', '')}
-        """
-    else:
-        fiscal_text = ""
-        f = """        NETWORK ERROR WITH FISCAL DATA
-^^^ The invoice will be checked and submitted
-        """
-
-    print(before_logo)
-    print(recipt_text)
-    print(fiscal_text)
-
-    try:
-        printer_name = PrinterCase.objects.filter(status=True)[0].printer_name
-        recipt_text = recipt_text + (8 * '\n')
-        
-        c_shap_cut_command = b"\x1B@\x1DV1"
-        
-        raw_data = bytes(recipt_text, "utf-8")
-        before_logo_bytes = bytes(before_logo, "utf-8")
-        fiscal_text_bytes = bytes(fiscal_text, "utf-8")
-        
-        # Get QR code if fiscalised
-        qr_code = fiscal_details.get('url', '') if fiscal_details and fiscal_details.get('is_fiscalised') == True else ""
-
-        # Create printer handle
-        import win32print
-        drivers = win32print.EnumPrinterDrivers(None, None, 2)
-        hPrinter = win32print.OpenPrinter(printer_name)
-        printer_info = win32print.GetPrinter(hPrinter, 2)
-        
-        printer_driver = None
-        for driver in drivers:
-            if driver["Name"] == printer_info["pDriverName"]:
-                printer_driver = driver
-                break
-
-        raw_type = "XPS_PASS" if printer_driver and printer_driver["Version"] == 4 else "RAW"
-
-        try:
-            # -----------------------------------------------------------------------------
-            # -----PRINT TEXT BEFORE LOGO
-            # -----------------------------------------------------------------------------
-            hJob = win32print.StartDocPrinter(hPrinter, 1, ("BEFORE LOGO", None, raw_type))
-            try:
-                win32print.StartPagePrinter(hPrinter)
-                win32print.WritePrinter(hPrinter, before_logo_bytes)
-                win32print.EndPagePrinter(hPrinter)
-            except Exception as e:
-                print(f"Error printing before logo: {e}")
-                message = f"Error printing! {e}"
-                custome_status = "Error"
-                return custome_status, message
-            finally:
-                win32print.EndDocPrinter(hPrinter)
-
-            # -----------------------------------------------------------------------------
-            # -----PRINT LOGO
-            # -----------------------------------------------------------------------------
-            try:
-                print_logo(printer_name)
-            except Exception as e:
-                print(f"Logo printing error: {e}")
-
-            # -----------------------------------------------------------------------------
-            # -----PRINT BODY
-            # -----------------------------------------------------------------------------
-            hJob = win32print.StartDocPrinter(hPrinter, 1, ("RECEIPT BODY", None, raw_type))
-            try:
-                win32print.WritePrinter(hPrinter, raw_data)
-                win32print.EndPagePrinter(hPrinter)
-            except Exception as e:
-                print(f"Error printing body: {e}")
-                message = f"Error printing! {e}"
-                custome_status = "Error"
-                return custome_status, message
-            finally:
-                win32print.EndDocPrinter(hPrinter)
-
-            # -----------------------------------------------------------------------------
-            # -----PRINT FISCAL TEXT
-            # -----------------------------------------------------------------------------
-            if fiscal_text_bytes:
-                hJob = win32print.StartDocPrinter(hPrinter, 1, ("FISCAL TEXT", None, raw_type))
-                try:
-                    win32print.WritePrinter(hPrinter, fiscal_text_bytes)
-                    win32print.EndPagePrinter(hPrinter)
-                except Exception as e:
-                    print(f"Error printing fiscal text: {e}")
-                    message = f"Error printing! {e}"
-                    custome_status = "Error"
-                    return custome_status, message
-                finally:
-                    win32print.EndDocPrinter(hPrinter)
-
-            # -----------------------------------------------------------------------------
-            # -----PRINT QR CODE (if fiscalised)
-            # -----------------------------------------------------------------------------
-            if qr_code:
-                try:
-                    print_qrcode(printer_name, qr_code)
-                except Exception as e:
-                    print(f"QR code printing error: {e}")
-
-            # -----------------------------------------------------------------------------
-            # -----CUT PAPER
-            # -----------------------------------------------------------------------------
-            hJob = win32print.StartDocPrinter(hPrinter, 1, ("CUT", None, raw_type))
-            try:
-                win32print.WritePrinter(hPrinter, c_shap_cut_command)
-                win32print.EndPagePrinter(hPrinter)
-            except Exception as e:
-                print(f"Error cutting paper: {e}")
-                message = f"Error printing! {e}"
-                custome_status = "Error"
-                return custome_status, message
-            finally:
-                win32print.EndDocPrinter(hPrinter)
-
-        except Exception as e:
-            print(f"Error! {e}")
-            message = f"Error! {e}"
-            custome_status = "Error"
-            return custome_status, message
-        finally:
-            win32print.ClosePrinter(hPrinter)
-
-        print('Printer job sent')
-        custome_status = ""
-        message = "Printer job sent"
-        return custome_status, message
-
-    except Exception as e:
-        print(f"Error printing! {e}")
-        custome_status = "Error"
-        message = f"Error printing! {e}"
-        return custome_status, message
-
-def print_receipt_(sale_transaction_id, receipt_purpose, fiscal_details):
+def print_receipt(sale_transaction_id, receipt_purpose, qr_code, fiscal_device_id):
     try:
         sale_transaction = SaleTransaction.objects.get(recipt_number=int(sale_transaction_id))
     except Exception as e:
@@ -1475,12 +973,14 @@ def print_receipt_(sale_transaction_id, receipt_purpose, fiscal_details):
 
 {custome_wraper(configuration.address)}
 {custome_wraper(configuration.tel)}
+Local Invoice
 Email    :{configuration.email}
 ----------------------------------------------
 VAT      :{configuration.vat_number}
 TIN      :{configuration.tin_number}
 PRZ      :{configuration.prz_number}
 INVOICE #:{sale_transaction.ultimate_recipt_number}
+DEVICE   :{fiscal_device_id}
 ----------------------------------------------
                     BUYER
 Buyer Name   :{sale_transaction.buyer_name}
@@ -1505,21 +1005,9 @@ Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.cr
      
 {' '.join(center_and_wrap("YOUR CAR KNOWS THE BEST"))}  
     '''
-    fiscal_text = """        NETWORK ERROR WITH FISCAL DATA
-^^^ The invoice will be checked and submitted
-    """
-    
-    if fiscal_details['is_fiscalised'] == True:
-        fiscal_text = f"""
-Fiscal Day      : {fiscal_details['fiscal_day']}
-Global Count    : {fiscal_details['global_count']}
-Fiscal Count    : {fiscal_details['fiscal_count']}
-Validation Code : {fiscal_details['validation_code']}
-        """
 
     print(before_logo)
     print(recipt_text)
-    print(fiscal_text)
     
     try:
         printer_name = PrinterCase.objects.filter(status=True)[0].printer_name #printers.recipt
@@ -1529,7 +1017,6 @@ Validation Code : {fiscal_details['validation_code']}
         
         raw_data = bytes(recipt_text , "utf-8")
         before_logo = bytes(before_logo, "utf-8")
-        fiscal_text = bytes(fiscal_text, "utf-8")
 
         # create printer handle 
         import win32print
@@ -1589,22 +1076,9 @@ Validation Code : {fiscal_details['validation_code']}
             # -----------------------------------------------------------------------------
             # -----PRINT QR CODE
             # -----------------------------------------------------------------------------
-            if fiscal_details.get('is_fiscalised') == True:
-                qr_code = fiscal_details.get('url', '')
+            if qr_code:
                 print_qrcode(printer_name, qr_code)
             
-            if fiscal_text:
-                win32print.StartPagePrinter(hPrinter)
-                try:
-                    win32print.WritePrinter(hPrinter, fiscal_text)
-                    
-                except Exception as e:
-                    message = f"Error printing! {e}"
-                    custome_status = "Error"
-                    return custome_status, message
-                finally:
-                    win32print.EndDocPrinter(hPrinter)
-                
             # -----------------------------------------------------------------------------
             # -----CUT
             # -----------------------------------------------------------------------------
