@@ -3,6 +3,7 @@ import json
 import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -15,7 +16,8 @@ from .services import FiscalisationService, BinaryAPIClient
 logger = logging.getLogger(__name__)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def dashboard(request):
     service = FiscalisationService()
     
@@ -34,7 +36,8 @@ def dashboard(request):
     return render(request, 'fiscalisation/dashboard.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def settings(request):
     if request.method == 'POST':
         settings_obj = FiscalisationSettings.get_settings()
@@ -65,7 +68,8 @@ def settings(request):
     return render(request, 'fiscalisation/settings.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def receipt_list(request):
     receipts_list = FiscalReceipt.objects.all().order_by('-created_at')
     
@@ -90,35 +94,40 @@ def receipt_list(request):
     return render(request, 'fiscalisation/receipt_list.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def pending_receipts(request):
     receipts = FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_PENDING).order_by('created_at')
     context = {'active_tab': 'receipts', 'receipts': receipts, 'title': 'Pending Sync'}
     return render(request, 'fiscalisation/receipt_list.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def failed_receipts(request):
     receipts = FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_FAILED).order_by('-created_at')
     context = {'active_tab': 'receipts', 'receipts': receipts, 'title': 'Failed Receipts'}
     return render(request, 'fiscalisation/receipt_list.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def bypassed_receipts(request):
     receipts = FiscalReceipt.objects.filter(status=FiscalReceipt.STATUS_BYPASSED).order_by('-created_at')
     context = {'active_tab': 'receipts', 'receipts': receipts, 'title': 'Bypassed Receipts'}
     return render(request, 'fiscalisation/receipt_list.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def sync_queue(request):
     queue_items = SyncQueue.objects.select_related('fiscal_receipt').all().order_by('-priority', 'scheduled_for')
     context = {'active_tab': 'queue', 'queue_items': queue_items}
     return render(request, 'fiscalisation/sync_queue.html', context)
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def sync_logs(request):
     logs = SyncLog.objects.all().order_by('-attempt_time')[:100]
     context = {'active_tab': 'logs', 'logs': logs}
@@ -126,8 +135,7 @@ def sync_logs(request):
 
 
 # API endpoints
-@csrf_exempt
-@staff_member_required
+@login_required
 def pause_fiscalisation(request):
     if request.method == 'POST':
         service = FiscalisationService()
@@ -136,8 +144,7 @@ def pause_fiscalisation(request):
         return JsonResponse({'success': True})
 
 
-@csrf_exempt
-@staff_member_required
+@login_required
 def resume_fiscalisation(request):
     if request.method == 'POST':
         service = FiscalisationService()
@@ -145,8 +152,7 @@ def resume_fiscalisation(request):
         return JsonResponse({'success': True})
 
 
-@csrf_exempt
-@staff_member_required
+@login_required
 def sync_now(request):
     if request.method == 'POST':
         service = FiscalisationService()
@@ -154,8 +160,7 @@ def sync_now(request):
         return JsonResponse({'success': True, 'synced': results['success'], 'failed': results['failed'], 'total': results['total']})
 
 
-@csrf_exempt
-@staff_member_required
+@login_required
 def test_connection(request):
     if request.method == 'POST':
         settings_obj = FiscalisationSettings.get_settings()
@@ -180,8 +185,7 @@ def test_connection(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
 
-@csrf_exempt
-@staff_member_required
+@login_required
 def retry_receipt(request, receipt_id):
     if request.method == 'POST':
         service = FiscalisationService()
@@ -189,8 +193,7 @@ def retry_receipt(request, receipt_id):
         return JsonResponse({'success': success})
 
 
-@csrf_exempt
-@staff_member_required
+@login_required
 def void_receipt(request, receipt_id):
     if request.method == 'POST':
         service = FiscalisationService()
@@ -198,7 +201,8 @@ def void_receipt(request, receipt_id):
         return JsonResponse({'success': success})
 
 
-@staff_member_required
+# @staff_member_required
+@login_required
 def receipt_detail_api(request, receipt_id):
     receipt = get_object_or_404(FiscalReceipt, id=receipt_id)
     

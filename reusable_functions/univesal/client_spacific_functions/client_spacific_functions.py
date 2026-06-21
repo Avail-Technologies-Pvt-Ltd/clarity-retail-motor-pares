@@ -1096,7 +1096,8 @@ Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.cr
 ----------------------------------------------
 '''
 
-    fiscal_text = """        NETWORK ERROR WITH FISCAL DATA
+    fiscal_text = ""
+    f = f"""        NETWORK ERROR WITH FISCAL DATA
 ^^^ The invoice will be checked and submitted
     """
     
@@ -1505,7 +1506,8 @@ Sales Rep: {sale_transaction.created_by.first_name.title()} {sale_transaction.cr
      
 {' '.join(center_and_wrap("YOUR CAR KNOWS THE BEST"))}  
     '''
-    fiscal_text = """        NETWORK ERROR WITH FISCAL DATA
+    fiscal_text = ""
+    f = f"""        NETWORK ERROR WITH FISCAL DATA
 ^^^ The invoice will be checked and submitted
     """
     
