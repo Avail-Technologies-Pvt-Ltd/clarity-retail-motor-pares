@@ -1,0 +1,73 @@
+name: Deploy to Company Servers
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'Company to deploy to'
+        required: true
+        type: choice
+        options:
+          - CompanyA
+          - CompanyB
+          - CompanyC
+      version:
+        description: 'Docker image tag (leave empty for latest)'
+        required: false
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.company }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to ${{ github.event.inputs.company }}
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USER }}
+        key: ${{ secrets.DEPLOY_KEY }}
+        port: ${{ secrets.DEPLOY_PORT || 22 }}
+        script: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          
+          # Create .env file from secrets
+          cat > .env << EOF
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          DEBUG=False
+          ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS || '*' }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_HOST=${{ secrets.DB_HOST || 'db' }}
+          DB_PORT=${{ secrets.DB_PORT || '5432' }}
+          TIME_ZONE=${{ secrets.TIME_ZONE || 'America/New_York' }}
+          FISCAL_DEVICE_ID=${{ secrets.FISCAL_DEVICE_ID }}
+          FISCAL_SERIAL_NO=${{ secrets.FISCAL_SERIAL_NO }}
+          FISCAL_ACTIVATION_KEY=${{ secrets.FISCAL_ACTIVATION_KEY }}
+          FISCAL_TEST_MODE=${{ secrets.FISCAL_TEST_MODE || 'False' }}
+          FISCAL_COMPANY_NAME=${{ secrets.FISCAL_COMPANY_NAME }}
+          FISCAL_MODEL_NAME=${{ secrets.FISCAL_MODEL_NAME || 'Server' }}
+          FISCAL_MODEL_VERSION=${{ secrets.FISCAL_MODEL_VERSION || 'v1' }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          EOF
+          
+          # Pull the image
+          docker pull ${{ secrets.DOCKER_USERNAME }}/pos-app:${{ github.event.inputs.version || 'latest' }}
+          
+          # Deploy with Docker Compose
+          export TAG=${{ github.event.inputs.version || 'latest' }}
+          export DOCKER_REGISTRY=${{ secrets.DOCKER_USERNAME }}
+          docker-compose -f docker/docker-compose.prod.yml down
+          docker-compose -f docker/docker-compose.prod.yml up -d
+          
+          # Run migrations
+          docker-compose -f docker/docker-compose.prod.yml exec web python manage.py migrate --noinput
+          
+          # Clean up old images
+          docker system prune -af
+          
+          echo "Deployment to ${{ github.event.inputs.company }} complete!"

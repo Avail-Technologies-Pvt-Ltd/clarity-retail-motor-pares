@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:13
+    container_name: pos-postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ${DOCKER_REGISTRY:-yourusername}/pos-app:${TAG:-latest}
+    container_name: pos-app
+    ports:
+      - "8001:8000"  # ← External 8001 maps to internal 8000
+    environment:
+      - DJANGO_SETTINGS_MODULE=point_of_sale.settings_prod
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SENTRY_DSN=${SENTRY_DSN}
+      - FISCAL_DEVICE_ID=${FISCAL_DEVICE_ID}
+      - FISCAL_SERIAL_NO=${FISCAL_SERIAL_NO}
+      - FISCAL_ACTIVATION_KEY=${FISCAL_ACTIVATION_KEY}
+      - FISCAL_TEST_MODE=${FISCAL_TEST_MODE}
+      - FISCAL_COMPANY_NAME=${FISCAL_COMPANY_NAME}
+      - FISCAL_MODEL_NAME=${FISCAL_MODEL_NAME}
+      - FISCAL_MODEL_VERSION=${FISCAL_MODEL_VERSION}
+    env_file:
+      - .env
+    volumes:
+      - ./certs:/app/certs
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
+      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:

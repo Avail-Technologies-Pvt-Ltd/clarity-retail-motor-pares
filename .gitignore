@@ -1,19 +1,57 @@
-# folders
-documendation/
-tokens
+# Virtual Environment
 venv/
 .venv/
-#.env
-updates/
-tmp/
-tests/
+env/
+.env/
 
-certs/
-
-# python bytecode
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
 
-# data
+# Database
 *.sqlite3
+db.sqlite3
+*.db
+
+# Docker
+docker/*.local.yml
+docker/data/
+
+# Deployment
+deploy/*.env
+!deploy/*.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Django
+*.log
+media/
+staticfiles/
+tmp/
+logs/
+
+# Secrets
+certs/*.key
+certs/*.crt
+!certs/*.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Your custom exclusions
+documendation/
+tokens/
+updates/
+tests/
 envvv

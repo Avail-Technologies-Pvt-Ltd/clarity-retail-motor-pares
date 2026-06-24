@@ -1,4 +1,4 @@
-APScheduler==3.11.2
+﻿APScheduler==3.11.2
 asgiref==3.8.0
 bson==0.5.10
 certifi==2026.2.25
@@ -29,7 +29,6 @@ python-decouple==3.8
 python-dotenv==1.1.1
 pytube==15.0.0
 pytz==2025.2
-pywin32==306
 qrcode==8.2
 reportlab==4.5.1
 requests==2.32.5
@@ -42,6 +41,5 @@ typing_extensions==4.10.0
 tzdata==2024.1
 tzlocal==5.3.1
 urllib3==2.6.3
-waitress==3.0.2
 whitenoise==6.8.2
 zimra==0.0.1

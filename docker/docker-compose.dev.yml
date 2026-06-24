@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:13
+    container_name: pos-postgres
+    environment:
+      - POSTGRES_DB=point_of_sale
+      - POSTGRES_USER=pos_user
+      - POSTGRES_PASSWORD=postgres_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pos_user -d point_of_sale"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.light
+    container_name: pos-app
+    ports:
+      - "8001:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=point_of_sale.settings_prod
+      - DEBUG=False
+      - SECRET_KEY=test-secret-key-12345-must-be-long-and-secure
+      - DB_NAME=point_of_sale
+      - DB_USER=pos_user
+      - DB_PASSWORD=postgres_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SENTRY_DSN=
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../certs:/app/certs
+      - ../media:/app/media
+      - ../staticfiles:/app/staticfiles
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
