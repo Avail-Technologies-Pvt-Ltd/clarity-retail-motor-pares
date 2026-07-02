@@ -42,7 +42,7 @@ DATABASES = {
 }
 
 # Production settings
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 print("=" * 50)

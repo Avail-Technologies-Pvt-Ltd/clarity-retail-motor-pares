@@ -6,6 +6,9 @@ Technologies: PostgreSQL, Redis, Python 3.11, Django 4.2, Bootstrap 5, JavaScrip
 
 # CHANGELOG
 ================================
+--------------------
+- added product categories
+- added product department
 
 [1.5.1] - 2026-06-10
 --------------------

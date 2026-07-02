@@ -189,7 +189,7 @@ class FiscalReceipt(models.Model):
         ]
     
     def __str__(self):
-        return f"Fiscal #{self.fiscal_receipt_number or '?'} - Internal: {self.internal_invoice_number} - {self.status}"
+        return f"Fiscal #{self.fiscal_receipt_number or '?'} - Internal: {self.internal_invoice_number} - {self.status} ---- {self.receipt_type}"
     
     @property
     def display_receipt_number(self):

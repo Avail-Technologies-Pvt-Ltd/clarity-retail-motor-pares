@@ -12,6 +12,8 @@ urlpatterns = [
     path('load_live_product_options', views.load_live_product_options, name='load_live_product_options'),
     path('load_live_batch_adjustment_reason_options', views.load_live_batch_adjustment_reason_options, name='load_live_batch_adjustment_reason_options'),
     path('load_live_return_reason_options', views.load_live_return_reason_options, name='load_live_return_reason_options'),
+    path('load_live_category_options', views.load_live_category_options, name='load_live_category_options'),
+    path('load_live_department_options', views.load_live_department_options, name='load_live_department_options'),
     
     #   live search data
     path('ajax_notifications_live_search', views.ajax_notifications_live_search, name='ajax_notifications_live_search'),

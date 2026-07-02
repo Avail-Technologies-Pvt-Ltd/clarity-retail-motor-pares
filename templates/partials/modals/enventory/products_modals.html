@@ -62,7 +62,7 @@
 
 
                                 <div class="row" style="padding-top: 10px;">
-                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
                                         <div class="col-sm text-start">Details</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
                                             <div class="form-group ic-cmp-int" style="width:100%;">
@@ -74,6 +74,33 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Category</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label type="text" placeholder="Code" id="product-details-category-value"></label>
+                                                    <hr>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Department</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label type="text" placeholder="Code" id="product-details-department-value"></label>
+                                                    <hr>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">Is active</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
@@ -84,8 +111,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    
+                                    </div>                                    
                                 </div>
                             </div>
 
@@ -166,7 +192,7 @@
 
 
                                 <div class="row" style="padding-top: 10px;">
-                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
                                         <div class="col-sm text-start">Details</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
                                             <div class="form-group ic-cmp-int" style="width:100%;">
@@ -176,6 +202,25 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Category</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select data-live-search="true" class=" selectpicker update_product_category_selector_class" id="update-product-category-value" onchange="">
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Department</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select data-live-search="true" class=" selectpicker update_product_department_selector_class" id="update-product-department-value" onchange="">
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">Status</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
@@ -254,15 +299,19 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">VAT Code</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <button class="btn btn-success add_object_button" onclick="openVatCodesPopup()">
+                                                +
+                                            </button>
                                             <select data-live-search="true" class=" selectpicker add_product_vat_code_selector_class" id="add-product-vat-code" onchange="">
                                             </select>
                                         </div>
                                     </div>
+                                    
                                 </div>
 
 
                                 <div class="row" style="padding-top: 10px;">
-                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
                                         <div class="col-sm text-start">Details</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
                                             <div class="form-group ic-cmp-int" style="width:100%;">
@@ -270,6 +319,23 @@
                                                     <input type="text" class="form-control " placeholder="Product details" id="add-product-details">
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Category</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select data-live-search="true" class=" selectpicker add_product_category_selector_class" id="add-product-category" onchange="">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Department</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select data-live-search="true" class=" selectpicker add_product_department_selector_class" id="add-product-department" onchange="">
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
@@ -515,6 +581,8 @@
                             document.getElementById('product-details-product-code-value').innerHTML = responseData.details['product_code']
                             document.getElementById('product-details-vat-code-value').innerHTML = responseData.details['vat_code_text']
                             document.getElementById('product-details-status-value').innerHTML = responseData.details['status']
+                            document.getElementById('product-details-category-value').innerHTML = responseData.details['category_text']
+                            document.getElementById('product-details-department-value').innerHTML = responseData.details['department_text']
                         }
                     },
                     error: function(responseData, error){
@@ -550,10 +618,13 @@
                             });
                         }else{
                             document.getElementById('update-product-title-value').value = responseData.details['title']
+                            /*document.getElementById('update-product-category-value').value = responseData.details['category']
+                            document.getElementById('update-product-department-value').value = responseData.details['department']*/
                             document.getElementById('update-product-details-value').value = responseData.details['details']
                             document.getElementById('update-product-product-code-value').value = responseData.details['product_code']
                             document.getElementById('update-product-status-value').value = responseData.details['status']
 
+                            //VAT CODE
                             var selectElement = document.getElementById('update-product-vat-code-value')
                             $("#update-product-vat-code-value").empty();
 
@@ -562,7 +633,30 @@
                             newOption.text = responseData.details['vat_code_text']
                             selectElement.appendChild(newOption)
                             
-                            $("#update-product-vat-code-value").selectpicker('refresh')   
+                            $("#update-product-vat-code-value").selectpicker('refresh') 
+
+
+                            //CATEGORY
+                            var selectElement = document.getElementById('update-product-category-value')
+                            $("#update-product-category-value").empty();
+
+                            var newOption = document.createElement("option")
+                            newOption.value = responseData.details['category_id']
+                            newOption.text = responseData.details['category_text']
+                            selectElement.appendChild(newOption)
+                            
+                            $("#update-product-category-value").selectpicker('refresh') 
+
+                            //DEPARTMENT
+                            var selectElement = document.getElementById('update-product-department-value')
+                            $("#update-product-department-value").empty();
+
+                            var newOption = document.createElement("option")
+                            newOption.value = responseData.details['department_id']
+                            newOption.text = responseData.details['department_text']
+                            selectElement.appendChild(newOption)
+                            
+                            $("#update-product-department-value").selectpicker('refresh')   
                         }
                     },
                     error: function(responseData, error){
@@ -587,7 +681,10 @@
         var title = document.getElementById('update-product-title-value').value
         var details = document.getElementById('update-product-details-value').value
         var product_code = document.getElementById('update-product-product-code-value').value
+        var category = document.getElementById('update-product-category-value').value
+        var department = document.getElementById('update-product-department-value').value
         var status = document.getElementById('update-product-status-value').value
+        var vat_code = document.getElementById('update-product-vat-code-value').value
         var product_id = sessionStorage.getItem('product_id_for_update')
 
         var errors = ""
@@ -601,9 +698,13 @@
                 data:{
                     product_id: product_id,
                     title: title,
+                    category: category,
+                    department: department,
                     details: details,
                     product_code: product_code,
-                    status: status
+                    status: status,
+                    vat_code: vat_code,
+
                 }, 
                 success:function(responseData) {
                     if(responseData.custome_status == "Error"){ 
@@ -855,6 +956,8 @@ function showDependentDetails(responseData) {
         var product_code = document.getElementById('add-product-product-code').value 
         var details = document.getElementById('add-product-details').value 
         var vat_code = document.getElementById('add-product-vat-code').value 
+        var category = document.getElementById('add-product-category').value 
+        var department = document.getElementById('add-product-department').value 
         var status = document.getElementById('add-product-status').value 
 
 
@@ -866,6 +969,10 @@ function showDependentDetails(responseData) {
             product_code = ""
         }else if (details == ""){
             errors = "Details field can not be blank"
+        }else if (category == ""){
+            errors = "Please select a valid category"
+        }else if (department == ""){
+            errors = "Please select a valid department"
         }else if (vat_code == ""){
             errors = "Vat_code field can not be blank"
         }else if (status == ""){
@@ -880,7 +987,10 @@ function showDependentDetails(responseData) {
                     product_code: product_code,
                     details: details,
                     vat_code: vat_code,
-                    status: status
+                    category: category,
+                    department: department,
+                    status: status,
+
                 },
                 success: function(responseData) {
                     if(responseData.custome_status == "Error"){
@@ -1069,6 +1179,58 @@ function showDependentDetails(responseData) {
         }
     })
 
+    $(document).on('keyup', '.update_product_department_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_department_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('update-product-department-value')
+                    $("#update-product-department-value").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#update-product-department-value").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+    $(document).on('keyup', '.update_product_category_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_category_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('update-product-category-value')
+                    $("#update-product-category-value").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#update-product-category-value").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
 
     $(document).on('keyup', '.add_product_vat_code_selector_class .bs-searchbox input', function(e){
         if (e.key.length === 1 || e.key === "Backspace") { 
@@ -1088,6 +1250,59 @@ function showDependentDetails(responseData) {
                         selectElement.appendChild(newOption)
                     })
                     $("#add-product-vat-code").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+
+    $(document).on('keyup', '.add_product_department_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_department_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('add-product-department')
+                    $("#add-product-department").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#add-product-department").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+    $(document).on('keyup', '.add_product_category_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_category_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('add-product-category')
+                    $("#add-product-category").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#add-product-category").selectpicker('refresh')   
                 },
                 error: function(responseData, error){
                         //alert("An error ocured! " + error)

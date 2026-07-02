@@ -332,19 +332,31 @@ def update_product(request):
     product_code = request.GET.get('product_code')
     status = request.GET.get('status')
     product_id = request.GET.get('product_id')
+    category = request.GET.get('category')
+    department = request.GET.get('department')
+    vat_code = request.GET.get('vat_code')
 
     product = Product.objects.get(id=int(product_id))
     already_exist = Product.objects.filter(title=title, details=details).exclude(id=int(product_id))
     if already_exist:
         return JsonResponse({"custome_status":"Error", "message":"A product with the same title and detals alread exist!"})
+    try:
+        product.title = title
+        product.details = details
+        product.product_code = product_code
+        product.vat_code = VATCode.objects.get(id=int(vat_code))
+        try:
+            product.category = Category.objects.get(id=int(category))
+            product.department = Department.objects.get(id=int(department))
+        except:
+            pass
+        product.status = status
+        product.save()
 
-    product.title = title
-    product.details = details
-    product.product_code = product_code
-    product.status = status
-    product.save()
+        return JsonResponse({"custome_status":"", "message":"Product updated succesefully!"})
+    except Exception as e:
+        return JsonResponse({"custome_status":"Error", "message":str(e)})
 
-    return JsonResponse({"custome_status":"", "message":"Product updated succesefully!"})
 
 
 
@@ -518,7 +530,7 @@ def save_stock_adjustments(request):
 @login_required
 @role_validator(['Data Analyst','Supervisor','Sales Rep'])
 def print_all_stock_for_reconcile(request):
-    stock_list = Stock.objects.filter(status=True)
+    stock_list = Stock.objects.filter(status=True).order_by('-product__category__title')
     counter = 0
     stock_list_print_out = f"""----------------------------------------------
 ----------------------------------------------
@@ -534,7 +546,7 @@ PRODUCT                               IN STOCK
         counter += 1
         description = f"{str(counter):>4} [{ stock.product.product_code }] { stock.product.title }"
         total_units = stock.total_units
-        product_line = f"""\n{str(description)[:38]:<40} {locale.format_string('%.0f', counter * 10, grouping=True):>5}"""
+        product_line = f"""\n{str(description)[:38]:<40} {locale.format_string('%.0f', total_units, grouping=True):>5}"""
 
         stock_list_print_out += product_line
     stock_list_print_out += """
@@ -739,7 +751,13 @@ def get_product_details(request):
     details = product.details
     product_code = product.product_code
     vat_code_id = product.vat_code.id
-    vat_code_text = product.vat_code.title
+    vat_code_text = f"{ product.vat_code.title } ({ product.vat_code.percentage })"
+
+    category_id = product.category.id if product.category else "0"
+    category_text = product.category.title if product.category else ""
+    department_id = product.department.id if product.department else "0"
+    department_text = product.department.title if product.department else ""
+
     status = product.status
     if status == True:
         status = "True"
@@ -752,6 +770,12 @@ def get_product_details(request):
         'product_code': product_code,
         'vat_code_id': vat_code_id,
         'vat_code_text': vat_code_text,
+
+        'category_id': category_id,
+        'category_text': category_text,
+        'department_id': department_id,
+        'department_text': department_text,
+
         'status': status,
     }
 
@@ -1200,7 +1224,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 @role_validator(['Sales Rep'])
-@db_transaction.atomic
+@transaction.atomic
 def return_inn_sale_bulk(request):
     try:
         # ============================================================
@@ -1218,6 +1242,7 @@ def return_inn_sale_bulk(request):
         # STEP 2: Get the original sale transaction
         # ============================================================
         original_sale = SaleTransaction.objects.get(recipt_number=int(receipt_number))
+        sale_payments = Payment.objects.filter(payment_for="RECEIPT", payment_for_id=receipt_number)
         
         # ============================================================
         # STEP 3: Check if the original sale was FISCALISED
@@ -1226,6 +1251,16 @@ def return_inn_sale_bulk(request):
             internal_invoice_number=str(receipt_number),
             receipt_type='FISCALINVOICE'
         ).first()
+
+        dominant_payment_method = PaymentMethod.objects.get(id=int(payment_method_id))
+        if sale_payments:
+            if dominant_payment_method == sale_payments.first().payment_method:
+                pass
+            else:
+                should_fiscalise_return = original_fiscal_receipt is not None
+        else:
+            should_fiscalise_return = original_fiscal_receipt is not None
+
         
         # Determine if we need to fiscalise this return
         # Rule: If original sale was fiscalised, we MUST fiscalise the return
@@ -1362,9 +1397,9 @@ def return_inn_sale_bulk(request):
             price_excl_vat = round(price_excl_vat, 2)
             
             # Line totals
-            line_total_incl_vat = round(price_incl_vat * quantity, 2)
-            line_total_excl_vat = round(price_excl_vat * quantity, 2)
-            vat_amount = round((price_incl_vat - price_excl_vat) * quantity, 2)
+            line_total_incl_vat = round(price_incl_vat * quantity * float(dominant_payment_method.rate), 2)
+            line_total_excl_vat = round(price_excl_vat * quantity * float(dominant_payment_method.rate), 2)
+            vat_amount = round((price_incl_vat * float(dominant_payment_method.rate) - price_excl_vat) * quantity, 2)
             
             # Accumulate totals
             total_credit_excl_vat += Decimal(str(line_total_excl_vat))
@@ -1394,9 +1429,9 @@ def return_inn_sale_bulk(request):
             # Add to credit note lines (NEGATIVE for credit note)
             credit_note_lines.append({
                 "description": sale.stock.product.title,
-                "unit_price": -price_incl_vat,
+                "unit_price": -float(price_incl_vat) * float(dominant_payment_method.rate),
                 "quantity": quantity,
-                "total": -line_total_incl_vat,
+                "total": -float(line_total_incl_vat),
                 "tax_percentage": vat_percentage,
                 "int_tax_code": int_tax_code,
                 "str_tax_code": str_tax_code,
@@ -1453,23 +1488,27 @@ def return_inn_sale_bulk(request):
             print(f"  Total Incl VAT: {total_with_vat}")
             print(f"  Total VAT: {total_credit_vat}")
             print(f"  Amount Paid: {amount_paid}")
+
+
+            payment_method = dominant_payment_method.zimra_money_type_text.upper()
+            currency = dominant_payment_method.shortcut.upper()
             
             # Create fiscal credit note
             fiscal_credit_note = fiscal_service.create_fiscal_receipt(
                 internal_invoice_id=credit_note.id,
                 internal_invoice_number=str(credit_note.sale_transaction.recipt_number),
                 total_amount=Decimal(str(-total_with_vat)),
-                payment_method=payment_method_name,
+                payment_method=payment_method,
                 payment_amount=Decimal(str(-abs(float(amount_paid)))),
                 payments=[{
-                    "method": payment_method_name,
+                    "method": payment_method,
                     "amount": -abs(float(amount_paid)),
-                    "currency": "USD"
+                    "currency": currency
                 }],
                 line_items=credit_note_lines,
                 transaction_date=datetime.now().date(),
                 transaction_time=datetime.now().strftime('%H:%M:%S'),
-                currency="USD",
+                currency=currency,
                 buyer_info=buyer_info,
                 receipt_type="CREDITNOTE",
                 original_invoice_number=str(receipt_number),
@@ -1786,6 +1825,8 @@ def add_product(request):
     product_code = request.GET.get('product_code')
     details = request.GET.get('details')
     vat_code = request.GET.get('vat_code')
+    category = request.GET.get('category')
+    department = request.GET.get('department')
     status = request.GET.get('status')
 
     already_exist = Product.objects.filter(title=title, details=details)
@@ -1800,6 +1841,11 @@ def add_product(request):
         new_product.created_by = request.user
         if status == "False":
             new_product.status = False
+        try:
+            new_product.category = Category.objects.get(id=int(category))
+            new_product.department = Department.objects.get(id=int(department))
+        except:
+            pass
 
         new_product.save()
 
@@ -3032,11 +3078,22 @@ def ajax_products_live_search(request):
     """
     rows = ""
     for product in data_page:
+        department = ""
+        category = ""
+        if product.department:
+            department = f"""<span title="Department" style="background: darkblue; padding: 3px; margin-right: 3px; font-size: 10px; color: white; border-radius: 10px;">{ product.department.title.title() } </span>"""
+        if product.category:
+            category = f"""<span title="Category" style="background: seagreen; padding: 3px; margin-right: 3px; font-size: 10px; color: white; border-radius: 10px;">{ product.category.title.title() } </span>"""
+       
         row = f"""
             <tr>
                 <th>{ product.product_code.upper() }</th>
                 <td>{ product.title }<small></small></td>
-                <td>{ product.details }</td>
+                <td>
+                    { product.details }<br>
+                    { department } { category }
+       
+                </td>
                 <td>{ locale.format_string('%.2f', product.vat_code.percentage, grouping=True) }%</td>
                 <td><a href="" title="Details" class="btn btn-primary" data-object-id="{ product.id }" type="button"  data-toggle="modal" data-target="#stockDetailsModal" id="payment-modal-button"><i class="notika-icon notika-menus"></a></td>
                 <td><a href="" title="Update" class="btn btn-primary" data-object-id="{ product.id }" type="button"  data-toggle="modal" data-target="#updateProductModal" id="payment-modal-button"><i class="notika-icon notika-edit"></a></td>
@@ -3457,13 +3514,62 @@ def ajax_invoices_live_search(request):
 
 
 #   options
+
+
+@login_required
+def load_live_category_options(request):
+    # search key
+    try:
+        search_query = request.GET.get('search')
+        categorys = Category.objects.filter(deleted=False, status=True, title__icontains=search_query)[:6]
+    except:
+        categorys = Category.objects.filter(deleted=False, status=True)[:50]
+    
+
+    category_options = [
+        f"<option value='{ category.id }'>{ category.title.title() } </option>" for category in categorys
+    ]
+
+    title_option = [
+        f"<option value='0' selected>Select Category</option>"
+    ]
+
+    category_options = title_option + category_options
+
+    return JsonResponse({'options':category_options})
+
+
+
+@login_required
+def load_live_department_options(request):
+    # search key
+    try:
+        search_query = request.GET.get('search')
+        departments = Department.objects.filter(deleted=False, status=True, title__icontains=search_query)[:6]
+    except:
+        departments = Department.objects.filter(deleted=False, status=True)[:50]
+    
+
+    department_options = [
+        f"<option value='{ department.id }'>{ department.title.title() } </option>" for department in departments
+    ]
+
+    title_option = [
+        f"<option value='0' selected>Select Department</option>"
+    ]
+
+    department_options = title_option + department_options
+
+    return JsonResponse({'options':department_options})
+
+
+
 @login_required
 def load_live_return_reason_options(request):
     # search key
     try:
         search_query = request.GET.get('search')
         return_reasons = ReturnReason.objects.filter(deleted=False, status=True, shortcut__icontains=search_query)[:50]
-        print(search_query)
     except:
         return_reasons = ReturnReason.objects.filter(deleted=False, status=True)[:50]
     

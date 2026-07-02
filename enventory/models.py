@@ -31,6 +31,59 @@ CLASSES HERE:
 '''
 
 
+class Category(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	title = models.CharField(max_length=30)
+	
+	#sync
+	branch_created = models.CharField(max_length=100, default='', blank=True, null=True)
+	branch_updated = models.CharField(max_length=100, default='', blank=True, null=True)
+	date_synced = models.CharField(max_length=100, default='', blank=True, null=True)
+
+	created_by = models.CharField(max_length=30,blank=True, null=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	status = models.BooleanField(default=True)
+	deleted = models.BooleanField(default=False)
+
+	def __str__(self):
+		return f'{self.title}'
+
+
+
+class Department(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
+	title = models.CharField(max_length=30)
+	
+	#sync
+	branch_created = models.CharField(max_length=100, default='', blank=True, null=True)
+	branch_updated = models.CharField(max_length=100, default='', blank=True, null=True)
+	date_synced = models.CharField(max_length=100, default='', blank=True, null=True)
+
+	created_by = models.CharField(max_length=30,blank=True, null=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	status = models.BooleanField(default=True)
+	deleted = models.BooleanField(default=False)
+
+	def __str__(self):
+		return f'{self.title}'
+
+
 
 class Product(models.Model):
 	global_id = models.UUIDField(unique=True, null=True, blank=True)
@@ -48,6 +101,8 @@ class Product(models.Model):
 	product_code = models.CharField(max_length=50, default='N/A', blank=True, null=True)
 	details = models.TextField(max_length=400, default='')
 	vat_code = models.ForeignKey(VATCode, on_delete=models.DO_NOTHING, blank=True, null=True)
+	category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, blank=True, null=True)
+	department = models.ForeignKey(Department, on_delete=models.DO_NOTHING, blank=True, null=True)
 
 	#sync
 	branch_created = models.CharField(max_length=100, default='', blank=True, null=True)
