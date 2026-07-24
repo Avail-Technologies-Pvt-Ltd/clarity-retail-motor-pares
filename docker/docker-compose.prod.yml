@@ -18,10 +18,10 @@ services:
       retries: 5
 
   web:
-    image: ${DOCKER_REGISTRY:-tinashemp}/pos-app:${TAG:-latest} 
+    image: ${DOCKER_REGISTRY:-tinashemp}/clarity-pos:${TAG:-latest}
     container_name: pos-app
     ports:
-      - "8001:8000"  # ← External 8001 maps to internal 8000
+      - "8085:8000"
     environment:
       - DJANGO_SETTINGS_MODULE=point_of_sale.settings_prod
       - DEBUG=False
@@ -40,7 +40,7 @@ services:
       - FISCAL_MODEL_NAME=${FISCAL_MODEL_NAME}
       - FISCAL_MODEL_VERSION=${FISCAL_MODEL_VERSION}
     env_file:
-      - .env
+      - ../.env
     volumes:
       - ./certs:/app/certs
       - ./media:/app/media
@@ -50,11 +50,6 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 volumes:
   postgres_data:

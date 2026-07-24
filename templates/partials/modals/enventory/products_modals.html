@@ -62,7 +62,19 @@
 
 
                                 <div class="row" style="padding-top: 10px;">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Zimra HS Code</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <label type="text"  placeholder="Product HS Code" id="product-details-hs-code-value"></label>
+                                                    <hr>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
                                         <div class="col-sm text-start">Details</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
                                             <div class="form-group ic-cmp-int" style="width:100%;">
@@ -192,7 +204,17 @@
 
 
                                 <div class="row" style="padding-top: 10px;">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">ZIMRA HS Code</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control " placeholder="Product HS Code" id="update-product-hs-code-value">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
                                         <div class="col-sm text-start">Details</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
                                             <div class="form-group ic-cmp-int" style="width:100%;">
@@ -208,6 +230,9 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">Category</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <button class="btn btn-success add_object_button" onclick="openCategoryPopup()">
+                                                +
+                                            </button>
                                             <select data-live-search="true" class=" selectpicker update_product_category_selector_class" id="update-product-category-value" onchange="">
                                             </select>
                                         </div>
@@ -216,6 +241,9 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">Department</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <button class="btn btn-success add_object_button" onclick="openDepartmentPopup()">
+                                                +
+                                            </button>
                                             <select data-live-search="true" class=" selectpicker update_product_department_selector_class" id="update-product-department-value" onchange="">
                                             </select>
                                         </div>
@@ -311,7 +339,17 @@
 
 
                                 <div class="row" style="padding-top: 10px;">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Zimra HS Code</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <div class="form-group ic-cmp-int" style="width:100%;">
+                                                <div class="nk-int-st">
+                                                    <input type="text" class="form-control"  id="add-product-hs-code">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12" >
                                         <div class="col-sm text-start">Details</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
                                             <div class="form-group ic-cmp-int" style="width:100%;">
@@ -327,6 +365,9 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">Category</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <button class="btn btn-success add_object_button" onclick="openCategoryPopup()">
+                                                +
+                                            </button>
                                             <select data-live-search="true" class=" selectpicker add_product_category_selector_class" id="add-product-category" onchange="">
                                             </select>
                                         </div>
@@ -334,6 +375,9 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
                                         <div class="col-sm text-start">Department</div>
                                         <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <button class="btn btn-success add_object_button" onclick="openDepartmentPopup()">
+                                                +
+                                            </button>
                                             <select data-live-search="true" class=" selectpicker add_product_department_selector_class" id="add-product-department" onchange="">
                                             </select>
                                         </div>
@@ -577,6 +621,7 @@
                             });
                         }else{
                             document.getElementById('product-details-title-value').innerHTML = responseData.details['title']
+                            document.getElementById('product-details-hs-code-value').innerHTML = responseData.details['hs_code']
                             document.getElementById('product-details-details-value').innerHTML = responseData.details['details']
                             document.getElementById('product-details-product-code-value').innerHTML = responseData.details['product_code']
                             document.getElementById('product-details-vat-code-value').innerHTML = responseData.details['vat_code_text']
@@ -620,6 +665,7 @@
                             document.getElementById('update-product-title-value').value = responseData.details['title']
                             /*document.getElementById('update-product-category-value').value = responseData.details['category']
                             document.getElementById('update-product-department-value').value = responseData.details['department']*/
+                            document.getElementById('update-product-hs-code-value').value = responseData.details['hs_code']
                             document.getElementById('update-product-details-value').value = responseData.details['details']
                             document.getElementById('update-product-product-code-value').value = responseData.details['product_code']
                             document.getElementById('update-product-status-value').value = responseData.details['status']
@@ -679,6 +725,7 @@
 
     function updateProduct(){
         var title = document.getElementById('update-product-title-value').value
+        var hs_code = document.getElementById('update-product-hs-code-value').value
         var details = document.getElementById('update-product-details-value').value
         var product_code = document.getElementById('update-product-product-code-value').value
         var category = document.getElementById('update-product-category-value').value
@@ -697,6 +744,7 @@
                 url: "{% url 'update_product' %}", 
                 data:{
                     product_id: product_id,
+                    hs_code: hs_code,
                     title: title,
                     category: category,
                     department: department,
@@ -860,34 +908,17 @@ function showDependentDetails(responseData) {
     });
 }
 
-/*function deleteProduct(product_id){
-    $.ajax({
-        url: "{% url 'delete_product' %}",
-        data: {
-            product_id: product_id
-        },
-        success: function(responseData) {
-            swal({
-                title: responseData.title,
-                text: responseData.message,
-                type: responseData.type
-            })
-        },
-        error: function(responseData, error){
-            swal({
-                title: "Error",
-                text: "An error occured! " + error,
-                type: "error"
-            });
-        },
-        complete: function(){
-            productsInitialLoad()
-        }
-    });
-}*/
+
 
     function openVatCodesPopup(){
         newBrowserWindow("{% url 'VATcodes_page' %}")
+    }
+
+    function openCategoryPopup(){
+        newBrowserWindow("{% url 'categories_page' %}")
+    }
+    function openDepartmentPopup(){
+        newBrowserWindow("{% url 'departments_page' %}")
     }
 
     function mergeProducts(){
@@ -954,6 +985,7 @@ function showDependentDetails(responseData) {
     function addProduct(){
         var title = document.getElementById('add-product-title').value 
         var product_code = document.getElementById('add-product-product-code').value 
+        var hs_code = document.getElementById('add-product-hs-code').value 
         var details = document.getElementById('add-product-details').value 
         var vat_code = document.getElementById('add-product-vat-code').value 
         var category = document.getElementById('add-product-category').value 
@@ -969,10 +1001,6 @@ function showDependentDetails(responseData) {
             product_code = ""
         }else if (details == ""){
             errors = "Details field can not be blank"
-        }else if (category == ""){
-            errors = "Please select a valid category"
-        }else if (department == ""){
-            errors = "Please select a valid department"
         }else if (vat_code == ""){
             errors = "Vat_code field can not be blank"
         }else if (status == ""){
@@ -984,6 +1012,7 @@ function showDependentDetails(responseData) {
                 url: "{% url 'add_product' %}",
                 data: {
                     title: title,
+                    hs_code: hs_code,
                     product_code: product_code,
                     details: details,
                     vat_code: vat_code,

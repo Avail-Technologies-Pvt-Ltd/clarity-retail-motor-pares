@@ -13,6 +13,8 @@ from datetime import datetime, date, timedelta
 
 '''
 CLASSES HERE:
+	Category
+	Department
 	Product
 	Stock
 	Notification
@@ -41,17 +43,24 @@ class Category(models.Model):
 	deleted_at = models.DateTimeField(null=True, blank=True)
 	
 	title = models.CharField(max_length=30)
+	description = models.CharField(max_length=100, default='', blank=True, null=True)
 	
 	#sync
 	branch_created = models.CharField(max_length=100, default='', blank=True, null=True)
 	branch_updated = models.CharField(max_length=100, default='', blank=True, null=True)
 	date_synced = models.CharField(max_length=100, default='', blank=True, null=True)
 
-	created_by = models.CharField(max_length=30,blank=True, null=True)
+	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	status = models.BooleanField(default=True)
 	deleted = models.BooleanField(default=False)
+
+	def total_products(self):
+		total_products = Product.objects.filter(category=self.id).count()
+		return total_products
+
+	total_products = property(total_products)
 
 	def __str__(self):
 		return f'{self.title}'
@@ -68,17 +77,24 @@ class Department(models.Model):
 	deleted_at = models.DateTimeField(null=True, blank=True)
 	
 	title = models.CharField(max_length=30)
+	description = models.CharField(max_length=100, default='', blank=True, null=True)
 	
 	#sync
 	branch_created = models.CharField(max_length=100, default='', blank=True, null=True)
 	branch_updated = models.CharField(max_length=100, default='', blank=True, null=True)
 	date_synced = models.CharField(max_length=100, default='', blank=True, null=True)
 
-	created_by = models.CharField(max_length=30,blank=True, null=True)
+	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	status = models.BooleanField(default=True)
 	deleted = models.BooleanField(default=False)
+
+	def total_products(self):
+		total_products = Product.objects.filter(department=self.id).count()
+		return total_products
+
+	total_products = property(total_products)
 
 	def __str__(self):
 		return f'{self.title}'
@@ -299,7 +315,6 @@ class Batch(models.Model):
 	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
 	deleted_at = models.DateTimeField(null=True, blank=True)
 	
-	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	batch_number = models.CharField(max_length=100)
 	stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING)
 	manufacturer = models.ForeignKey(Manufacturer, on_delete=models.DO_NOTHING)
@@ -399,7 +414,7 @@ class Batch(models.Model):
 
 
 	def __str__(self):
-		return f'{self.total_units}' #{self.product}' if this is uncommended, test will fail, i dont know why
+		return f'[{self.stock.product.product_code}] {self.stock.product.title} {self.stock.product.details} (Total: {self.total_units})' #{self.product}' if this is uncommended, test will fail, i dont know why
 
 
 
@@ -604,7 +619,6 @@ class InvoiceItem(models.Model):
 	updated_by_branch = models.ForeignKey(Branch, on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
 	deleted_at = models.DateTimeField(null=True, blank=True)
 	
-	# global_id = models.UUIDField(null=True, blank=True, default=uuid.uuid4, editable=False,db_index=True)
 	invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
 	stock = models.ForeignKey(Stock, on_delete=models.CASCADE, blank=True, null=True)
 	manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)

@@ -150,6 +150,26 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Department</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select data-live-search="true" class=" selectpicker products_filter_form_department_class_selector" id="products-filter-form-department-value" onchange="">
+                                                <option value="all">All</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                        <div class="col-sm text-start">Category</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                            <select data-live-search="true" class=" selectpicker products_filter_form_category_class_selector" id="products-filter-form-category-value" onchange="">
+                                                <option value="all">All</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </form>
 
                             <hr style="background: RGB(0 194 146);">
@@ -190,6 +210,9 @@ $(document).ready(function() {
 })
 
 
+
+
+
 //GLOBAL VARIABLES
 var page = 1
 
@@ -217,6 +240,8 @@ function requestData(request_type){
         var product_code = document.getElementById('products-filter-form-product-code-value').value
         var title = document.getElementById('products-filter-form-title-value').value
         var details = document.getElementById('products-filter-form-details-value').value
+        var department = document.getElementById('products-filter-form-department-value').value
+        var category = document.getElementById('products-filter-form-category-value').value
         
         // sessionStorage.setItem('stored_product_code', product_code)
         // sessionStorage.setItem('stored_product_title', product_title)
@@ -259,7 +284,10 @@ function requestData(request_type){
 
             product_code: product_code,
             title: title,
-            details: details
+            details: details,
+            department: department,
+            category: category,
+
          },
         success: function(responseData) {
             $('#products-table').html(responseData.table)
@@ -338,6 +366,11 @@ function productsInitialLoad(){
         document.getElementById('products-filter-form-product-code-value').value = ""
         document.getElementById('products-filter-form-title-value').value = ""
         document.getElementById('products-filter-form-details-value').value = ""
+        document.getElementById('products-filter-form-department-value').value = "all"
+        document.getElementById('products-filter-form-category-value').value = "all"
+
+        $("#products-filter-form-department-value").selectpicker('refresh')  
+        $("#products-filter-form-category-value").selectpicker('refresh')  
     }
     
     function loadProductsFilterQuery(){
@@ -347,6 +380,72 @@ function productsInitialLoad(){
 
 
 /*//BUTTON FUNCTIONS*/
+
+
+/*LIVE FUNCTIONS*/
+    $(document).on('keyup', '.products_filter_form_department_class_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_department_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('products-filter-form-department-value')
+                    $("#products-filter-form-department-value").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        if(parsedOption.value == "0"){
+                            newOption.value = "all"
+                            newOption.text = "All"
+                        }else{
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                        }
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#products-filter-form-department-value").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+    $(document).on('keyup', '.products_filter_form_category_class_selector .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            $.ajax({
+                url: "{% url 'load_live_category_options' %}",
+                data: { search_query: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('products-filter-form-category-value')
+                    $("#products-filter-form-category-value").empty();
+                    responseData.options.forEach(optionString => {
+
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        if(parsedOption.value == "0"){
+                            newOption.value = "all"
+                            newOption.text = "All"
+                        }else{
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                        }
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#products-filter-form-category-value").selectpicker('refresh')   
+                },
+                error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                }
+            });
+        }
+    })
+
+/*//LIVE FUNCTIONS*/
 
 
 </script>

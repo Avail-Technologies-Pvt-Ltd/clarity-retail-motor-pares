@@ -1,0 +1,3365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiscalisation Dashboard</title>
+    {% load static %}
+    
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!--     <link rel="stylesheet" href="{% static '' %}css/bootstrap.min.css"> -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!--     <link rel="stylesheet" href="{% static '' %}css/font-awesome.min.css"> -->
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+<!--     <script src="{% static '' %}js/dialog/dialog-active.js"></script>
+    <script src="{% static '' %}js/dialog/sweetalert2.min.js"></script> -->
+    <!-- QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
+    <style>
+    /* ============================================================
+       GLOBAL STYLES
+       ============================================================ */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f0f2f5;
+        overflow-x: hidden;
+    }
+    
+    /* ============================================================
+       SIDEBAR
+       ============================================================ */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        color: #fff;
+        z-index: 1050;
+        transition: transform 0.3s ease, width 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .sidebar.collapsed {
+        width: 70px;
+    }
+    
+    .sidebar.collapsed .sidebar-brand h3,
+    .sidebar.collapsed .sidebar-brand small,
+    .sidebar.collapsed .menu-label,
+    .sidebar.collapsed .nav-link span,
+    .sidebar.collapsed .nav-link .badge,
+    .sidebar.collapsed .sidebar-footer {
+        display: none;
+    }
+    
+    .sidebar.collapsed .nav-link {
+        justify-content: center;
+        padding: 12px 0;
+    }
+    
+    .sidebar.collapsed .nav-link i {
+        margin-right: 0;
+        font-size: 20px;
+    }
+    
+    .sidebar-brand {
+        padding: 20px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .sidebar-brand h3 {
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        font-size: 20px;
+    }
+    
+    .sidebar-brand small {
+        color: rgba(255,255,255,0.6);
+        font-size: 11px;
+        display: block;
+    }
+    
+    .sidebar-brand .collapse-toggle {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: #fff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s;
+        flex-shrink: 0;
+    }
+    
+    .sidebar-brand .collapse-toggle:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .sidebar-menu {
+        padding: 20px 0;
+    }
+    
+    .sidebar-menu .menu-label {
+        padding: 10px 20px;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 1px;
+        transition: opacity 0.3s;
+    }
+    
+    .sidebar-menu .nav-item {
+        padding: 0 15px;
+        margin-bottom: 2px;
+    }
+    
+    .sidebar-menu .nav-link {
+        color: rgba(255,255,255,0.7);
+        padding: 12px 15px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+    
+    .sidebar-menu .nav-link:hover {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+    }
+    
+    .sidebar-menu .nav-link.active {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .sidebar-menu .nav-link i {
+        width: 24px;
+        margin-right: 12px;
+        font-size: 16px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+    
+    .sidebar-menu .nav-link .badge {
+        margin-left: auto;
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+    }
+    
+    .sidebar-footer {
+        padding: 15px 20px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        font-size: 11px;
+        color: rgba(255,255,255,0.4);
+        text-align: center;
+        transition: opacity 0.3s;
+    }
+    
+    /* Mobile sidebar toggle */
+    .sidebar-toggle {
+        display: none;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1060;
+        background: #1a1a2e;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1040;
+    }
+    
+    /* ============================================================
+       MAIN CONTENT
+       ============================================================ */
+    .main-content {
+        margin-left: 250px;
+        min-height: 100vh;
+        transition: margin-left 0.3s ease;
+    }
+    
+    .main-content.expanded {
+        margin-left: 70px;
+    }
+    
+    /* ============================================================
+       STICKY HEADER
+       ============================================================ */
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #fff;
+        padding: 15px 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .sticky-header .page-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+    
+    .sticky-header .page-title small {
+        font-size: 13px;
+        font-weight: 400;
+        color: #6c757d;
+        margin-left: 10px;
+    }
+    
+    .sticky-header .header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .sticky-header .status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    /* ============================================================
+       CONTENT AREA
+       ============================================================ */
+    .content-area {
+        padding: 25px;
+    }
+    
+    /* ============================================================
+       STAT CARDS
+       ============================================================ */
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: default;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card .card-body {
+        padding: 18px 20px;
+    }
+    
+    .stat-card .stat-icon {
+        float: right;
+        font-size: 28px;
+        opacity: 0.3;
+    }
+    
+    .stat-card .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    
+    .stat-card .stat-label {
+        font-size: 13px;
+        opacity: 0.8;
+        margin: 0;
+    }
+    
+    /* ============================================================
+       TABLES
+       ============================================================ */
+    .table-container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    
+    .table-container .table {
+        margin-bottom: 0;
+    }
+    
+    .table-container .table th {
+        background: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+        font-size: 13px;
+        color: #495057;
+    }
+    
+    .table-container .table td {
+        vertical-align: middle;
+        font-size: 14px;
+    }
+    
+    .table-container .table-footer {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    /* ============================================================
+       FILTER SECTION
+       ============================================================ */
+    .filter-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 18px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 20px;
+    }
+    
+    .filter-section .form-group {
+        margin-bottom: 0;
+    }
+    
+    /* ============================================================
+       BADGES
+       ============================================================ */
+    .badge-processing {
+        background: #17a2b8;
+        color: #fff;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .badge-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    /* ============================================================
+       SYNC PERFORMANCE CARD
+       ============================================================ */
+    .progress-bar {
+        transition: width 0.8s ease;
+        font-weight: 600;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .border-right {
+        border-right: 1px solid #dee2e6 !important;
+    }
+    
+    #syncStatusBadge {
+        padding: 4px 12px;
+        font-size: 12px;
+        border-radius: 20px;
+    }
+    
+    #syncStatusBadge.badge-success {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    #syncStatusBadge.badge-info {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+    
+    #syncStatusBadge.badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    #syncStatusBadge.badge-danger {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    
+    #syncTrend {
+        font-size: 13px;
+    }
+    
+    .font-weight-medium {
+        font-weight: 500;
+    }
+    
+    /* ============================================================
+       DEVICE STATUS CARD
+       ============================================================ */
+    #deviceStatusBadge.badge-success {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    #deviceStatusBadge.badge-danger {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    
+    #deviceStatusBadge.badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* ============================================================
+       QR CODE
+       ============================================================ */
+    .qr-code-container {
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .qr-code-container canvas,
+    .qr-code-container img {
+        display: block;
+        margin: 0 auto;
+    }
+    
+    .qr-code-wrapper {
+        text-align: center;
+    }
+
+    /* ============================================================
+       DASHBOARD ENHANCEMENTS
+       ============================================================ */
+    .opacity-50 {
+        opacity: 0.7;
+        font-size: 11px;
+    }
+
+    /* Daily Activity Bars */
+    #dailyActivityContainer {
+        padding: 5px 0;
+    }
+
+    .daily-bar-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        height: 100%;
+        justify-content: flex-end;
+    }
+
+    .daily-bar {
+        width: 30px;
+        min-height: 4px;
+        border-radius: 4px 4px 0 0;
+        transition: height 0.6s ease;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .daily-bar:hover {
+        opacity: 0.8;
+        transform: scaleY(1.05);
+        transform-origin: bottom;
+    }
+
+    .daily-bar-label {
+        font-size: 10px;
+        color: #6c757d;
+        margin-top: 4px;
+        text-align: center;
+    }
+
+    .daily-bar-value {
+        font-size: 9px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 2px;
+    }
+
+    /* Tax Summary Card */
+    #taxSummaryPeriod {
+        font-size: 11px;
+        padding: 3px 10px;
+    }
+
+    /* Quick Stats Changes */
+    .stat-card .opacity-50 {
+        display: block;
+        margin-top: 2px;
+    }
+
+    /* Recent Receipts Total Badge */
+    #recentTotal {
+        font-size: 12px;
+        padding: 3px 10px;
+    }
+
+    /* Connection result animation */
+    #connectionResult {
+        transition: all 0.3s ease;
+    }
+
+    /* Daily bar tooltip */
+    .daily-bar-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a2e;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        margin-bottom: 4px;
+    }
+
+    .daily-bar:hover .daily-bar-tooltip {
+        opacity: 1;
+    }
+        
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            width: 280px;
+        }
+        
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        
+        .sidebar.collapsed {
+            width: 280px;
+        }
+        
+        .sidebar.collapsed .sidebar-brand h3,
+        .sidebar.collapsed .sidebar-brand small,
+        .sidebar.collapsed .menu-label,
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .nav-link .badge,
+        .sidebar.collapsed .sidebar-footer {
+            display: block;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            justify-content: flex-start;
+            padding: 12px 15px;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        
+        .sidebar-toggle {
+            display: block;
+        }
+        
+        .sidebar-overlay.open {
+            display: block;
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        
+        .sticky-header {
+            padding: 12px 15px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .sticky-header .header-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .content-area {
+            padding: 15px;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 20px;
+        }
+        
+        .filter-section .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .border-right {
+            border-right: none !important;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .sticky-header .page-title {
+            font-size: 16px;
+        }
+        
+        .sticky-header .page-title small {
+            display: none;
+        }
+        
+        .stat-card .card-body {
+            padding: 12px 15px;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 18px;
+        }
+    }
+    
+    /* Scrollbar styling */
+    .sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 10px;
+    }
+    
+    .json-preview {
+        max-height: 200px;
+        overflow: auto;
+        font-size: 12px;
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+    
+    .tab-pane-content {
+        display: none;
+    }
+    .tab-pane-content.active {
+        display: block;
+    }
+    
+    /* Modal overrides */
+    .modal-lg {
+        max-width: 900px;
+    }
+    .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    .form-control-static {
+        padding: 6px 0;
+        margin-bottom: 0;
+    }
+    
+    /* Tax Report Styles */
+    .tax-report-card {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s ease;
+    }
+    
+    .tax-report-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .tax-report-card .card-body {
+        padding: 15px 18px;
+    }
+    
+    .tax-report-card .card-header {
+        background: transparent;
+        border-bottom: none;
+        font-weight: 600;
+    }
+    
+    .tax-report-total {
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .tax-report-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Tax Report - Payment Method Badges */
+    .payment-method-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        margin: 2px 4px 2px 0;
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: 12px;
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .payment-method-badge .amount {
+        font-weight: 600;
+        color: #212529;
+    }
+    
+    /* Loading states */
+    .loading-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #e9ecef;
+        border-top-color: #007bff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Card header icons */
+    .card-header .fas {
+        color: #007bff;
+    }
+    
+    /* Table row hover */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,123,255,0.04);
+    }
+    
+    /* Badge status colors */
+    .badge-success {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    .badge-danger {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .badge-info {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+    
+    .badge-secondary {
+        background-color: #6c757d;
+        color: #fff;
+    }
+    
+    .badge-dark {
+        background-color: #343a40;
+        color: #fff;
+    }
+</style>
+</head>
+<body>
+
+    <!-- ============================================================
+    SIDEBAR TOGGLE (Mobile)
+    ============================================================ -->
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarMobile()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebarMobile()"></div>
+
+    <!-- ============================================================
+    SIDEBAR
+    ============================================================ -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div>
+                <h3><i class="fas fa-receipt"></i> Fiscal</h3>
+                <small>ZIMRA Compliance</small>
+            </div>
+            <button class="collapse-toggle" onclick="toggleSidebarCollapse()" title="Toggle sidebar">
+                <i class="fas fa-chevron-left" id="collapseIcon"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-label">Main</div>
+            
+            <div class="nav-item">
+                <div class="nav-link active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </div>
+            </div>
+            
+            <div class="nav-item">
+                <div class="nav-link" data-tab="receipts" onclick="switchTab('receipts')">
+                    <i class="fas fa-receipt"></i>
+                    <span>Receipts</span>
+                    <span class="badge" id="sidebarReceiptCount">0</span>
+                </div>
+            </div>
+            
+            <div class="nav-item" id="detailNavItem" style="display:none;">
+                <div class="nav-link" data-tab="detail" onclick="switchTab('detail')">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Receipt Detail</span>
+                </div>
+            </div>
+            
+            <div class="nav-item">
+                <div class="nav-link" data-tab="logs" onclick="switchTab('logs')">
+                    <i class="fas fa-history"></i>
+                    <span>Sync Logs</span>
+                </div>
+            </div>
+            
+            <div class="menu-label mt-3">Reports</div>
+            
+            <div class="nav-item">
+                <div class="nav-link" data-tab="tax-reports" onclick="switchTab('tax-reports')">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Tax Reports</span>
+                </div>
+            </div>
+            
+            <div class="menu-label mt-3">System</div>
+            
+            <div class="nav-item">
+                <div class="nav-link" data-tab="settings" onclick="switchTab('settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <i class="fas fa-shield-alt"></i> v1.0 &bull; ZIMRA Fiscalisation
+        </div>
+    </nav>
+
+    <!-- ============================================================
+    MAIN CONTENT
+    ============================================================ -->
+    <div class="main-content" id="mainContent">
+
+        <!-- ============================================================
+        STICKY HEADER
+        ============================================================ -->
+        <header class="sticky-header" id="stickyHeader">
+            <div class="page-title">
+                <span><a style="color: seagreen; text-decoration: none;" href="{% url 'home' %}"><b>HOME</b></a></span>
+                <span id="pageTitle">Dashboard</span>
+                <small id="pageSubtitle">Fiscalisation overview</small>
+            </div>
+            <div class="header-actions">
+                <span class="status-badge" id="headerStatusBadge">
+                    <i class="fas fa-circle mr-1"></i>
+                    <span id="headerStatusText">Loading...</span>
+                </span>
+                <button class="btn btn-sm btn-outline-primary" onclick="toggleFiscalisation()" id="headerToggleBtn">
+                    <i class="fas fa-pause"></i> <span id="headerToggleText">Pause</span>
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="syncAll()">
+                    <i class="fas fa-sync"></i> Sync All
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="retryFailed()">
+                    <i class="fas fa-redo"></i> Retry Failed
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="refreshData()">
+                    <i class="fas fa-refresh"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ============================================================
+        CONTENT AREA
+        ============================================================ -->
+        <div class="content-area">
+
+            <!-- ============================================================
+            TAB: DASHBOARD
+            ============================================================ -->
+            <div id="tab-dashboard" class="tab-pane-content active">
+                
+                <!-- Quick Stats Cards -->
+                <div class="row" id="statsContainer">
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card text-white bg-primary">
+                            <div class="card-body">
+                                <i class="fas fa-cubes stat-icon"></i>
+                                <div class="stat-number" id="stat-total">0</div>
+                                <p class="stat-label">Total Receipts</p>
+                                <small class="opacity-50" id="stat-total-change">—</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card text-white bg-success">
+                            <div class="card-body">
+                                <i class="fas fa-check-circle stat-icon"></i>
+                                <div class="stat-number" id="stat-synced">0</div>
+                                <p class="stat-label">Synced</p>
+                                <small class="opacity-50" id="stat-synced-percent">0%</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card text-white bg-warning">
+                            <div class="card-body">
+                                <i class="fas fa-clock stat-icon"></i>
+                                <div class="stat-number" id="stat-pending">0</div>
+                                <p class="stat-label">Pending</p>
+                                <small class="opacity-50" id="stat-pending-percent">0%</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card text-white bg-info">
+                            <div class="card-body">
+                                <i class="fas fa-spinner fa-spin stat-icon"></i>
+                                <div class="stat-number" id="stat-processing">0</div>
+                                <p class="stat-label">Processing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card text-white bg-danger">
+                            <div class="card-body">
+                                <i class="fas fa-exclamation-triangle stat-icon"></i>
+                                <div class="stat-number" id="stat-failed">0</div>
+                                <p class="stat-label">Failed</p>
+                                <small class="opacity-50" id="stat-failed-percent">0%</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card text-white bg-secondary">
+                            <div class="card-body">
+                                <i class="fas fa-calendar-day stat-icon"></i>
+                                <div class="stat-number" id="stat-today">0</div>
+                                <p class="stat-label">Today's Receipts</p>
+                                <small class="opacity-50" id="stat-today-change">—</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sync Performance & Device Status Row -->
+                <div class="row">
+                    <!-- Sync Performance Card -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0"><i class="fas fa-chart-line mr-2"></i>Sync Performance</h6>
+                                <span class="badge" id="syncStatusBadge">
+                                    <i class="fas fa-circle mr-1"></i> <span id="syncStatusText">Checking...</span>
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <!-- Success Rate Progress -->
+                                <div class="d-flex justify-content-between align-items-end mb-1">
+                                    <span class="text-muted small">Success Rate</span>
+                                    <span class="h5 mb-0" id="successRateText">0%</span>
+                                </div>
+                                <div class="progress" style="height: 25px; border-radius: 8px; background-color: #e9ecef;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: 0%;" id="successRateBar" 
+                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        <span id="successRateLabel">0%</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stats Row -->
+                                <div class="row mt-3 text-center">
+                                    <div class="col-4 border-right">
+                                        <div class="small text-muted">Total Attempts</div>
+                                        <div class="h6 mb-0 font-weight-bold" id="syncTotalAttempts">0</div>
+                                    </div>
+                                    <div class="col-4 border-right">
+                                        <div class="small text-success">Successful</div>
+                                        <div class="h6 mb-0 font-weight-bold text-success" id="syncSuccessful">0</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-danger">Failed</div>
+                                        <div class="h6 mb-0 font-weight-bold text-danger" id="syncFailed">0</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Last Sync Info -->
+                                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="far fa-clock text-muted mr-1"></i>
+                                        <span class="text-muted small">Last sync:</span>
+                                        <span id="lastSyncTime" class="small font-weight-medium">Never</span>
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-arrow-right text-muted small mr-1"></i>
+                                        <span class="text-muted small" id="syncTrend">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Device Status Card -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0"><i class="fas fa-server mr-2"></i>Device Status</h6>
+                                <span class="badge" id="deviceStatusBadge">
+                                    <i class="fas fa-circle mr-1"></i> <span id="deviceStatusText">Unknown</span>
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Device ID</small>
+                                        <p><code id="deviceIdDisplay">—</code></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Machine Code</small>
+                                        <p><code id="machineCodeDisplay">—</code></p>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">API Base URL</small>
+                                        <p><code id="apiBaseUrlDisplay" class="text-truncate d-block" style="max-width: 180px;">—</code></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">QR URL</small>
+                                        <p><code id="qrUrlDisplay" class="text-truncate d-block" style="max-width: 180px;">—</code></p>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Max Retry Count</small>
+                                        <p><code id="maxRetryDisplay">—</code></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Sync Interval</small>
+                                        <p><code id="syncIntervalDisplay">—</code></p>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="testConnection()">
+                                        <i class="fas fa-plug"></i> Test Connection
+                                    </button>
+                                    <span id="connectionResult" class="ml-2"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Activity & Tax Summary Row -->
+                <div class="row">
+                    <!-- Daily Activity Chart -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0"><i class="fas fa-calendar-alt mr-2"></i>Daily Activity (Last 7 Days)</h6>
+                                <span class="badge badge-light" id="dailyTotal">0 receipts</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="dailyActivityContainer" style="height: 180px;">
+                                    <div class="d-flex justify-content-between align-items-end h-100" id="dailyBars">
+                                        <!-- Bars will be rendered by JavaScript -->
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2" id="dailyLabels">
+                                    <!-- Labels will be rendered by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tax Summary -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0"><i class="fas fa-percentage mr-2"></i>Tax Summary</h6>
+                                <span class="badge badge-light" id="taxSummaryPeriod">This Month</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="small text-muted">Total Sales (incl. tax)</div>
+                                        <div class="h5 mb-0 text-primary font-weight-bold" id="taxSummarySales">$0.00</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="small text-muted">Total Tax</div>
+                                        <div class="h5 mb-0 text-success font-weight-bold" id="taxSummaryTax">$0.00</div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-6">
+                                        <div class="small text-muted">Total Receipts</div>
+                                        <div class="h5 mb-0 text-info font-weight-bold" id="taxSummaryReceipts">0</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="small text-muted">Average per Receipt</div>
+                                        <div class="h5 mb-0 text-warning font-weight-bold" id="taxSummaryAverage">$0.00</div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary w-100" onclick="switchTab('tax-reports')">
+                                        <i class="fas fa-file-invoice-dollar"></i> View Full Tax Report
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Receipts -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="table-container">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0"><i class="fas fa-history mr-2"></i>Recent Receipts</h6>
+                                <div>
+                                    <span class="badge badge-light mr-2" id="recentTotal">0 receipts</span>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="switchTab('receipts')">
+                                        View All <i class="fas fa-arrow-right ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Fiscal #</th>
+                                            <th>Type</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentReceiptsBody">
+                                        <tr><td colspan="6" class="text-center py-3">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            TAB: RECEIPTS
+            ============================================================ -->
+            <div id="tab-receipts" class="tab-pane-content">
+                <!-- Filters -->
+                <div class="filter-section">
+                    <div class="row align-items-end">
+                        <div class="col-md-2 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Status</label>
+                                <select id="filterStatus" class="form-control form-control-sm" onchange="loadReceipts()">
+                                    <option value="">All Statuses</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Type</label>
+                                <select id="filterType" class="form-control form-control-sm" onchange="loadReceipts()">
+                                    <option value="">All Types</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Currency</label>
+                                <select id="filterCurrency" class="form-control form-control-sm" onchange="loadReceipts()">
+                                    <option value="">All Currencies</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Search</label>
+                                <input type="text" id="filterSearch" class="form-control form-control-sm" 
+                                       placeholder="Search..." onkeyup="if(event.key==='Enter') loadReceipts()">
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-warning" onclick="bulkAction('retry')">
+                                    <i class="fas fa-redo"></i> Retry
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="bulkAction('void')">
+                                    <i class="fas fa-times"></i> Void
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="bulkAction('reset')">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receipts Table -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th>Fiscal #</th>
+                                    <th>Local #</th>
+                                    <th>Type</th>
+                                    <th>Currency</th>
+                                    <th>Total</th>
+                                    <th>Buyer</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th style="width: 120px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receiptsBody">
+                                <tr><td colspan="10" class="text-center py-3">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <span id="receiptPaginationInfo" class="small text-muted">Showing 0 of 0</span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="receiptPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            TAB: RECEIPT DETAIL
+            ============================================================ -->
+            <div id="tab-detail" class="tab-pane-content">
+                <div id="receiptDetailContainer">
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                        <p class="mt-3">Loading receipt details...</p>
+                    </div>
+                </div>
+            </div>
+            <!-- ============================================================
+            TAB: TAX REPORTS
+            ============================================================ -->
+            <div id="tab-tax-reports" class="tab-pane-content">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar mr-2"></i>Tax Reports</h5>
+                                <button class="btn btn-sm btn-success" onclick="exportTaxReport()">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <!-- Filters -->
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="small text-muted">Date From</label>
+                                            <input type="date" id="taxReportDateFrom" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="small text-muted">Date To</label>
+                                            <input type="date" id="taxReportDateTo" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="small text-muted">Currency</label>
+                                            <select id="taxReportCurrency" class="form-control form-control-sm" onchange="loadTaxReport()">
+                                                <option value="">All Currencies</option>
+                                                <option value="USD">USD</option>
+                                                <option value="ZWG">ZWG</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-end">
+                                        <button class="btn btn-primary btn-sm w-100" onclick="loadTaxReport()">
+                                            <i class="fas fa-search"></i> Generate Report
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Summary Cards -->
+                                <div class="row mb-4" id="taxReportSummary">
+                                    <div class="col-md-3">
+                                        <div class="card tax-report-card bg-light">
+                                            <div class="card-body">
+                                                <div class="tax-report-label">Total Sales (Incl. Tax)</div>
+                                                <div class="tax-report-total text-primary" id="taxTotalSales">$0.00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card tax-report-card bg-light" style="border-left-color: #28a745;">
+                                            <div class="card-body">
+                                                <div class="tax-report-label">Total Tax</div>
+                                                <div class="tax-report-total text-success" id="taxTotalTax">$0.00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card tax-report-card bg-light" style="border-left-color: #17a2b8;">
+                                            <div class="card-body">
+                                                <div class="tax-report-label">Number of Receipts</div>
+                                                <div class="tax-report-total text-info" id="taxReceiptCount">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card tax-report-card bg-light" style="border-left-color: #ffc107;">
+                                            <div class="card-body">
+                                                <div class="tax-report-label">Average per Receipt</div>
+                                                <div class="tax-report-total text-warning" id="taxAverage">$0.00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tax Breakdown by Tax Code and Currency -->
+                                <div class="table-container mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-percentage mr-2"></i>Tax Breakdown by Rate &amp; Currency</h6>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tax Rate</th>
+                                                    <th>Tax Code</th>
+                                                    <th>Currency</th>
+                                                    <th>Sales Amount</th>
+                                                    <th>Tax Amount</th>
+                                                    <th>Receipts</th>
+                                                    <th>Payment Methods</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="taxBreakdownBody">
+                                                <tr><td colspan="7" class="text-center py-3">Select date range and click Generate Report</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Method Summary -->
+                                <div class="table-container">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-credit-card mr-2"></i>Payment Method Summary</h6>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Currency</th>
+                                                    <th>Payment Method</th>
+                                                    <th>Total Amount</th>
+                                                    <th>Receipts Count</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="paymentMethodBody">
+                                                <tr><td colspan="4" class="text-center py-3">Select date range and click Generate Report</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            TAB: LOGS
+            ============================================================ -->
+            <div id="tab-logs" class="tab-pane-content">
+                <div class="filter-section">
+                    <div class="row align-items-end">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Result</label>
+                                <select id="logFilterSuccess" class="form-control form-control-sm" onchange="loadLogs()">
+                                    <option value="">All</option>
+                                    <option value="true">Success</option>
+                                    <option value="false">Failed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Date From</label>
+                                <input type="date" id="logFilterDateFrom" class="form-control form-control-sm" onchange="loadLogs()">
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="form-group">
+                                <label class="small text-muted">Date To</label>
+                                <input type="date" id="logFilterDateTo" class="form-control form-control-sm" onchange="loadLogs()">
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <button class="btn btn-sm btn-primary w-100" onclick="loadLogs()">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Receipt</th>
+                                    <th>Result</th>
+                                    <th>Synced</th>
+                                    <th>Failed</th>
+                                    <th>Duration</th>
+                                    <th>Time</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsBody">
+                                <tr><td colspan="7" class="text-center py-3">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <span id="logsPaginationInfo" class="small text-muted">Showing 0 of 0</span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="logsPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            TAB: SETTINGS
+            ============================================================ -->
+            <div id="tab-settings" class="tab-pane-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-cog mr-2"></i>Fiscalisation Settings</h6>
+                    </div>
+                    <div class="card-body">
+                        <form id="settingsForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>API Base URL</label>
+                                        <input type="url" name="api_base_url" class="form-control" 
+                                               value="{{ settings.api_base_url }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Device ID</label>
+                                        <input type="text" name="device_id" class="form-control" 
+                                               value="{{ settings.device_id }}">
+                                        <small class="text-muted">Your ZIMRA Device ID</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Machine Code</label>
+                                        <input type="text" name="machine_code" class="form-control" 
+                                               value="{{ settings.machine_code }}">
+                                        <small class="text-muted">Provided by Binary Software</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>API Password</label>
+                                        <input type="password" name="api_password" class="form-control" 
+                                               value="{{ settings.api_password }}">
+                                        <small class="text-muted">Provided by Binary Software</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>QR URL</label>
+                                        <input type="url" name="qr_url" class="form-control" 
+                                               value="{{ settings.qr_url }}">
+                                        <small class="text-muted">ZIMRA QR validation URL</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Sync Interval (seconds)</label>
+                                        <input type="number" name="sync_interval_seconds" class="form-control" 
+                                               value="{{ settings.sync_interval_seconds }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Max Retry Count</label>
+                                        <input type="number" name="max_retry_count" class="form-control" 
+                                               value="{{ settings.max_retry_count }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Admin Email</label>
+                                        <input type="email" name="admin_email" class="form-control" 
+                                               value="{{ settings.admin_email }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Admin Phone</label>
+                                        <input type="text" name="admin_phone" class="form-control" 
+                                               value="{{ settings.admin_phone }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="autoResume" 
+                                                   name="auto_resume_on_success" {% if settings.auto_resume_on_success %}checked{% endif %}>
+                                            <label class="custom-control-label" for="autoResume">Auto-resume on success</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Save Settings
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary ml-2" onclick="testConnection()">
+                                        <i class="fas fa-plug"></i> Test Connection
+                                    </button>
+                                    <span id="settingsResult" class="ml-3"></span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /content-area -->
+    </div><!-- /main-content -->
+
+    <!-- ============================================================
+    MODALS
+    ============================================================ -->
+
+    <!-- ============================================================
+    EDIT RECEIPT MODAL
+    ============================================================ -->
+    <div class="modal fade" id="editReceiptModal" tabindex="-1" role="dialog" aria-labelledby="editReceiptModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editReceiptModalLabel">
+                        <i class="fas fa-edit mr-2"></i>Edit Receipt
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="editReceiptModalBody">
+                    <div class="text-center py-3">
+                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                        <p class="mt-2">Loading receipt details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="saveReceiptEdit">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    VIEW RECEIPT MODAL (With Rendered QR Code)
+    ============================================================ -->
+    <div class="modal fade" id="viewReceiptModal" tabindex="-1" role="dialog" aria-labelledby="viewReceiptModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewReceiptModalLabel">
+                        <i class="fas fa-receipt mr-2"></i>Receipt Details
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="viewReceiptModalBody">
+                    <div class="text-center py-3">
+                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                        <p class="mt-2">Loading receipt details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    BOOTSTRAP & DEPENDENCIES
+    ============================================================ -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- <script src="{% static '' %}js/dialog/sweetalert2.min.js"></script> -->
+
+    <!-- ============================================================
+    APPLICATION JAVASCRIPT
+    ============================================================ -->
+    <script>
+    // ============================================================
+    // CSRF TOKEN
+    // ============================================================
+    const csrfToken = '{{ csrf_token }}';
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let state = {
+        currentTab: 'dashboard',
+        receiptsPage: 1,
+        receiptsPerPage: 50,
+        logsPage: 1,
+        logsPerPage: 50,
+        selectedReceipts: [],
+        isLoading: false,
+        isSidebarCollapsed: false,
+        currentQrReceiptId: null,
+    };
+
+    // ============================================================
+    // SIDEBAR FUNCTIONS
+    // ============================================================
+    function toggleSidebarCollapse() {
+        state.isSidebarCollapsed = !state.isSidebarCollapsed;
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const icon = document.getElementById('collapseIcon');
+        
+        if (state.isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            icon.className = 'fas fa-chevron-right';
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            icon.className = 'fas fa-chevron-left';
+        }
+        
+        localStorage.setItem('sidebarCollapsed', state.isSidebarCollapsed);
+    }
+
+    function toggleSidebarMobile() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebarOverlay').classList.toggle('open');
+    }
+
+    // ============================================================
+    // SWEETALERT HELPERS
+    // ============================================================
+    function showToast(icon, title, text = '') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+        Toast.fire({ icon, title, text });
+    }
+
+    function showConfirm(title, text, icon = 'question') {
+        return Swal.fire({
+            title,
+            text,
+            icon,
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, do it!',
+            cancelButtonText: 'Cancel'
+        });
+    }
+
+    function showLoading(title = 'Processing...') {
+        Swal.fire({
+            title,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
+    function closeLoading() {
+        Swal.close();
+    }
+
+    // ============================================================
+    // API HELPERS
+    // ============================================================
+    const API = {
+        async get(url) {
+            const response = await fetch(url);
+            return response.json();
+        },
+        async post(url, data = {}) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+            return response.json();
+        },
+        async put(url, data = {}) {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+            return response.json();
+        }
+    };
+
+    // ============================================================
+    // UTILITY FUNCTIONS
+    // ============================================================
+    function getStatusBadgeClass(status) {
+        const map = {
+            'SYNCED': 'badge-success',
+            'PENDING': 'badge-warning',
+            'PROCESSING': 'badge-processing',
+            'FAILED': 'badge-danger',
+            'VOID': 'badge-dark',
+        };
+        return map[status] || 'badge-secondary';
+    }
+
+    function getStatusDisplay(status) {
+        const map = {
+            'SYNCED': 'Synced',
+            'PENDING': 'Pending',
+            'PROCESSING': 'Processing...',
+            'FAILED': 'Failed',
+            'VOID': 'Voided',
+        };
+        return map[status] || status;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return d.toLocaleString('en-ZW', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+
+    function formatCurrency(amount, currency = 'USD') {
+        return `${currency} ${parseFloat(amount || 0).toFixed(2)}`;
+    }
+
+    // ============================================================
+    // QR CODE GENERATOR
+    // ============================================================
+    function generateQRCode(containerId, url) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        // Clear previous QR
+        container.innerHTML = '';
+        
+        if (!url) {
+            container.innerHTML = '<p class="text-muted">No QR code available</p>';
+            return;
+        }
+        
+        try {
+            // Create QR code
+            new QRCode(container, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Make it clickable
+            const canvas = container.querySelector('canvas');
+            if (canvas) {
+                canvas.style.cursor = 'pointer';
+                canvas.addEventListener('click', function() {
+                    window.open(url, '_blank');
+                });
+            }
+            
+            // Add clickable link below
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.className = 'btn btn-sm btn-outline-primary mt-2';
+            link.innerHTML = '<i class="fas fa-external-link-alt"></i> Open QR Code';
+            container.appendChild(link);
+            
+        } catch (e) {
+            console.error('QR generation error:', e);
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Could not generate QR code. 
+                    <a href="${url}" target="_blank" class="btn btn-sm btn-primary mt-2">View QR Link</a>
+                </div>
+            `;
+        }
+    }
+
+    // ============================================================
+    // TAB MANAGEMENT
+    // ============================================================
+    function switchTab(tab) {
+        state.currentTab = tab;
+        
+        document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
+        const sidebarLink = document.querySelector(`.sidebar .nav-link[data-tab="${tab}"]`);
+        if (sidebarLink) sidebarLink.classList.add('active');
+        
+        document.querySelectorAll('.tab-pane-content').forEach(el => el.classList.remove('active'));
+        const tabPane = document.getElementById(`tab-${tab}`);
+        if (tabPane) tabPane.classList.add('active');
+        
+        const titles = {
+            'dashboard': { title: 'Dashboard', subtitle: 'Fiscalisation overview' },
+            'receipts': { title: 'Receipts', subtitle: 'Manage fiscal receipts' },
+            'detail': { title: 'Receipt Detail', subtitle: 'View receipt information' },
+            'tax-reports': { title: 'Tax Reports', subtitle: 'View tax breakdown reports' },
+            'logs': { title: 'Sync Logs', subtitle: 'View sync history' },
+            'settings': { title: 'Settings', subtitle: 'Configure fiscalisation' },
+        };
+        const info = titles[tab] || titles.dashboard;
+        document.getElementById('pageTitle').textContent = info.title;
+        document.getElementById('pageSubtitle').textContent = info.subtitle;
+        
+        document.getElementById('detailNavItem').style.display = tab === 'detail' ? 'block' : 'none';
+        
+        switch(tab) {
+            case 'dashboard':
+                loadDashboard();
+                break;
+            case 'receipts':
+                loadReceipts();
+                break;
+            case 'tax-reports':
+                loadTaxReport();
+                break;
+            case 'logs':
+                loadLogs();
+                break;
+            case 'settings':
+                loadSettings();
+                break;
+        }
+    }
+
+    // ============================================================
+    // DASHBOARD
+    // ============================================================
+    async function loadDashboard() {
+        try {
+            const data = await API.get('/fiscalisation/api/stats/');
+            if (!data.success) return;
+            
+            const stats = data.stats;
+            const total = stats.total || 0;
+            const synced = stats.synced || 0;
+            const pending = stats.pending || 0;
+            const processing = stats.processing || 0;
+            const failed = stats.failed || 0;
+            
+            // Update stat cards
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-synced').textContent = synced;
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('stat-processing').textContent = processing;
+            document.getElementById('stat-failed').textContent = failed;
+            
+            // Calculate percentages
+            const syncedPercent = total > 0 ? Math.round((synced / total) * 100) : 0;
+            const pendingPercent = total > 0 ? Math.round((pending / total) * 100) : 0;
+            const failedPercent = total > 0 ? Math.round((failed / total) * 100) : 0;
+            
+            document.getElementById('stat-synced-percent').textContent = `${syncedPercent}%`;
+            document.getElementById('stat-pending-percent').textContent = `${pendingPercent}%`;
+            document.getElementById('stat-failed-percent').textContent = `${failedPercent}%`;
+            
+            // Today's receipts
+            const today = new Date().toISOString().split('T')[0];
+            const todayCount = await getTodayCount(today);
+            document.getElementById('stat-today').textContent = todayCount;
+            
+            // Update sidebar count
+            document.getElementById('sidebarReceiptCount').textContent = total;
+            
+            // Update sync performance
+            updateSyncStats(data);
+            
+            // Update fiscalisation status
+            updateFiscalisationUI(data.fiscalisation_active);
+            
+            // Update device status
+            await updateDeviceStatus();
+            
+            // Update daily activity chart
+            await updateDailyActivity();
+            
+            // Update tax summary
+            await updateTaxSummary();
+            
+            // Recent receipts
+            const receipts = await API.get('/fiscalisation/api/receipts/?per_page=10');
+            renderRecentReceipts(receipts);
+            document.getElementById('recentTotal').textContent = `${receipts.data?.length || 0} receipts`;
+            
+        } catch (e) {
+            console.error('Dashboard error:', e);
+        }
+    }
+
+    // ============================================================
+    // GET TODAY'S COUNT
+    // ============================================================
+    async function getTodayCount(date) {
+        try {
+            const data = await API.get(`/fiscalisation/api/receipts/?date_from=${date}&date_to=${date}&per_page=1`);
+            return data.total || 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    // ============================================================
+    // UPDATE DAILY ACTIVITY
+    // ============================================================
+    async function updateDailyActivity() {
+        try {
+            const days = 7;
+            const dates = [];
+            const counts = [];
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = d.toISOString().split('T')[0];
+                dates.push(dateStr);
+                
+                const data = await API.get(`/fiscalisation/api/receipts/?date_from=${dateStr}&date_to=${dateStr}&per_page=1`);
+                counts.push(data.total || 0);
+            }
+            
+            const maxCount = Math.max(...counts, 1);
+            const total = counts.reduce((a, b) => a + b, 0);
+            document.getElementById('dailyTotal').textContent = `${total} receipts`;
+            
+            // Render bars
+            const container = document.getElementById('dailyBars');
+            const labelsContainer = document.getElementById('dailyLabels');
+            
+            const colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69'];
+            
+            container.innerHTML = counts.map((count, i) => {
+                const height = Math.max((count / maxCount) * 100, 5);
+                const date = new Date(dates[i]);
+                const dayName = date.toLocaleDateString('en', { weekday: 'short' });
+                const dayNum = date.getDate();
+                
+                return `
+                    <div class="daily-bar-wrapper">
+                        <div class="daily-bar-value">${count}</div>
+                        <div class="daily-bar" style="height: ${height}%; background: ${colors[i % colors.length]};">
+                            <span class="daily-bar-tooltip">${dayName} ${dayNum}: ${count} receipts</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            labelsContainer.innerHTML = dates.map(d => {
+                const date = new Date(d);
+                return `<span class="daily-bar-label">${date.toLocaleDateString('en', { weekday: 'short' })}</span>`;
+            }).join('');
+            
+        } catch (e) {
+            console.error('Daily activity error:', e);
+        }
+    }
+
+    // ============================================================
+    // UPDATE TAX SUMMARY
+    // ============================================================
+    async function updateTaxSummary() {
+        try {
+            const data = await API.get('/fiscalisation/api/tax-report-summary/');
+            if (!data.success) return;
+            
+            const summary = data.data;
+            document.getElementById('taxSummarySales').textContent = formatCurrency(summary.total_sales || 0);
+            document.getElementById('taxSummaryTax').textContent = formatCurrency(summary.total_tax || 0);
+            document.getElementById('taxSummaryReceipts').textContent = summary.total_receipts || 0;
+            
+            const avg = summary.total_receipts > 0 ? summary.total_sales / summary.total_receipts : 0;
+            document.getElementById('taxSummaryAverage').textContent = formatCurrency(avg);
+            
+            // Update period
+            if (summary.period) {
+                const from = new Date(summary.period.from);
+                const to = new Date(summary.period.to);
+                const monthName = from.toLocaleDateString('en', { month: 'long' });
+                document.getElementById('taxSummaryPeriod').textContent = `${monthName} ${from.getFullYear()}`;
+            }
+            
+        } catch (e) {
+            console.error('Tax summary error:', e);
+        }
+    }
+
+    // ============================================================
+    // UPDATE SYNC STATS
+    // ============================================================
+    function updateSyncStats(data) {
+        const rate = data.success_rate || 0;
+        const total = data.total_attempts || 0;
+        const successful = data.successful || 0;
+        const failed = data.failed || 0;
+        
+        // Update progress bar
+        const bar = document.getElementById('successRateBar');
+        const rateText = document.getElementById('successRateText');
+        const rateLabel = document.getElementById('successRateLabel');
+        
+        // Set color based on rate
+        let color = 'bg-success';
+        let status = 'Excellent';
+        if (rate < 50) {
+            color = 'bg-danger';
+            status = 'Critical';
+        } else if (rate < 70) {
+            color = 'bg-warning';
+            status = 'Warning';
+        } else if (rate < 90) {
+            color = 'bg-info';
+            status = 'Good';
+        }
+        
+        bar.className = `progress-bar ${color}`;
+        bar.style.width = `${rate}%`;
+        bar.setAttribute('aria-valuenow', rate);
+        
+        rateText.textContent = `${Math.round(rate)}%`;
+        rateLabel.textContent = `${Math.round(rate)}%`;
+        
+        // Update stats
+        document.getElementById('syncTotalAttempts').textContent = total;
+        document.getElementById('syncSuccessful').textContent = successful;
+        document.getElementById('syncFailed').textContent = failed;
+        
+        // Update status badge
+        const statusBadge = document.getElementById('syncStatusBadge');
+        const statusText = document.getElementById('syncStatusText');
+        
+        statusBadge.className = `badge badge-${color.replace('bg-', '')}`;
+        statusText.textContent = status;
+        
+        // Update trend
+        const trend = document.getElementById('syncTrend');
+        if (data.trend && data.trend !== 'stable') {
+            const trendIcon = data.trend === 'up' ? '📈' : '📉';
+            const trendColor = data.trend === 'up' ? 'text-success' : 'text-danger';
+            trend.innerHTML = `<span class="${trendColor}">${trendIcon} ${data.trend_percent || 0}%</span>`;
+        } else if (data.trend === 'stable') {
+            trend.innerHTML = `<span class="text-muted">➡️ Stable</span>`;
+        } else {
+            trend.textContent = '—';
+        }
+        
+        // Update last sync time
+        document.getElementById('lastSyncTime').textContent = data.last_sync_at ? formatDate(data.last_sync_at) : 'Never';
+    }
+
+    // ============================================================
+    // UPDATE DEVICE STATUS
+    // ============================================================
+    async function updateDeviceStatus() {
+        try {
+            const settings = await API.get('/fiscalisation/api/settings/');
+            if (settings.success) {
+                document.getElementById('deviceIdDisplay').textContent = settings.data.device_id || 'Not set';
+                document.getElementById('machineCodeDisplay').textContent = settings.data.machine_code || 'Not set';
+                document.getElementById('apiBaseUrlDisplay').textContent = settings.data.api_base_url || 'Not set';
+                document.getElementById('qrUrlDisplay').textContent = settings.data.qr_url || 'Not set';
+                document.getElementById('maxRetryDisplay').textContent = settings.data.max_retry_count || '5';
+                document.getElementById('syncIntervalDisplay').textContent = `${settings.data.sync_interval_seconds || 30}s`;
+                
+                // Update device status badge
+                const badge = document.getElementById('deviceStatusBadge');
+                const statusText = document.getElementById('deviceStatusText');
+                
+                if (settings.data.device_id && settings.data.machine_code) {
+                    badge.className = 'badge badge-success';
+                    statusText.textContent = 'Configured';
+                } else if (settings.data.device_id || settings.data.machine_code) {
+                    badge.className = 'badge badge-warning';
+                    statusText.textContent = 'Partial';
+                } else {
+                    badge.className = 'badge badge-danger';
+                    statusText.textContent = 'Not Configured';
+                }
+            }
+        } catch (e) {
+            console.error('Device status error:', e);
+            const badge = document.getElementById('deviceStatusBadge');
+            badge.className = 'badge badge-danger';
+            document.getElementById('deviceStatusText').textContent = 'Error';
+        }
+    }
+
+    // ============================================================
+    // UPDATE FISCALISATION UI
+    // ============================================================
+    function updateFiscalisationUI(active) {
+        const badge = document.getElementById('headerStatusBadge');
+        const statusText = document.getElementById('headerStatusText');
+        const toggleText = document.getElementById('headerToggleText');
+        const toggleBtn = document.getElementById('headerToggleBtn');
+        
+        if (active) {
+            badge.className = 'status-badge badge-success';
+            statusText.textContent = 'Active';
+            toggleText.textContent = 'Pause';
+            toggleBtn.className = 'btn btn-sm btn-outline-danger';
+        } else {
+            badge.className = 'status-badge badge-danger';
+            statusText.textContent = 'Paused';
+            toggleText.textContent = 'Resume';
+            toggleBtn.className = 'btn btn-sm btn-outline-success';
+        }
+    }
+
+    function renderRecentReceipts(data) {
+        const tbody = document.getElementById('recentReceiptsBody');
+        const receipts = data.data || [];
+        
+        if (receipts.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3">No receipts yet</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = receipts.map(r => `
+            <tr>
+                <td><strong>${r.inv_number || '—'}</strong></td>
+                <td>${r.doc_type_display}</td>
+                <td>${formatCurrency(r.document_total, r.doc_currency)}</td>
+                <td><span class="badge badge-status ${getStatusBadgeClass(r.status)}">${getStatusDisplay(r.status)}</span></td>
+                <td>${formatDate(r.created_at)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewReceiptModal(${r.id})" title="View">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${r.status === 'FAILED' || r.status === 'PENDING' ? 
+                        `<button class="btn btn-sm btn-outline-danger" onclick="syncReceipt(${r.id})" title="Sync">
+                            <i class="fas fa-sync"></i>
+                        </button>` : ''}
+                    ${r.status === 'PENDING' ? 
+                        `<button class="btn btn-sm btn-outline-warning" onclick="editReceipt(${r.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // ============================================================
+    // RECEIPTS
+    // ============================================================
+    async function loadReceipts() {
+        if (state.isLoading) return;
+        state.isLoading = true;
+        
+        try {
+            const status = document.getElementById('filterStatus').value;
+            const type = document.getElementById('filterType').value;
+            const currency = document.getElementById('filterCurrency').value;
+            const search = document.getElementById('filterSearch').value;
+            
+            const url = `/fiscalisation/api/receipts/?page=${state.receiptsPage}&per_page=${state.receiptsPerPage}` +
+                (status ? `&status=${status}` : '') +
+                (type ? `&type=${type}` : '') +
+                (currency ? `&currency=${currency}` : '') +
+                (search ? `&search=${encodeURIComponent(search)}` : '');
+            
+            const data = await API.get(url);
+            
+            if (!data.success) {
+                document.getElementById('receiptsBody').innerHTML = 
+                    `<tr><td colspan="10" class="text-center py-3 text-danger">Error loading receipts</td></tr>`;
+                return;
+            }
+            
+            const filters = data.filters || {};
+            updateFilterOptions('filterStatus', filters.available_statuses || [], getStatusDisplay);
+            updateFilterOptions('filterType', filters.available_types || [], 
+                val => ({'FISCALINVOICE': 'Invoice', 'CREDITNOTE': 'Credit Note', 'DEBITNOTE': 'Debit Note'}[val] || val));
+            updateFilterOptions('filterCurrency', filters.available_currencies || []);
+            
+            document.getElementById('sidebarReceiptCount').textContent = data.total || 0;
+            
+            renderReceipts(data);
+            
+            renderPagination('receiptPagination', data.page, data.total_pages, (page) => {
+                state.receiptsPage = page;
+                loadReceipts();
+            });
+            
+            document.getElementById('receiptPaginationInfo').textContent = 
+                `Showing ${data.data.length} of ${data.total} receipts`;
+            
+        } catch (e) {
+            console.error('Load receipts error:', e);
+            document.getElementById('receiptsBody').innerHTML = 
+                `<tr><td colspan="10" class="text-center py-3 text-danger">Error: ${e.message}</td></tr>`;
+        } finally {
+            state.isLoading = false;
+        }
+    }
+
+    function updateFilterOptions(selectId, values, labelFn) {
+        const select = document.getElementById(selectId);
+        const current = select.value;
+        const options = select.querySelectorAll('option:not(:first-child)');
+        options.forEach(el => el.remove());
+        
+        values.forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = labelFn ? labelFn(val) : val;
+            select.appendChild(opt);
+        });
+        
+        select.value = current;
+    }
+
+    function renderReceipts(data) {
+        const tbody = document.getElementById('receiptsBody');
+        const receipts = data.data || [];
+        
+        if (receipts.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-3">No receipts found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = receipts.map(r => `
+            <tr>
+                <td><input type="checkbox" class="receipt-select" value="${r.id}" onchange="updateSelected()"></td>
+                <td><strong>${r.inv_number || '—'}</strong></td>
+                <td>${r.local_receipt_number || '—'}</td>
+                <td>${r.doc_type_display}</td>
+                <td>${r.doc_currency}</td>
+                <td>${formatCurrency(r.document_total, r.doc_currency)}</td>
+                <td>${r.buyer_register_name || '—'}</td>
+                <td><span class="badge badge-status ${getStatusBadgeClass(r.status)}">${getStatusDisplay(r.status)}</span></td>
+                <td>${formatDate(r.created_at)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewReceiptModal(${r.id})" title="View">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${r.status === 'FAILED' || r.status === 'PENDING' ? 
+                        `<button class="btn btn-sm btn-outline-danger" onclick="syncReceipt(${r.id})" title="Sync">
+                            <i class="fas fa-sync"></i>
+                        </button>` : ''}
+                    ${r.status === 'PENDING' ? 
+                        `<button class="btn btn-sm btn-outline-warning" onclick="editReceipt(${r.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function toggleSelectAll() {
+        const checked = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.receipt-select').forEach(cb => cb.checked = checked);
+        updateSelected();
+    }
+
+    function updateSelected() {
+        state.selectedReceipts = Array.from(document.querySelectorAll('.receipt-select:checked'))
+            .map(cb => parseInt(cb.value));
+    }
+
+    function getSelectedReceipts() {
+        return state.selectedReceipts;
+    }
+
+    // ============================================================
+    // EDIT RECEIPT IN MODAL
+    // ============================================================
+    async function editReceipt(receiptId) {
+        try {
+            const modal = $('#editReceiptModal');
+            const body = document.getElementById('editReceiptModalBody');
+            body.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2">Loading receipt details...</p>
+                </div>
+            `;
+            modal.modal('show');
+            
+            const data = await API.get(`/fiscalisation/api/receipt/${receiptId}/`);
+            
+            if (!data.success) {
+                body.innerHTML = `<div class="alert alert-danger">${data.error || 'Receipt not found'}</div>`;
+                return;
+            }
+            
+            const r = data.data;
+            
+            let lineItemsHtml = '';
+            if (r.line_items && r.line_items.length > 0) {
+                lineItemsHtml = r.line_items.map((item, i) => `
+                    <tr>
+                        <td>
+                            <input type="text" class="form-control form-control-sm line-item-desc" 
+                                   value="${item.LineDescription || ''}" data-index="${i}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" class="form-control form-control-sm line-item-price" 
+                                   value="${item.UnitPrice || 0}" data-index="${i}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" class="form-control form-control-sm line-item-qty" 
+                                   value="${item.Quantity || 0}" data-index="${i}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" class="form-control form-control-sm line-item-total" 
+                                   value="${item.Total || 0}" data-index="${i}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" class="form-control form-control-sm line-item-tax" 
+                                   value="${item.TaxPercentage || 0}" data-index="${i}">
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm line-item-hs" 
+                                   value="${item.receiptLineHSCode || ''}" data-index="${i}">
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm line-item-taxcode" 
+                                   value="${item.StrTaxCode || ''}" data-index="${i}">
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                lineItemsHtml = '<tr><td colspan="7" class="text-center">No line items</td></tr>';
+            }
+            
+            body.innerHTML = `
+                <form id="editReceiptForm">
+                    <input type="hidden" id="editReceiptId" value="${r.id}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><strong>Fiscal Number</strong></label>
+                                <p class="form-control-static">${r.inv_number || 'Pending'}</p>
+                            </div>
+                            <div class="form-group">
+                                <label>Buyer Name <span class="text-danger">*</span></label>
+                                <input type="text" id="editBuyerName" class="form-control" 
+                                       value="${r.buyer_register_name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Buyer TIN</label>
+                                <input type="text" id="editBuyerTIN" class="form-control" 
+                                       value="${r.buyer_TIN || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>VAT Number</label>
+                                <input type="text" id="editVATNumber" class="form-control" 
+                                       value="${r.VAT_number || ''}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><strong>Status</strong></label>
+                                <p class="form-control-static">
+                                    <span class="badge badge-status ${getStatusBadgeClass(r.status)}">
+                                        ${getStatusDisplay(r.status)}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text" id="editPhone" class="form-control" 
+                                       value="${r.phone_no || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="editEmail" class="form-control" 
+                                       value="${r.email || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label><strong>Total</strong></label>
+                                <p class="form-control-static text-primary font-weight-bold">
+                                    ${formatCurrency(r.document_total, r.doc_currency)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-list mr-2"></i>Line Items</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Description</th>
+                                    <th style="width:100px;">Unit Price</th>
+                                    <th style="width:80px;">Qty</th>
+                                    <th style="width:100px;">Total</th>
+                                    <th style="width:80px;">Tax %</th>
+                                    <th style="width:100px;">HS Code</th>
+                                    <th style="width:70px;">Tax Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${lineItemsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            `;
+            
+            window._editReceiptData = r;
+            
+        } catch (e) {
+            document.getElementById('editReceiptModalBody').innerHTML = 
+                `<div class="alert alert-danger">Error loading receipt: ${e.message}</div>`;
+        }
+    }
+
+    // ============================================================
+    // SAVE EDITED RECEIPT
+    // ============================================================
+    async function saveEditedReceipt() {
+        const receiptId = document.getElementById('editReceiptId').value;
+        
+        const data = {
+            buyer_register_name: document.getElementById('editBuyerName').value,
+            buyer_TIN: document.getElementById('editBuyerTIN').value,
+            VAT_number: document.getElementById('editVATNumber').value,
+            phone_no: document.getElementById('editPhone').value,
+            email: document.getElementById('editEmail').value,
+            line_items: [],
+        };
+        
+        const descs = document.querySelectorAll('.line-item-desc');
+        const prices = document.querySelectorAll('.line-item-price');
+        const qtys = document.querySelectorAll('.line-item-qty');
+        const totals = document.querySelectorAll('.line-item-total');
+        const taxes = document.querySelectorAll('.line-item-tax');
+        const hss = document.querySelectorAll('.line-item-hs');
+        const taxcodes = document.querySelectorAll('.line-item-taxcode');
+        
+        for (let i = 0; i < descs.length; i++) {
+            if (descs[i].value.trim()) {
+                data.line_items.push({
+                    LineDescription: descs[i].value.trim(),
+                    UnitPrice: prices[i].value || '0',
+                    Quantity: qtys[i].value || '0',
+                    Total: totals[i].value || '0',
+                    TaxPercentage: taxes[i].value || '0',
+                    receiptLineHSCode: hss[i].value || '95069100',
+                    StrTaxCode: taxcodes[i].value || 'B',
+                    IntTaxCode: 2,
+                });
+            }
+        }
+        
+        if (!data.buyer_register_name) {
+            showToast('warning', 'Validation Error', 'Buyer Name is required');
+            return;
+        }
+        
+        if (data.line_items.length === 0) {
+            showToast('warning', 'Validation Error', 'At least one line item is required');
+            return;
+        }
+        
+        const result = await showConfirm(
+            'Save Changes?',
+            'This will update the receipt. Are you sure?',
+            'info'
+        );
+        if (!result.isConfirmed) return;
+        
+        showLoading('Saving changes...');
+        
+        try {
+            const response = await API.put(`/fiscalisation/api/receipt/${receiptId}/`, data);
+            closeLoading();
+            
+            if (response.success) {
+                showToast('success', 'Receipt updated successfully!');
+                $('#editReceiptModal').modal('hide');
+                refreshData();
+            } else {
+                showToast('error', 'Error', response.error);
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    // ============================================================
+    // VIEW RECEIPT IN MODAL (WITH QR CODE RENDERED)
+    // ============================================================
+    async function viewReceiptModal(receiptId) {
+        try {
+            const modal = $('#viewReceiptModal');
+            const body = document.getElementById('viewReceiptModalBody');
+            body.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2">Loading receipt details...</p>
+                </div>
+            `;
+            modal.modal('show');
+            
+            const data = await API.get(`/fiscalisation/api/receipt/${receiptId}/`);
+            
+            if (!data.success) {
+                body.innerHTML = `<div class="alert alert-danger">${data.error || 'Receipt not found'}</div>`;
+                return;
+            }
+            
+            const r = data.data;
+            state.currentQrReceiptId = receiptId;
+            
+            // Build view HTML
+            let lineItemsHtml = '';
+            if (r.line_items && r.line_items.length > 0) {
+                lineItemsHtml = r.line_items.map((item, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${item.LineDescription || ''}</td>
+                        <td>${item.UnitPrice || '0'}</td>
+                        <td>${item.Quantity || '0'}</td>
+                        <td><strong>${item.Total || '0'}</strong></td>
+                        <td>${item.TaxPercentage || '0'}</td>
+                        <td>${item.StrTaxCode || '—'}</td>
+                        <td>${item.receiptLineHSCode || '—'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                lineItemsHtml = '<tr><td colspan="8" class="text-center">No line items</td></tr>';
+            }
+            
+            let paymentsHtml = '';
+            if (r.payment_lines && r.payment_lines.length > 0) {
+                paymentsHtml = r.payment_lines.map(p => `
+                    <tr><td>${p.PaymentMethodName || '—'}</td><td>${p.PaymentAmt || '0'}</td></tr>
+                `).join('');
+            } else {
+                paymentsHtml = '<tr><td colspan="2" class="text-center">No payments</td></tr>';
+            }
+            
+            let logsHtml = '';
+            if (r.logs && r.logs.length > 0) {
+                logsHtml = r.logs.map(log => `
+                    <tr>
+                        <td>${formatDate(log.attempt_time)}</td>
+                        <td><span class="badge badge-status ${log.success ? 'badge-success' : 'badge-danger'}">${log.success ? '✅ Success' : '❌ Failed'}</span></td>
+                        <td>${log.duration_ms || '—'}ms</td>
+                        <td class="text-danger">${log.error_message || '—'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                logsHtml = '<tr><td colspan="4" class="text-center">No logs</td></tr>';
+            }
+            
+            body.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>Receipt Information</strong></div>
+                            <div class="card-body p-0">
+                                <table class="table table-bordered mb-0">
+                                    <tr><th style="width:40%">Fiscal Number</th><td>${r.inv_number || '—'}</td></tr>
+                                    <tr><th>Local Number</th><td>${r.local_receipt_number || '—'}</td></tr>
+                                    <tr><th>Document Type</th><td>${r.doc_type_display}</td></tr>
+                                    <tr><th>Currency</th><td>${r.doc_currency}</td></tr>
+                                    <tr><th>Total</th><td><strong>${formatCurrency(r.document_total, r.doc_currency)}</strong></td></tr>
+                                    <tr><th>Date</th><td>${r.my_yyy_mm_dd_date} ${r.my_24hr_time_format_with_seconds}</td></tr>
+                                    <tr><th>Status</th><td><span class="badge badge-status ${getStatusBadgeClass(r.status)}">${getStatusDisplay(r.status)}</span></td></tr>
+                                    <tr><th>Created</th><td>${formatDate(r.created_at)}</td></tr>
+                                    <tr><th>Synced</th><td>${r.synced_at ? formatDate(r.synced_at) : 'Not synced'}</td></tr>
+                                    <tr><th>Retry Count</th><td>${r.retry_count}/5</td></tr>
+                                    ${r.last_error ? `<tr><th>Last Error</th><td class="text-danger">${r.last_error}</td></tr>` : ''}
+                                    ${r.invoice_number_to_credit_debit ? `<tr><th>Original Invoice</th><td>${r.invoice_number_to_credit_debit}</td></tr>` : ''}
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>Buyer Information</strong></div>
+                            <div class="card-body p-0">
+                                <table class="table table-bordered mb-0">
+                                    <tr><th style="width:40%">Name</th><td>${r.buyer_register_name || '—'}</td></tr>
+                                    <tr><th>TIN</th><td>${r.buyer_TIN || '—'}</td></tr>
+                                    <tr><th>VAT Number</th><td>${r.VAT_number || '—'}</td></tr>
+                                    <tr><th>Phone</th><td>${r.phone_no || '—'}</td></tr>
+                                    <tr><th>Email</th><td>${r.email || '—'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        ${r.qr_code_url ? `
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>QR Code</strong></div>
+                            <div class="card-body text-center">
+                                <div id="qrCodeContainer" class="qr-code-wrapper"></div>
+                            </div>
+                        </div>` : `
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>QR Code</strong></div>
+                            <div class="card-body text-center">
+                                <p class="text-muted"><i class="fas fa-qrcode fa-2x"></i><br>No QR code available</p>
+                            </div>
+                        </div>`}
+                    </div>
+                </div>
+                
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>Tax Totals</strong></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3"><strong>Non-Taxable:</strong> ${formatCurrency(r.nontaxible_sales_amt_total, r.doc_currency)}</div>
+                                    <div class="col-md-3"><strong>Zero % Sales:</strong> ${formatCurrency(r.zero_perc_sales_amt_total, r.doc_currency)}</div>
+                                    <div class="col-md-3"><strong>15% Sales:</strong> ${formatCurrency(r.tax_15_perc_sales_total, r.doc_currency)}</div>
+                                    <div class="col-md-3"><strong>15% Tax:</strong> ${formatCurrency(r.tax_amt_15_perc, r.doc_currency)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>Line Items (${r.line_items ? r.line_items.length : 0})</strong></div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Description</th>
+                                                <th>Unit Price</th>
+                                                <th>Qty</th>
+                                                <th>Total</th>
+                                                <th>Tax %</th>
+                                                <th>Tax Code</th>
+                                                <th>HS Code</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>${lineItemsHtml}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>Payments</strong></div>
+                            <div class="card-body p-0">
+                                <table class="table table-bordered mb-0">
+                                    <thead><tr><th>Method</th><th>Amount</th></tr></thead>
+                                    <tbody>${paymentsHtml}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-2">
+                            <div class="card-header"><strong>Sync Logs</strong></div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0">
+                                        <thead><tr><th>Time</th><th>Result</th><th>Duration</th><th>Error</th></tr></thead>
+                                        <tbody>${logsHtml}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${r.binary_server_response ? `
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header"><strong>Binary Server Response</strong></div>
+                            <div class="card-body">
+                                <pre class="json-preview">${JSON.stringify(r.binary_server_response, null, 2)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>` : ''}
+            `;
+            
+            // Generate QR code after modal content is rendered
+            if (r.qr_code_url) {
+                // Wait for DOM to render
+                setTimeout(() => {
+                    generateQRCode('qrCodeContainer', r.qr_code_url);
+                }, 100);
+            }
+            
+        } catch (e) {
+            document.getElementById('viewReceiptModalBody').innerHTML = 
+                `<div class="alert alert-danger">Error loading receipt: ${e.message}</div>`;
+        }
+    }
+
+    // ============================================================
+    // TAX REPORTS
+    // ============================================================
+    async function loadTaxReport() {
+        const dateFrom = document.getElementById('taxReportDateFrom').value;
+        const dateTo = document.getElementById('taxReportDateTo').value;
+        const currency = document.getElementById('taxReportCurrency').value;
+        
+        // Show loading state
+        const breakdownBody = document.getElementById('taxBreakdownBody');
+        const paymentBody = document.getElementById('paymentMethodBody');
+        breakdownBody.innerHTML = '<tr><td colspan="7" class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Loading report...</td></tr>';
+        paymentBody.innerHTML = '<tr><td colspan="4" class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+        
+        try {
+            let url = '/fiscalisation/api/tax-report/?';
+            if (dateFrom) url += `date_from=${dateFrom}&`;
+            if (dateTo) url += `date_to=${dateTo}&`;
+            if (currency) url += `currency=${currency}&`;
+            url += 'status=SYNCED';
+            
+            const data = await API.get(url);
+            
+            if (!data.success) {
+                breakdownBody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-danger">Error: ${data.error || 'Failed to load report'}</td></tr>`;
+                paymentBody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-danger">Error: ${data.error || 'Failed to load report'}</td></tr>`;
+                showToast('error', 'Report Error', data.error);
+                return;
+            }
+            
+            const report = data.data;
+            const summary = report.summary;
+            const breakdown = report.breakdown || [];
+            const paymentSummary = report.payment_summary || [];
+            
+            // Update summary cards
+            document.getElementById('taxTotalSales').textContent = formatCurrency(summary.total_sales, summary.currency);
+            document.getElementById('taxTotalTax').textContent = formatCurrency(summary.total_tax, summary.currency);
+            document.getElementById('taxReceiptCount').textContent = summary.total_receipts || 0;
+            document.getElementById('taxAverage').textContent = formatCurrency(summary.average_per_receipt || 0, summary.currency);
+            
+            // Update breakdown table
+            if (breakdown.length === 0) {
+                breakdownBody.innerHTML = '<tr><td colspan="7" class="text-center py-3">No synced receipts found for the selected period</td></tr>';
+            } else {
+                breakdownBody.innerHTML = breakdown.map(item => {
+                    // Build payment methods badge
+                    let pmHtml = '';
+                    if (item.payment_methods && item.payment_methods.length > 0) {
+                        pmHtml = item.payment_methods.map(pm => 
+                            `<span class="badge badge-secondary mr-1">${pm.method}: ${formatCurrency(pm.amount, item.currency)}</span>`
+                        ).join('');
+                    } else {
+                        pmHtml = '<span class="text-muted">N/A</span>';
+                    }
+                    
+                    return `
+                        <tr>
+                            <td><strong>${item.rate}</strong></td>
+                            <td>${item.tax_code}</td>
+                            <td>${item.currency}</td>
+                            <td>${formatCurrency(item.sales, item.currency)}</td>
+                            <td>${formatCurrency(item.tax, item.currency)}</td>
+                            <td>${item.count}</td>
+                            <td>${pmHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            // Update payment method summary
+            if (paymentSummary.length === 0) {
+                paymentBody.innerHTML = '<tr><td colspan="4" class="text-center py-3">No payment data found</td></tr>';
+            } else {
+                paymentBody.innerHTML = paymentSummary.map(item => `
+                    <tr>
+                        <td><strong>${item.currency}</strong></td>
+                        <td><span class="badge badge-info">${item.method}</span></td>
+                        <td>${formatCurrency(item.total, item.currency)}</td>
+                        <td>${item.count}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            showToast('success', 'Report Generated', `Found ${summary.total_receipts} synced receipts`);
+            
+        } catch (e) {
+            console.error('Tax report error:', e);
+            breakdownBody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-danger">Error: ${e.message}</td></tr>`;
+            paymentBody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-danger">Error: ${e.message}</td></tr>`;
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    // ============================================================
+    // EXPORT TAX REPORT
+    // ============================================================
+    async function exportTaxReport() {
+        const dateFrom = document.getElementById('taxReportDateFrom').value;
+        const dateTo = document.getElementById('taxReportDateTo').value;
+        const currency = document.getElementById('taxReportCurrency').value;
+        
+        let url = '/fiscalisation/api/tax-report-export/?';
+        if (dateFrom) url += `date_from=${dateFrom}&`;
+        if (dateTo) url += `date_to=${dateTo}&`;
+        if (currency) url += `currency=${currency}&`;
+        
+        window.open(url, '_blank');
+        showToast('info', 'Export Started', 'Downloading CSV file...');
+    }
+    // ============================================================
+    // LOAD TAX REPORT SUMMARY (for quick view)
+    // ============================================================
+    async function loadTaxReportSummary() {
+        try {
+            const data = await API.get('/fiscalisation/api/tax-report-summary/');
+            if (!data.success) return;
+            
+            const summary = data.data;
+            // Can be used to show a quick summary on dashboard
+            console.log('Tax Report Summary:', summary);
+            
+        } catch (e) {
+            console.error('Tax report summary error:', e);
+        }
+    }
+
+    // ============================================================
+    // LOGS
+    // ============================================================
+    async function loadLogs() {
+        try {
+            const success = document.getElementById('logFilterSuccess').value;
+            const dateFrom = document.getElementById('logFilterDateFrom').value;
+            const dateTo = document.getElementById('logFilterDateTo').value;
+            
+            const url = `/fiscalisation/api/logs/?page=${state.logsPage}&per_page=${state.logsPerPage}` +
+                (success ? `&success=${success}` : '') +
+                (dateFrom ? `&date_from=${dateFrom}` : '') +
+                (dateTo ? `&date_to=${dateTo}` : '');
+            
+            const data = await API.get(url);
+            
+            if (!data.success) {
+                document.getElementById('logsBody').innerHTML = 
+                    `<tr><td colspan="7" class="text-center py-3 text-danger">Error loading logs</td></tr>`;
+                return;
+            }
+            
+            renderLogs(data);
+            renderPagination('logsPagination', data.page, data.total_pages, (page) => {
+                state.logsPage = page;
+                loadLogs();
+            });
+            
+            document.getElementById('logsPaginationInfo').textContent = 
+                `Showing ${data.data.length} of ${data.total} logs`;
+            
+        } catch (e) {
+            console.error('Load logs error:', e);
+        }
+    }
+
+    function renderLogs(data) {
+        const tbody = document.getElementById('logsBody');
+        const logs = data.data || [];
+        
+        if (logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-3">No logs found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td>${log.receipt_number || '—'}</td>
+                <td><span class="badge badge-status ${log.success ? 'badge-success' : 'badge-danger'}">${log.success ? '✅ Success' : '❌ Failed'}</span></td>
+                <td>${log.synced_count || 0}</td>
+                <td>${log.failed_count || 0}</td>
+                <td>${log.duration_ms || '—'}ms</td>
+                <td>${formatDate(log.attempt_time)}</td>
+                <td class="text-danger small">${log.error_message ? log.error_message.substring(0, 50) + (log.error_message.length > 50 ? '...' : '') : '—'}</td>
+            </tr>
+        `).join('');
+    }
+
+    // ============================================================
+    // SETTINGS
+    // ============================================================
+    async function loadSettings() {
+        try {
+            const data = await API.get('/fiscalisation/api/settings/');
+            if (!data.success) return;
+            
+            const s = data.data;
+            document.querySelector('input[name="api_base_url"]').value = s.api_base_url || '';
+            document.querySelector('input[name="device_id"]').value = s.device_id || '';
+            document.querySelector('input[name="machine_code"]').value = s.machine_code || '';
+            document.querySelector('input[name="api_password"]').value = s.api_password || '';
+            document.querySelector('input[name="qr_url"]').value = s.qr_url || '';
+            document.querySelector('input[name="sync_interval_seconds"]').value = s.sync_interval_seconds || 30;
+            document.querySelector('input[name="max_retry_count"]').value = s.max_retry_count || 5;
+            document.querySelector('input[name="admin_email"]').value = s.admin_email || '';
+            document.querySelector('input[name="admin_phone"]').value = s.admin_phone || '';
+            document.getElementById('autoResume').checked = s.auto_resume_on_success || false;
+            
+        } catch (e) {
+            console.error('Load settings error:', e);
+        }
+    }
+
+    // ============================================================
+    // ACTIONS
+    // ============================================================
+    
+    // ============================================================
+    // TOGGLE FISCALISATION
+    // ============================================================
+    async function toggleFiscalisation() {
+        const active = document.getElementById('headerStatusText').textContent === 'Active';
+        const action = active ? 'pause' : 'resume';
+        
+        const result = await showConfirm(
+            `${active ? 'Pause' : 'Resume'} Fiscalisation?`,
+            active ? 'No new receipts will be submitted to ZIMRA until resumed.' : 'Receipts will be submitted to ZIMRA again.',
+            active ? 'warning' : 'info'
+        );
+        
+        if (!result.isConfirmed) return;
+        
+        try {
+            showLoading(`${active ? 'Pausing' : 'Resuming'} fiscalisation...`);
+            
+            const data = await API.post('/fiscalisation/api/toggle/', { action });
+            closeLoading();
+            
+            if (data.success) {
+                showToast('success', data.message);
+                // Update UI immediately
+                updateFiscalisationUI(data.active);
+                // Reload dashboard data
+                loadDashboard();
+            } else {
+                showToast('error', 'Error', data.error || 'Unknown error');
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+
+    async function syncReceipt(receiptId) {
+        const result = await showConfirm('Sync Receipt?', 'This will submit the receipt to ZIMRA now.');
+        if (!result.isConfirmed) return;
+        
+        showLoading('Syncing receipt...');
+        
+        try {
+            const data = await API.post(`/fiscalisation/api/sync/${receiptId}/`);
+            closeLoading();
+            
+            if (data.success) {
+                showToast('success', 'Sync started in background!');
+                setTimeout(refreshData, 3000);
+            } else {
+                showToast('error', 'Error', data.error);
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    async function syncAll() {
+        const result = await showConfirm('Sync All Receipts?', 'This will submit all pending receipts to ZIMRA.');
+        if (!result.isConfirmed) return;
+        
+        showLoading('Syncing all receipts...');
+        
+        try {
+            const data = await API.post('/fiscalisation/api/sync-all/', { limit: 100 });
+            closeLoading();
+            
+            if (data.success) {
+                showToast('success', `Sync started! ${data.result.total} receipts queued.`);
+                setTimeout(refreshData, 5000);
+            } else {
+                showToast('error', 'Error', data.error || 'Unknown error');
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    async function retryFailed() {
+        const result = await showConfirm('Retry Failed Receipts?', 'This will reset and retry all failed receipts.');
+        if (!result.isConfirmed) return;
+        
+        showLoading('Retrying failed receipts...');
+        
+        try {
+            const data = await API.post('/fiscalisation/api/retry-failed/', { limit: 50 });
+            closeLoading();
+            
+            if (data.success) {
+                showToast('success', `${data.result.reset} receipts reset and queued for retry.`);
+                setTimeout(refreshData, 3000);
+            } else {
+                showToast('error', 'Error', data.error || 'Unknown error');
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    async function voidReceipt(receiptId) {
+        const result = await showConfirm(
+            'Void Receipt?',
+            'This will mark the receipt as void. This cannot be undone.',
+            'warning'
+        );
+        if (!result.isConfirmed) return;
+        
+        showLoading('Voiding receipt...');
+        
+        try {
+            const data = await API.post(`/fiscalisation/api/void/${receiptId}/`);
+            closeLoading();
+            
+            if (data.success) {
+                showToast('success', 'Receipt voided successfully!');
+                viewReceiptModal(receiptId);
+            } else {
+                showToast('error', 'Error', data.error);
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    async function bulkAction(action) {
+        const ids = getSelectedReceipts();
+        if (ids.length === 0) {
+            showToast('warning', 'No Selection', 'Please select at least one receipt.');
+            return;
+        }
+        
+        const actionLabels = {
+            'retry': 'Retry',
+            'void': 'Void',
+            'reset': 'Reset'
+        };
+        
+        const result = await showConfirm(
+            `${actionLabels[action]} ${ids.length} Receipt(s)?`,
+            `This will ${action} ${ids.length} receipt(s).`,
+            action === 'void' ? 'warning' : 'info'
+        );
+        if (!result.isConfirmed) return;
+        
+        showLoading(`Processing ${action}...`);
+        
+        try {
+            const data = await API.post('/fiscalisation/api/bulk-action/', {
+                receipt_ids: ids,
+                action: action
+            });
+            closeLoading();
+            
+            if (data.success) {
+                showToast('success', `Bulk ${action} complete!`, 
+                    `${data.results.success} success, ${data.results.failed} failed, ${data.results.skipped} skipped.`);
+                loadReceipts();
+            } else {
+                showToast('error', 'Error', data.error);
+            }
+        } catch (e) {
+            closeLoading();
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    async function testConnection() {
+        const resultSpan = document.getElementById('connectionResult') || 
+                           document.getElementById('settingsResult') || 
+                           document.createElement('span');
+        
+        resultSpan.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+        
+        try {
+            const data = await API.post('/fiscalisation/api/test-connection/');
+            if (data.success) {
+                resultSpan.innerHTML = '<span class="text-success">✅ Connected!</span>';
+                showToast('success', 'Connection successful!');
+            } else {
+                resultSpan.innerHTML = `<span class="text-danger">❌ ${data.error || 'Connection failed'}</span>`;
+                showToast('error', 'Connection failed', data.error);
+            }
+        } catch (e) {
+            resultSpan.innerHTML = `<span class="text-danger">❌ ${e.message}</span>`;
+            showToast('error', 'Error', e.message);
+        }
+    }
+
+    // ============================================================
+    // SETTINGS FORM
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const settingsForm = document.getElementById('settingsForm');
+        if (settingsForm) {
+            settingsForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const resultSpan = document.getElementById('settingsResult');
+                
+                const data = {
+                    api_base_url: this.querySelector('input[name="api_base_url"]').value,
+                    device_id: this.querySelector('input[name="device_id"]').value,
+                    machine_code: this.querySelector('input[name="machine_code"]').value,
+                    api_password: this.querySelector('input[name="api_password"]').value,
+                    qr_url: this.querySelector('input[name="qr_url"]').value,
+                    sync_interval_seconds: parseInt(this.querySelector('input[name="sync_interval_seconds"]').value) || 30,
+                    max_retry_count: parseInt(this.querySelector('input[name="max_retry_count"]').value) || 5,
+                    admin_email: this.querySelector('input[name="admin_email"]').value,
+                    admin_phone: this.querySelector('input[name="admin_phone"]').value,
+                    auto_resume_on_success: document.getElementById('autoResume').checked,
+                };
+                
+                resultSpan.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                
+                try {
+                    const response = await API.post('/fiscalisation/api/settings/', data);
+                    if (response.success) {
+                        resultSpan.innerHTML = '<span class="text-success">✅ Settings saved successfully!</span>';
+                        showToast('success', 'Settings saved successfully!');
+                        setTimeout(() => resultSpan.innerHTML = '', 3000);
+                    } else {
+                        resultSpan.innerHTML = `<span class="text-danger">❌ ${response.error || 'Save failed'}</span>`;
+                        showToast('error', 'Save failed', response.error);
+                    }
+                } catch (e) {
+                    resultSpan.innerHTML = `<span class="text-danger">❌ ${e.message}</span>`;
+                    showToast('error', 'Error', e.message);
+                }
+            });
+        }
+    });
+
+    // ============================================================
+    // PAGINATION
+    // ============================================================
+    function renderPagination(containerId, currentPage, totalPages, onPageClick) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        const prevDisabled = currentPage <= 1 ? 'disabled' : '';
+        const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+        
+        html += `<li class="page-item ${prevDisabled}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); ${prevDisabled ? '' : `onPageClick(${currentPage - 1})`}">&laquo;</a>
+        </li>`;
+        
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, currentPage + 2);
+        
+        if (start > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="event.preventDefault(); onPageClick(1)">1</a></li>`;
+            if (start > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+        
+        for (let i = start; i <= end; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); onPageClick(${i})">${i}</a>
+            </li>`;
+        }
+        
+        if (end < totalPages) {
+            if (end < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="event.preventDefault(); onPageClick(${totalPages})">${totalPages}</a></li>`;
+        }
+        
+        html += `<li class="page-item ${nextDisabled}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); ${nextDisabled ? '' : `onPageClick(${currentPage + 1})`}">&raquo;</a>
+        </li>`;
+        
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    // REFRESH
+    // ============================================================
+    function refreshData() {
+        switch(state.currentTab) {
+            case 'dashboard': loadDashboard(); break;
+            case 'receipts': loadReceipts(); break;
+            case 'tax-reports': loadTaxReport(); break;
+            case 'logs': loadLogs(); break;
+            case 'settings': loadSettings(); break;
+        }
+        showToast('info', 'Refreshed');
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboard();
+        setInterval(refreshData, 300000);
+        
+        document.getElementById('saveReceiptEdit').addEventListener('click', saveEditedReceipt);
+        
+        const saved = localStorage.getItem('sidebarCollapsed');
+        if (saved === 'true') {
+            state.isSidebarCollapsed = true;
+            document.getElementById('sidebar').classList.add('collapsed');
+            document.getElementById('mainContent').classList.add('expanded');
+            document.getElementById('collapseIcon').className = 'fas fa-chevron-right';
+        }
+        
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleSidebarMobile();
+                }
+            });
+        });
+        
+        // Set default dates for tax report
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('taxReportDateFrom').value = firstDay.toISOString().split('T')[0];
+        document.getElementById('taxReportDateTo').value = today.toISOString().split('T')[0];
+    });
+    </script>
+</body>
+</html>

@@ -10,6 +10,7 @@ urlpatterns = [
     
     # HELPER FUNCTIONS
     path('days_from_now', views.days_from_now, name='days_from_now'),
+    path('load_global_search_options', views.load_global_search_options, name='load_global_search_options'),
     
     # API ENDPOINTS FOR SYSTEM SETTINGS (AJAX)
     path('api/update_user_profile', views.api_update_user_profile, name='api_update_user_profile'),

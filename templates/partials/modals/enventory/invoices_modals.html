@@ -377,6 +377,7 @@
                                                                 <table class="table table-striped">
                                                                     <thead >
                                                                         <tr style=" width: auto; background-color: RGB(0 194 146);">
+                                                                            <th>#</th>
                                                                             <th>CURRENCE</th>
                                                                             <th style="text-align:right;">AMOUNT</th>
                                                                             <th style="text-align:right;">RATE</th>
@@ -862,7 +863,7 @@
             });
         }
     })
-    /*LIVE FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+    /*//LIVE FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
 
     /*TRIGERED FUNCTIONS:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
@@ -876,8 +877,11 @@
                 //alert('success')
                 var tableContainer = document.getElementById('add-invoice-portion-payment-potions-table')
                 tableContainer.innerHTML = ""
+                var counter = 0
                 responseData.invoice_money_portions_table_rows.forEach(row => {
+                    counter += 1
                     const tableRow = `<tr>
+                            <td style="width:;">` + counter + `</td>
                             <td style="width:30%;">` + row[1] + `</td>
                             <td style="text-align:right;">` + row[2] + `</td>
                             <td style="text-align:right;">` + row[3] + `</td>

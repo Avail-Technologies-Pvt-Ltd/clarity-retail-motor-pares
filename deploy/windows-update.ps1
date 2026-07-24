@@ -1,21 +1,20 @@
 # windows-update.ps1
-# Windows PowerShell script to check and apply updates
+# Run this to update the POS system
 
 param(
-    [string]$CompanyName = "CompanyA",
     [string]$Tag = "latest",
     [string]$AppPath = "C:\pos-app"
 )
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "POS System Update Check - $CompanyName" -ForegroundColor Cyan
+Write-Host "POS System Update" -ForegroundColor Cyan
 Write-Host "Time: $(Get-Date)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 # Change to app directory
 Set-Location $AppPath
 
-# Load environment variables from .env file
+# Load .env file
 if (Test-Path ".env") {
     Get-Content ".env" | ForEach-Object {
         if ($_ -match '^([^=]+)=(.*)$') {
@@ -24,77 +23,58 @@ if (Test-Path ".env") {
             [Environment]::SetEnvironmentVariable($key, $value, 'Process')
         }
     }
-    Write-Host "✅ Loaded .env file" -ForegroundColor Green
+    Write-Host "Loaded .env" -ForegroundColor Green
 } else {
-    Write-Host "❌ .env file not found!" -ForegroundColor Red
+    Write-Host ".env not found! Please create .env from .env.example" -ForegroundColor Red
     exit 1
 }
 
-# Login to Docker Registry (if using private registry)
-if ($env:DOCKER_USERNAME -and $env:DOCKER_PASSWORD) {
-    Write-Host "🔐 Logging into Docker registry..." -ForegroundColor Cyan
-    $env:DOCKER_PASSWORD | docker login -u $env:DOCKER_USERNAME --password-stdin
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Docker login failed!" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "✅ Docker login successful" -ForegroundColor Green
-}
-
 # Set registry and image name
-$registry = if ($env:DOCKER_REGISTRY) { $env:DOCKER_REGISTRY } else { "yourusername" }
-$imageName = "$registry/pos-app"
-$fullImage = "$imageName`:$Tag"
+$registry = if ($env:DOCKER_REGISTRY) { $env:DOCKER_REGISTRY } else { "tinashemp" }
+$fullImage = "$registry/clarity-pos`:$Tag"
+$composeFile = "docker/docker-compose.prod.yml"
 
-Write-Host "`n📦 Checking image: $fullImage" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Pulling image: $fullImage" -ForegroundColor Cyan
+docker pull $fullImage
 
-# Check current running image
-$currentImage = docker inspect --format='{{.Config.Image}}' pos-app-web 2>$null
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Current image: $currentImage" -ForegroundColor Yellow
-} else {
-    Write-Host "No running container found" -ForegroundColor Yellow
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to pull image!" -ForegroundColor Red
+    exit 1
 }
 
-# Pull latest image
-Write-Host "`n📦 Checking for updates..." -ForegroundColor Cyan
-$pullOutput = docker pull $fullImage 2>&1
+Write-Host ""
+Write-Host "Restarting containers..." -ForegroundColor Cyan
+docker compose -f $composeFile down
+docker compose -f $composeFile up -d
 
-if ($pullOutput -match "Image is up to date|Status: Image is up to date") {
-    Write-Host "✅ No updates available - latest version already running" -ForegroundColor Green
-    exit 0
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to start containers!" -ForegroundColor Red
+    exit 1
 }
 
-Write-Host "🔄 Updates found! Deploying..." -ForegroundColor Yellow
-
-# Stop old containers
-Write-Host "Stopping old containers..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.prod.yml down
-
-# Start new containers
-Write-Host "Starting new containers..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.prod.yml up -d
-
-# Wait for database
-Write-Host "⏳ Waiting for database..." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Waiting for database to be ready..." -ForegroundColor Cyan
 Start-Sleep -Seconds 10
 
-# Run migrations
-Write-Host "🔄 Running migrations..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.prod.yml exec web python manage.py migrate --noinput
+Write-Host ""
+Write-Host "Running migrations..." -ForegroundColor Cyan
+docker exec pos-app python manage.py migrate --noinput
 
-# Collect static files
-Write-Host "📁 Collecting static files..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.prod.yml exec web python manage.py collectstatic --noinput
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Migrations failed! Check logs: docker logs pos-app" -ForegroundColor Yellow
+} else {
+    Write-Host "Migrations successful" -ForegroundColor Green
+}
 
-# Clean up old images
-Write-Host "🧹 Cleaning up old images..." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Cleaning up old images..." -ForegroundColor Cyan
 docker system prune -f
 
-Write-Host "`n✅ Update complete!" -ForegroundColor Green
-Write-Host "New image: $fullImage" -ForegroundColor Cyan
-Write-Host "Time: $(Get-Date)" -ForegroundColor Cyan
-
-# Log the update
-$logEntry = "[$(Get-Date)] Update applied - Image: $fullImage"
-Add-Content -Path "$AppPath\update.log" -Value $logEntry
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "Update complete!" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "Open http://localhost:8085" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "To check logs, run: docker logs pos-app --tail 50" -ForegroundColor Yellow

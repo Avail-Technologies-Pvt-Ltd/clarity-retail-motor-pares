@@ -31,7 +31,8 @@ class VATCode(models.Model):
 	
 	title = models.CharField(max_length=30, blank=True, null=True)
 	percentage = models.DecimalField(max_digits=22, decimal_places=4, default=0)
-	zimra_tax_id = models.IntegerField(null=True, blank=True, help_text="ZIMRA taxID: 2=Zero%, 3=Exempt, 514=5%, 515=15.5%")
+	zimra_tax_id = models.IntegerField(null=True, blank=True, help_text="ZIMRA IntTaxID: 1=Exempt, 2=Zero%, 3=15%, 4=15.5%")
+	default_hs_code = models.CharField(max_length=10, null=True, blank=True)
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	created_at = models.DateTimeField(auto_now_add=True,blank=True, null=True)
 	updated_at = models.DateTimeField(auto_now=True,blank=True, null=True)

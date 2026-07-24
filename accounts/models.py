@@ -37,6 +37,7 @@ class User(AbstractUser):
 	roles = models.CharField(max_length=1000)
 	e_signature_link = models.TextField(max_length=255, default="", blank=True, null=True)
 	created_by = models.ForeignKey('User', on_delete=models.DO_NOTHING, null=True)
+	current_printer = models.ForeignKey('PrinterCase', on_delete=models.DO_NOTHING, null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	status = models.BooleanField(default=True)

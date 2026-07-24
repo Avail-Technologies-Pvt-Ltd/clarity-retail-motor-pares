@@ -859,7 +859,9 @@ def home(request):
     if expense_types is None:
         expense_types = ExpensesType.objects.filter(active=True).count()
         cache.set('total_expense_types', expense_types)
-    departments = cache.get('___total_departments')
+
+    departments = Department.objects.all().count()
+    categories = Category.objects.all().count()
 
     # utilities
     batch_adjustment_reasons = BatchAdjustmentReason.objects.all().count()
@@ -906,6 +908,7 @@ def home(request):
         'client_configurations': configurations,
         'expense_types':expense_types,
         'departments':departments,
+        'categories':categories,
 
         #stock
         'batches':batches,

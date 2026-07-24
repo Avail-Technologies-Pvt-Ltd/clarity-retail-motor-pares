@@ -20,7 +20,7 @@
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-3">
                                 <div class="breadcomb-report">
-                                    <!-- <a href="add_stock" data-toggle="tooltip" data-placement="left" title="Receive Stock" class="btn"><i class="notika-icon notika-edit"></i></a> -->
+                                    <a href="" title="Add New Batch" class="btn btn-primary" type="button"  data-toggle="modal" data-target="#addBatchModal" id="add-batch-modal-button"><i class="notika-icon notika-edit"></i></a>
                                     <button data-toggle="tooltip" data-placement="left" title="Download Report" class="btn"><i class="notika-icon notika-print"></i></button>
                                 </div>
                             </div>
@@ -170,7 +170,7 @@
 
 $(document).ready(function() {
 
-    batchiesinitialLoad()
+    batchiesInitialLoad()
 
     
 })
@@ -348,7 +348,7 @@ function previousPage(){
 }
 
 
-function batchiesinitialLoad(){
+function batchiesInitialLoad(){
     //request type is "NEXT-PAGE"
     //alert("INITIAL-LOAD")
     requestData("INITIAL-LOAD")

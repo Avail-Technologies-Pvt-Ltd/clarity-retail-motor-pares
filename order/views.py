@@ -319,6 +319,20 @@ def add_subscription_page(request):
 
 # HELPER FUNCTIONS
 
+# GLOBAL SEARCH
+def load_global_search_options(request):
+    search_query = request.GET.get('search_query')
+
+    features = [
+    # key_words, link, name, discription
+        { }
+    ]
+    links = [
+        f"<option value='{ feature['link'] }'> { feature['name'] }, <small>{ feature['description'] }</small> </option>" for feature in features
+    ]
+
+    return JsonResponse({'options':links})
+
 
 # API
 def days_from_now(request):

@@ -383,6 +383,9 @@ def get_sale_transaction_details(request):
 
     change_left = sale_transaction.totals['change_left']
 
+    dominant_payment_method_id = sale_transaction.dominant_payment_method.id
+    dominant_payment_method_text = sale_transaction.dominant_payment_method.shortcut
+
 
 
     receipt_details = {
@@ -399,6 +402,9 @@ def get_sale_transaction_details(request):
         "discount": locale.format_string('%.2f', discount, grouping=True),
         "vat": locale.format_string('%.2f', vat, grouping=True),
         "total_cost": locale.format_string('%.2f', total_cost, grouping=True),
+
+        "dominant_payment_method_id": dominant_payment_method_id,
+        "dominant_payment_method_text": dominant_payment_method_text,
 
         "thank_you_message": thank_you_message,
 

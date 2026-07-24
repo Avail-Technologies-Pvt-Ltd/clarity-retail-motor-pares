@@ -101,9 +101,11 @@ class FiscalReceipt(models.Model):
     STATUS_FAILED = 'FAILED'
     STATUS_BYPASSED = 'BYPASSED'
     STATUS_VOID = 'VOID'
+    STATUS_PROCESSING = 'PROCESSING'  # Make sure this exists
     
     STATUS_CHOICES = [
         (STATUS_PENDING, 'Pending Sync'),
+        (STATUS_PROCESSING, 'Processing...'),
         (STATUS_SYNCED, 'Synced to ZIMRA'),
         (STATUS_FAILED, 'Failed - Needs Retry'),
         (STATUS_BYPASSED, 'Bypassed - Fiscalisation was off'),
@@ -119,91 +121,134 @@ class FiscalReceipt(models.Model):
         (TYPE_CREDIT_NOTE, 'Credit Note'),
         (TYPE_DEBIT_NOTE, 'Debit Note'),
     ]
-    
-    # ========== Link to your existing system ==========
-    internal_sale_id = models.IntegerField(null=True, blank=True)
-    internal_invoice_id = models.IntegerField(null=True, blank=True)
-    internal_invoice_number = models.CharField(max_length=50)
-    
-    # ========== Fiscal receipt own sequence ==========
-    fiscal_receipt_number = models.IntegerField(null=True, blank=True)
-    fiscal_receipt_global_no = models.IntegerField(null=True, blank=True)
-    
-    # ========== Receipt Data ==========
-    receipt_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_INVOICE)
-    currency = models.CharField(max_length=3, default="USD")
-    transaction_date = models.DateField()
-    transaction_time = models.CharField(max_length=20)
-    subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    total_amount = models.DecimalField(max_digits=15, decimal_places=2)
-    tax_breakdown = models.JSONField(default=dict)
-    
-    # Payment details
-    payment_method = models.CharField(max_length=50, default="Cash")
-    payment_amount = models.DecimalField(max_digits=15, decimal_places=2)
-    payments = models.JSONField(default=list, blank=True, help_text="List of payment methods and amounts")
-    
-    # Buyer information
-    buyer_name = models.CharField(max_length=250, blank=True)
-    buyer_tin = models.CharField(max_length=50, blank=True)
-    buyer_vat = models.CharField(max_length=50, blank=True)
-    buyer_address = models.TextField(blank=True)
-    buyer_phone = models.CharField(max_length=50, blank=True)
-    buyer_email = models.EmailField(blank=True)
-    
-    # For credit/debit notes
-    original_fiscal_receipt = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='credit_notes')
-    original_invoice_number = models.CharField(max_length=50, blank=True)
-    
-    # Line Items
+
+    the_password = models.CharField(max_length=60, null=True, blank=True)
+    role = models.CharField(max_length=15, null=True, blank=True)
+    payment_lines = models.JSONField(default=list, blank=True, help_text="List of payment methods and amounts")
     line_items = models.JSONField(default=list)
-    
-    # Binary API Response
-    binary_response = models.JSONField(default=dict, blank=True)
+    doc_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    inv_number = models.IntegerField(null=True, blank=True)
+    inv_number_global = models.IntegerField(null=True, blank=True)
+    doc_currency = models.CharField(max_length=3, default="USD")
+    my_yyy_mm_dd_date = models.DateField()
+    my_24hr_time_format_with_seconds = models.CharField(max_length=20)
+    document_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    nontaxible_sales_amt_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    zero_per_taxamt = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    zero_perc_sales_amt_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    tax_amt_15_perc = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    tax_15_perc_sales_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    machinecode = models.CharField(max_length=10, default="")
+    the_password = models.CharField(max_length=10, default="")
+    invoice_number_to_credit_debit = models.IntegerField(null=True, blank=True)
+    buyer_register_name = models.CharField(max_length=50, null=True, blank=True, default="")
+    buyer_TIN = models.CharField(max_length=15, null=True, blank=True, default="")
+    VAT_number = models.CharField(max_length=15, null=True, blank=True, default="")
+    phone_no = models.CharField(max_length=50, null=True, blank=True, default="")
+    email = models.CharField(max_length=50, null=True, blank=True, default="")
+
+    local_receipt_number = models.IntegerField(null=True, blank=True)
+    local_invoice_number_to_credit_debit = models.IntegerField(null=True, blank=True)
+
+    binary_server_response = models.JSONField(default=dict, blank=True)
     qr_code_url = models.URLField(max_length=500, blank=True)
-    
-    # Status Tracking
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     retry_count = models.IntegerField(default=0)
     last_error = models.TextField(blank=True)
     last_sync_attempt = models.DateTimeField(null=True, blank=True)
 
-    # Add to FiscalReceipt model:
-    device_signature_hash = models.TextField(blank=True, null=True)
-    device_signature = models.TextField(blank=True, null=True)
-    
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     synced_at = models.DateTimeField(null=True, blank=True)
+        
+    # # ========== Link to your existing system ==========
+    # internal_sale_id = models.IntegerField(null=True, blank=True)
+    # internal_invoice_id = models.IntegerField(null=True, blank=True)
+    # internal_invoice_number = models.CharField(max_length=50)
     
-    class Meta:
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['status', 'retry_count']),
-            models.Index(fields=['internal_invoice_number']),
-            models.Index(fields=['fiscal_receipt_number']),
-            models.Index(fields=['created_at']),
-            models.Index(fields=['status']),
-        ]
+    # # ========== Fiscal receipt own sequence ==========
+    # fiscal_receipt_number = models.IntegerField(null=True, blank=True)
+    # fiscal_receipt_global_no = models.IntegerField(null=True, blank=True)
+    
+    # # ========== Receipt Data ==========
+    # receipt_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_INVOICE)
+    # currency = models.CharField(max_length=3, default="USD")
+    # transaction_date = models.DateField()
+    # transaction_time = models.CharField(max_length=20)
+    # subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    # tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    # total_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    # tax_breakdown = models.JSONField(default=dict)
+    
+    # # Payment details
+    # payment_method = models.CharField(max_length=50, default="Cash")
+    # payment_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    # payments = models.JSONField(default=list, blank=True, help_text="List of payment methods and amounts")
+    
+    # # Buyer information
+    # buyer_name = models.CharField(max_length=250, blank=True)
+    # buyer_tin = models.CharField(max_length=50, blank=True)
+    # buyer_vat = models.CharField(max_length=50, blank=True)
+    # buyer_address = models.TextField(blank=True)
+    # buyer_phone = models.CharField(max_length=50, blank=True)
+    # buyer_email = models.EmailField(blank=True)
+    
+    # # For credit/debit notes
+    # original_fiscal_receipt = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='credit_notes')
+    # original_invoice_number = models.CharField(max_length=50, blank=True)
+    
+    # # Line Items
+    # line_items = models.JSONField(default=list)
+    
+    # # Binary API Response
+    # binary_response = models.JSONField(default=dict, blank=True)
+    # qr_code_url = models.URLField(max_length=500, blank=True)
+    
+    # # Status Tracking
+    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    # retry_count = models.IntegerField(default=0)
+    # last_error = models.TextField(blank=True)
+    # last_sync_attempt = models.DateTimeField(null=True, blank=True)
+
+    # # Add to FiscalReceipt model:
+    # device_signature_hash = models.TextField(blank=True, null=True)
+    # device_signature = models.TextField(blank=True, null=True)
+    
+    # # Timestamps
+    # created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
+    # synced_at = models.DateTimeField(null=True, blank=True)
+    
+    # class Meta:
+    #     ordering = ['-created_at']
+    #     indexes = [
+    #         models.Index(fields=['status', 'retry_count']),
+    #         models.Index(fields=['internal_invoice_number']),
+    #         models.Index(fields=['fiscal_receipt_number']),
+    #         models.Index(fields=['created_at']),
+    #         models.Index(fields=['status']),
+    #     ]
     
     def __str__(self):
-        return f"Fiscal #{self.fiscal_receipt_number or '?'} - Internal: {self.internal_invoice_number} - {self.status} ---- {self.receipt_type}"
+        return f"[{ str(self.created_at)[:16] }] Fiscal #{self.inv_number or '?'} - Internal: {self.local_receipt_number} - {self.status} ---- {self.doc_type}"
     
     @property
     def display_receipt_number(self):
-        if self.fiscal_receipt_number:
-            return str(self.fiscal_receipt_number).zfill(10)
+        if self.inv_number:
+            return str(self.inv_number).zfill(10)
         return "PENDING"
     
-    def can_retry(self):
-        return self.status in [self.STATUS_FAILED, self.STATUS_PENDING] and self.retry_count < 5
+
+    def mark_processing(self):
+        """Mark receipt as being processed"""
+        self.status = self.STATUS_PROCESSING
+        self.save(update_fields=['status', 'updated_at'])
     
     def mark_synced(self, qr_url, response_data):
         self.status = self.STATUS_SYNCED
         self.qr_code_url = qr_url
-        self.binary_response = response_data
+        self.binary_server_response = response_data
         self.synced_at = timezone.now()
         self.last_error = ""
         self.save()
@@ -215,9 +260,16 @@ class FiscalReceipt(models.Model):
         self.last_sync_attempt = timezone.now()
         self.save()
     
+    def mark_pending(self):
+        self.status = self.STATUS_PENDING
+        self.save()
+    
     def mark_bypassed(self):
         self.status = self.STATUS_BYPASSED
         self.save()
+    
+    def can_retry(self):
+        return self.status in [self.STATUS_FAILED, self.STATUS_PENDING] and self.retry_count < 5
     
     def get_payments_list(self):
         if isinstance(self.payments, list):

@@ -354,8 +354,19 @@
                                 $('#return-inn-sale-transaction-receipt-money-portions-table-value').html(responseData.receipt_money_portions_table)
 
 
-                                /*new*/
+                              
                                 document.getElementById('return-inn-sale-return-date-returned').value = toDayFormattedDate()
+
+                                /*Set used dominant currence as return currency by default*/
+                                var selectElement = document.getElementById('return-inn-sale-return-payment-method')
+                                $("#return-inn-sale-return-payment-method").empty()
+                                
+                                var newOption = document.createElement("option")
+                                newOption.value = responseData.receipt_details['dominant_payment_method_id']
+                                newOption.text = responseData.receipt_details['dominant_payment_method_text']
+                                selectElement.appendChild(newOption)
+
+                                $("#return-inn-sale-return-payment-method").selectpicker('refresh') 
 
 
                             }

@@ -1,6 +1,188 @@
 {% load static %}
 
 
+<!-- ADD -->
+
+
+<div class="modal fade animated bounce" id="addBatchModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2>Add New Batch</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="row" style="padding-top: 10px;">
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div><b>&nbsp INVICE #:</b> <small id="add-batch-selected-invoice-invoice-number">XXXXXXXX</small> </div>
+                                    <div><b>&nbsp &nbsp &nbsp DATE:</b> <small id="add-batch-selected-invoice-invoice-date">XXXXXXXX</small> </div>
+                                    <div><b>SUPPLIER:</b> <small id="add-batch-selected-invoice-invoice-supplier">XXXXXXXX</small> </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Invoice</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                        <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_batch_invoice_selector" id="add-batch-invoice-selector" name="" >
+                                            <option value="0">Select Invoice</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start"><label title="A line item will be added, that means the total cost of the invoice will change.">ℹ️</label> Payment for received stock</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                        <select class="form-control" id="add-batch-invoice-item-payment-selector" name="" >
+                                            <option selected value="AUTO" title="The system will adjust the dominant payment to cover the new line item">Handle automaticaly</option>
+                                            <option value="IGNORE" title="You will probably have to go to the invoice and adjust payments to cater for the new line item">I will handle it manualy</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row" style="padding-top: 35px;">
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Stock/Product</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                        <button class="btn btn-success add_object_button" title="Add new Product" onclick="openProductsPopup()">
+                                            +
+                                        </button>
+                                        <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_batch_invoice_item_stock_selector_class" id="add-batch-invoice-item-stock-selector" name="" >
+                                            <option value="0">Select Stock</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Manufacturer/Brand</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                        <button class="btn btn-success add_object_button" title="Add new Manufacturer/Brand" onclick="openManufacturerPopup()">
+                                            +
+                                        </button>
+                                        <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker add_batch_invoice_item_manufacturer_selector_class" id="add-batch-invoice-item-manufacturer-selector" name="" >
+                                            <option value="0">Select Manufacturer/Brand</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Selling Price</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex;">
+                                        <select style="width: 50%;" class="form-control" id="add-batch-invoice-item-selling-price-type-selector" name="" >
+                                            <option selected value="SELLING PRICE">Selling Price</option>
+                                            <option value="EXISTING PRICE">Use Existing Price</option>
+                                            <option value="MARKUP PERCENTAGE">Markup Pecentage</option>
+                                        </select>
+                                        <div class="form-group ic-cmp-int" style="width:50%;">
+                                            <div class="nk-int-st">
+                                                <input type="number" step="any" class="form-control" placeholder="Value" id="add-batch-invoice-item-selling-price-number" style="text-align: right;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row" style="padding-top: 35px;">
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Expiration Date</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+
+                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                            <div class="nk-int-st">
+                                                <input type="date" class="form-control" placeholder="Date Received" id="add-batch-invoice-item-expiration-date">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Total Packs</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+
+                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                            <div class="nk-int-st">
+                                                <input type="number" class="form-control number_element" placeholder="Number of Packs" id="add-batch-invoice-item-total-packs">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Pack Size</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+
+                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                            <div class="nk-int-st">
+                                                <input type="number" class="form-control number_element" placeholder="Number of Units in a pack" id="add-batch-invoice-item-pack-size">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row" style="padding-top: 35px;">
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Buying Pack Price</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                            <div class="nk-int-st">
+                                                <input type="number" class="form-control number_element" placeholder="Price Per Pack" id="add-batch-invoice-item-buying-pack-price">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Batch Number</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                        <div class="form-group ic-cmp-int" style="width:100%;">
+                                            <div class="nk-int-st">
+                                                <input type="text" class="form-control number_element" placeholder="Batch Number" id="add-batch-invoice-item-batch-number">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+                                    <div class="col-sm text-start">Discount</div>
+                                    <div class="nk-int-mk sl-dp-mn ps-0" style="display: flex; justify-content:;">
+                                        <select style="width: 50%;" class="form-control" id="add-batch-invoice-item-discount-type" name="" >
+                                            <option selected value="DISCOUNT PRICE">Discount Price</option>
+                                            <option value="DISCOUNT PERCENTAGE">Discount Pecentage</option>
+                                        </select>
+                                        <div class="form-group ic-cmp-int" style="width:50%;">
+                                            <div class="nk-int-st">
+                                                <input type="number" class="form-control number_element" placeholder="Line Discount" id="add-batch-invoice-item-discount-number" value="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" onclick="addBatch()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // ADD -->
+
 
 <!-- BATCH DETAILS -->
 <div class="modal fade animated bounce" id="batchDetailsModal" role="dialog">
@@ -540,19 +722,23 @@
         requestAndLoadReturnReasons()
 
         $('#batchDetailsModal').on('hidden.bs.modal', function (){
-           batchiesinitialLoad()
+           batchiesinItialLoad()
         })
 
         $('#returnOutBatchModal').on('hidden.bs.modal', function (){
-           batchiesinitialLoad()
+           batchiesinItialLoad()
         })
 
         $('#adjustBatchModal').on('hidden.bs.modal', function (){
-           batchiesinitialLoad()
+           batchiesinItialLoad()
         })
 
         $('#activateDeactivateBatchModal').on('hidden.bs.modal', function (){
-           batchiesinitialLoad()
+           batchiesinItialLoad()
+        })
+
+        $('#add-batch-invoice-selector').on('change', function (){
+            renderInvoiceDetails()
         })
 
         $('#activateDeactivateBatchModal').on('show.bs.modal', function (event) {
@@ -727,11 +913,101 @@
 
 
     /*BUTTON FUNCTIONS ----------------------------------------------------------*/
-    
-    function openBatchAdjustmentReasonsPopup(){
-        newBrowserWindow("{% url 'batch_adjustment_reasons_page' %}")
-    }
+    function addBatch(){
+        var invoice_id = document.getElementById('add-batch-invoice-selector').value
+        var payment_instruction = document.getElementById('add-batch-invoice-item-payment-selector').value
+        var stock_id = document.getElementById('add-batch-invoice-item-stock-selector').value
+        var manufacturer = document.getElementById('add-batch-invoice-item-manufacturer-selector').value
+        var selling_price_type = document.getElementById('add-batch-invoice-item-selling-price-type-selector').value
+        var selling_price_number = document.getElementById('add-batch-invoice-item-selling-price-number').value
+        var expiration_date = document.getElementById('add-batch-invoice-item-expiration-date').value
+        var total_packs = document.getElementById('add-batch-invoice-item-total-packs').value
+        var pack_size = document.getElementById('add-batch-invoice-item-pack-size').value
+        var pack_price = document.getElementById('add-batch-invoice-item-buying-pack-price').value
+        var batch_number = document.getElementById('add-batch-invoice-item-batch-number').value
+        var discount_type = document.getElementById('add-batch-invoice-item-discount-type').value
+        var discount_number = document.getElementById('add-batch-invoice-item-discount-number').value
 
+
+        //validation
+        var errors = ""
+
+        if(isIntegerGreaterThanOrEqualToOne(invoice_id) == false){
+            errors = "Please select a valid invoce"
+        }else if(isIntegerGreaterThanOrEqualToOne(stock_id) == false){
+            errors = "Please select a valid product"
+        }else if(isIntegerGreaterThanOrEqualToOne(manufacturer) == false){
+            errors = "Please select the manufacturer"
+        }else if (selling_price_number == ""){
+            if (selling_price_type == "EXISTING PRICE"){
+                selling_price_number = '0'
+            }else{
+                errors = 'Invalid input on Selling_price_number field'
+            }
+        }else if(total_packs == ""){
+            errors = "Please input the total packs"
+        }else if(pack_size == ""){
+            errors = "Please input the pack size"
+        }else if(pack_price == ""){
+            errors = "Please input the pack price"
+        }else if(batch_number == ""){
+            errors = ('Invalid input on Batch_number field')
+        }else if (discount_type == ""){
+            errors = ('Invalid input on Discount_type field')
+        }else if (discount_number == ""){
+            discount_number = '0'
+        }
+        if ((expiration_date + "") == ""){
+            expiration_date = '2999-09-02'
+        }
+
+        if (errors == ""){
+            $.ajax({
+                url: "{% url 'add_batch_invoice_patching' %}", 
+                data:{
+                    invoice_id: invoice_id,
+                    payment_instruction: payment_instruction,
+                    stock_id: stock_id,
+                    manufacturer: manufacturer,
+                    selling_price_type: selling_price_type,
+                    selling_price_number: selling_price_number,
+                    expiration_date: expiration_date,
+                    total_packs: total_packs,
+                    pack_size: pack_size,
+                    pack_price: pack_price,
+                    batch_number: batch_number,
+                    discount_type: discount_type,
+                    discount_number: discount_number,
+                }, 
+                success:function(responseData) {
+                    swal({
+                        title: responseData.title,
+                        text: responseData.text,
+                        type: responseData.type
+                    })
+                },
+                error: function(responseData, error){
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                },
+                complete: function(){
+                    batchiesInitialLoad()
+                }
+            });
+
+        }else{
+            swal({
+                title: "Error",
+                text: errors,
+                type: "error"
+            });
+        }
+    }
+    
+    
         
     function activateDeactivateBatch(){
         var batch_id = sessionStorage.getItem('batch_id_for_activate_deactivate')
@@ -771,9 +1047,7 @@
         });
     }
 
-    function openReturnReasonsPopup(){
-        newBrowserWindow("{% url 'return_reasons_page' %}")
-    }
+    
 
     function createReturnOut(){
         var  date_returned = document.getElementById('return-out-batch-date-returned-value').value
@@ -906,9 +1180,199 @@
     }
 
 
-    /*BUTTON FUNCTIONS ----------------------------------------------------------*/
+
+
+    /*//BUTTON FUNCTIONS ----------------------------------------------------------*/
+
+
+    /* POPUPS*/
+
+
+        function openManufacturerPopup(){
+            newBrowserWindow("{% url 'manufacturers_page' %}")
+        }
+
+        function openProductsPopup(){
+            newBrowserWindow("{% url 'products_page' %}")
+        }
+
+        function openBatchAdjustmentReasonsPopup(){
+            newBrowserWindow("{% url 'batch_adjustment_reasons_page' %}")
+        }
+
+        function openReturnReasonsPopup(){
+            newBrowserWindow("{% url 'return_reasons_page' %}")
+        }
+
+    /*// POPUPS*/
+
+
+
+    /*TRIGERED FUN*/
+        function renderInvoiceDetails(){
+            var invoice_id = document.getElementById('add-batch-invoice-selector').value
+
+            if(isIntegerGreaterThanOrEqualToOne(invoice_id)){
+                $.ajax({
+                    url: "{% url 'get_invoice_details' %}",
+                    data: { invoice_id: invoice_id },
+                    success: function(responseData) {
+                        document.getElementById('add-batch-selected-invoice-invoice-number').innerHTML = responseData.details['invoice_number']
+                        document.getElementById('add-batch-selected-invoice-invoice-date').innerHTML = responseData.details['date']
+                        document.getElementById('add-batch-selected-invoice-invoice-supplier').innerHTML = responseData.details['supplier']
+                    },
+                    error: function(responseData, error){
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+                
+            }
+            
+        }
+    /*//TRIGERED FUN*/
+
+
+
 
     /*LIVE FUNCTIONS ------------------------------------------------------------*/
+        $(document).on('keyup', '.add_batch_invoice_selector .bs-searchbox input', function(e){
+            if (e.key.length === 1 || e.key === "Backspace") { 
+                var searchQuery = $(this).val();
+                //alert(searchQuery)
+                var mySelect = document.getElementById('add-batch-invoice-selector')
+                var selectOption = mySelect.options[mySelect.selectedIndex]
+                
+                var selected_patient_text = selectOption.texty
+                $.ajax({
+                    url: "{% url 'load_live_invoice_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('add-batch-invoice-selector')
+                        $("#add-batch-invoice-selector").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#add-batch-invoice-selector").selectpicker('refresh')    
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })
+
+
+        $(document).on('keyup', '.add_batch_invoice_item_stock_selector_class .bs-searchbox input', function(e){
+        if (e.key.length === 1 || e.key === "Backspace") { 
+            var searchQuery = $(this).val();
+            //alert("rrrttt")
+            $.ajax({
+                url: "{% url 'load_live_stock_options' %}",
+                data: { search: searchQuery },
+                success: function(responseData) {
+                    var selectElement = document.getElementById('add-batch-invoice-item-stock-selector')
+                    $("#add-batch-invoice-item-stock-selector").empty();
+                    responseData.options.forEach(optionString => {
+                        var newOption = document.createElement("option")
+                        var parsedOption = $(optionString)[0]
+                        newOption.value = parsedOption.value
+                        newOption.text = parsedOption.textContent
+                        selectElement.appendChild(newOption)
+                    })
+                    $("#add-batch-invoice-item-stock-selector").selectpicker('refresh')    
+                },
+                error: function(responseData, error){
+                    //alert("An error ocured! " + error)
+                    swal({
+                        title: "Error",
+                        text: "An error ocured! " + error,
+                        type: "error"
+                    });
+                }
+            });
+        }
+    })
+
+        $(document).on('keyup', '.add_batch_invoice_item_manufacturer_selector_class .bs-searchbox input', function(e){
+            if (e.key.length === 1 || e.key === "Backspace") { 
+                var searchQuery = $(this).val();
+                //alert("rrrttt")
+                $.ajax({
+                    url: "{% url 'load_live_manufacturers_options' %}",
+                    data: { search_text: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('add-batch-invoice-item-manufacturer-selector')
+                        $("#add-batch-invoice-item-manufacturer-selector").empty();
+                        responseData.options.forEach(optionString => {
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#add-batch-invoice-item-manufacturer-selector").selectpicker('refresh')    
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })
+
+        $(document).on('keyup', '.add_batch_invoice_selector .bs-searchbox input', function(e){
+            if (e.key.length === 1 || e.key === "Backspace") { 
+                var searchQuery = $(this).val();
+                //alert(searchQuery)
+                var mySelect = document.getElementById('add-batch-invoice-item-invoice-selector')
+                var selectOption = mySelect.options[mySelect.selectedIndex]
+                
+                var selected_patient_text = selectOption.texty
+                $.ajax({
+                    url: "{% url 'load_live_invoice_options' %}",
+                    data: { search: searchQuery },
+                    success: function(responseData) {
+                        var selectElement = document.getElementById('add-batch-invoice-item-invoice-selector')
+                        $("#add-batch-invoice-item-invoice-selector").empty();
+                        responseData.options.forEach(optionString => {
+
+                            var newOption = document.createElement("option")
+                            var parsedOption = $(optionString)[0]
+                            newOption.value = parsedOption.value
+                            newOption.text = parsedOption.textContent
+                            selectElement.appendChild(newOption)
+                        })
+                        $("#add-batch-invoice-item-invoice-selector").selectpicker('refresh')    
+                    },
+                    error: function(responseData, error){
+                        //alert("An error ocured! " + error)
+                        swal({
+                            title: "Error",
+                            text: "An error ocured! " + error,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        })
 
 
         function requestAndLoadReturnReasons(){
