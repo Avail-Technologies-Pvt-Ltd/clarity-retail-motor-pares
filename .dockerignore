@@ -1,0 +1,133 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Database (IMPORTANT! Exclude your dev database)
+*.sqlite3
+db.sqlite3
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker/*.local.yml
+
+# Deployment
+deploy/*.env
+!deploy/*.env.example
+
+# Secrets
+*.key
+*.crt
+!*.example
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+
+# Your local env
+.env
+.env.*
+*.zip
+*.tar
+
+
+
+
+
+
+
+
+
+
+
+
+
+# in git ignore
+# Virtual Environment
+venv/
+.venv/
+env/
+.env/
+.env.dev
+.env.prod
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Database
+*.sqlite3
+db.sqlite3
+*.db
+
+# Docker
+docker/*.local.yml
+docker/data/
+
+# Deployment
+deploy/*.env
+!deploy/*.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Django
+*.log
+media/
+staticfiles/
+tmp/
+logs/
+
+# Secrets
+certs/*.key
+certs/*.crt
+!certs/*.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Your custom exclusions
+documendation/
+tokens/
+updates/
+tests/
+envvv

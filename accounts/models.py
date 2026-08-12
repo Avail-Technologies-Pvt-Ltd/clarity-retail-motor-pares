@@ -46,12 +46,30 @@ class User(AbstractUser):
 
 
 class Branch(models.Model):
+	global_id = models.UUIDField(unique=True, null=True, blank=True)
+	version = models.IntegerField(default=1)
+	needs_sync = models.BooleanField(default=True)
+	last_synced_at = models.DateTimeField(null=True, blank=True)
+	created_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='created_%(class)s_records', null=True, blank=True)
+	updated_by_branch = models.ForeignKey('Branch', on_delete=models.DO_NOTHING, related_name='updated_%(class)s_records', null=True, blank=True)
+	deleted_at = models.DateTimeField(null=True, blank=True)
+	
 	# Contact Information
 	manager = models.CharField(max_length=20, blank=True, null=True)
 	phone = models.CharField(max_length=20, blank=True, null=True)
 	email = models.EmailField(blank=True, null=True)
+
+	# BANKING
+	bank_1_bank_name = models.CharField(max_length=50, blank=True)
+	bank_1_account_name = models.CharField(max_length=50, blank=True)
+	bank_1_nostro = models.CharField(max_length=50, blank=True)
+	bank_1_zig = models.CharField(max_length=50, blank=True)
+
+	# NOTES
+	thank_you_message = models.CharField(max_length=100, blank=True)
 	
 	# Address
+	branch_id = models.CharField(max_length=300, default=0)
 	branch_name = models.CharField(max_length=100)
 	address = models.CharField(max_length=255, blank=True)
 	city = models.CharField(max_length=100, blank=True)
@@ -62,12 +80,7 @@ class Branch(models.Model):
 	is_active = models.BooleanField(default=True)
 	is_local = models.BooleanField(default=True)
 	
-	# Sync
-	branch_id = models.CharField(max_length=100, default='', blank=True, null=True) #uuid from central server
-	branch_verification_key = models.CharField(max_length=300, default="")
-	sync_url = models.CharField(max_length=300, default="")
-	last_sync_time = models.CharField(max_length=300, default="")
-	last_sync_user = models.CharField(max_length=300, default="")
+
 	
 	# Timestamps
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -108,44 +121,47 @@ class Supplier(models.Model):
 		return f'{self.company_name}'
 
 
+
 class ClientSetting(models.Model):
-	configuration_name = models.CharField(max_length=30)
+	configuration_name = models.CharField(max_length=30, default="")
 	company_name = models.CharField(max_length=30)
 	address = models.TextField(max_length=255, blank=True, null=True)
-	tel = models.CharField(max_length=90)
-	tin_number = models.CharField(max_length=30)
-	prz_number = models.CharField(max_length=30)
-	vat_number = models.CharField(max_length=30)
-	invoice_number_prefix = models.CharField(max_length=30)
+	tel = models.CharField(max_length=90, blank=True, default="")
+	tin_number = models.CharField(max_length=30, blank=True, default="")
+	prz_number = models.CharField(max_length=30, blank=True, default="")
+	vat_number = models.CharField(max_length=30, blank=True, default="")
+	invoice_number_prefix = models.CharField(max_length=30, blank=True, default="")
+	quotation_number_prefix = models.CharField(max_length=30, blank=True, default="")
+	creditnote_number_prefix = models.CharField(max_length=30, blank=True, default="")
 
-	bank_1_bank_name = models.CharField(max_length=30)
-	bank_1_account_name = models.CharField(max_length=30)
-	bank_1_name_nostro = models.CharField(max_length=30)
-	bank_1_name_zig = models.CharField(max_length=30)
+	bank_1_bank_name = models.CharField(max_length=30, blank=True, default="")
+	bank_1_account_name = models.CharField(max_length=30, blank=True, default="")
+	bank_1_name_nostro = models.CharField(max_length=30, blank=True, default="")
+	bank_1_name_zig = models.CharField(max_length=30, blank=True, default="")
 
-	branch_verification_key = models.CharField(max_length=300, default="")
+	branch_verification_key = models.CharField(max_length=300, blank=True, default="")
 	branch_id = models.CharField(max_length=300, default=0)
 	branch_name = models.CharField(max_length=100, blank=True, null=True)
-	sync_url = models.CharField(max_length=300, default="")
-	last_sync_time = models.CharField(max_length=300, default="")
-	last_sync_user = models.CharField(max_length=300, default="")
+	sync_url = models.CharField(max_length=300, blank=True, default="")
+	last_sync_time = models.CharField(max_length=300, blank=True, default="")
+	last_sync_user = models.CharField(max_length=300, blank=True, default="")
 
-	company_registration = models.CharField(max_length=30)
+	company_registration = models.CharField(max_length=30, blank=True, default="")
 	email = models.TextField(max_length=255, blank=True, null=True)
-	logo = models.ImageField(blank=True, upload_to='static/images/company')
+	logo = models.ImageField(null=True, blank=True, upload_to='company_logos/')
 	thank_you_message = models.TextField(max_length=46, blank=True, null=True)
 	status = models.BooleanField(default=True)
-	online_update_minute_intervals = models.DecimalField(max_digits=10,decimal_places=0, default=5)
-	expiration_warning = models.DecimalField(max_digits=10,decimal_places=0)
+	online_update_minute_intervals = models.DecimalField(max_digits=10,decimal_places=0, default=60)
+	expiration_warning = models.DecimalField(max_digits=10, decimal_places=0, default=90)
 	pagination_slice_leangth = models.DecimalField(max_digits=10,decimal_places=0, default=20)
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	deleted = models.BooleanField(default=False)
 	subscription_expiration_date = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-	hosting_email = models.CharField(max_length=100, default="")
-	hosting_email_password = models.CharField(max_length=100, default="")
-	notification_receiving_email = models.CharField(max_length=100, default="")
+	hosting_email = models.CharField(max_length=100, blank=True, default="")
+	hosting_email_password = models.CharField(max_length=100, blank=True, default="")
+	notification_receiving_emails = models.JSONField(default=list, blank=True)
 	# notification_receiving_phone_number = models.CharField(max_length=100, default="")
 
 

@@ -10,7 +10,7 @@ urlpatterns = [
     
     # HELPER FUNCTIONS
     path('days_from_now', views.days_from_now, name='days_from_now'),
-    path('load_global_search_options', views.load_global_search_options, name='load_global_search_options'),
+    path('load-all-search-features/', views.load_all_search_features, name='load_all_search_features'),
     
     # API ENDPOINTS FOR SYSTEM SETTINGS (AJAX)
     path('api/update_user_profile', views.api_update_user_profile, name='api_update_user_profile'),
@@ -21,4 +21,10 @@ urlpatterns = [
     path('api/activate_subscription', views.api_activate_subscription, name='api_activate_subscription'),
     path('api/get_update_log', views.api_get_update_log, name='api_get_update_log'),
     path('api/create_branch', views.api_create_branch, name='api_create_branch'),
+
+
+    # NEW SETTINGS 
+    path('update_sync_settings', views.update_sync_settings, name='update_sync_settings'),
+    path('update_notification_settings', views.update_notification_settings, name='update_notification_settings'),
+    path('activate_subscription', views.activate_subscription, name='activate_subscription'),
 ]

@@ -2,40 +2,160 @@
 
 
 <!-- GLOBAL SEARCH -->
+<style>
+.search-container {
+    position: relative;
+}
 
+.search-input-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input-wrapper input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.search-input-wrapper input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.search-results-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+}
+
+.search-result-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover,
+.search-result-item.active {
+    background-color: #f0f7ff;
+}
+
+.search-result-item .result-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+    color: #007bff;
+}
+
+/* Fix for notika icons */
+.search-result-item .result-icon [class^="notika-"]:before,
+.search-result-item .result-icon [class*=" notika-"]:before {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.search-result-item .result-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-item .result-title {
+    font-weight: 500;
+    color: #333;
+}
+
+.search-result-item .result-description {
+    font-size: 13px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.search-result-item .result-badge {
+    font-size: 11px;
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    color: #666;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.search-result-item .highlight {
+    background-color: #ffeb3b;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.search-loading {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+.no-results {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
+
+/* Category groups */
+.result-group {
+    margin-bottom: 5px;
+}
+
+.result-group-title {
+    padding: 8px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    background: #f8f9fa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+</style>
+
+<!-- GLOBAL SEARCH -->
 <div class="modal fade animated bounce" id="searchModal" role="dialog">
     <div class="modal-dialog modal-medium">
         <div class="modal-content" style="padding: 2rem;">
             <div class="modal-header">
-                <span><b><i class="notika-icon notika-search"></i> Searh Pade </b></span>
+                <span><b><i class="notika-icon notika-search"></i> Search Page</b></span>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                        <div class="realtime-ctn">
-                            <div class="realtime-title">
-                                
+                        <div class="search-container">
+                            <div class="search-input-wrapper">
+                                <input type="text" 
+                                       id="globalSearchInput" 
+                                       class="form-control" 
+                                       placeholder="Type to search pages, users, settings..."
+                                       autocomplete="off">
+                                <button class="btn-primary btn" onclick="openSelectedSearchResult()">
+                                    <i class="notika-icon notika-right-arrow"></i> Go
+                                </button>
                             </div>
-                        </div>
-                        <div class="card-box">
-                            <div class="todoapp">
-                                <div id="todo-form">
-                                    <div class="row">
-                                        <div class="col-sm-12 col-md-12 col-sm-12 col-xs-12 todo-inputbar">
-                                            <div class="form-group todo-flex">
-                                                <div class="nk-int-st">
-                                                    <select data-live-search="true" style="background: red; width: 100%;" class="selectpicker global_search_link_selector" id="global-search-link-value">
-                                                        <option value="0">Type here to search</option>
-                                                    </select>
-                                                </div>
-                                                <div class="todo-send">
-                                                    <button class="btn-primary btn-md btn-block btn" type="button"  onclick="openCurrentSearchLink()">Open</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div id="searchResults" class="search-results-list" style="display:none;">
+                                <!-- Results will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -44,7 +164,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- // GLOBAL SEARCH -->
 
@@ -253,33 +372,425 @@
 
 
     /*LIVE FUNCTIONS*/
-    $(document).on('keyup', '.global_search_link_selector .bs-searchbox input', function(e){
-        if (e.key.length === 1 || e.key === "Backspace") { 
-            var searchQuery = $(this).val();
-                $.ajax({
-                    url: "{% url 'load_global_search_options' %}",
-                    data: { search_query: searchQuery },
-                    success: function(responseData) {
-                        var selectElement = document.getElementById('global-search-link-value')
-                        $("#global-search-link-value").empty();
-                        responseData.options.forEach(optionString => {
 
-                            var newOption = document.createElement("option")
-                            var parsedOption = $(optionString)[0]
-                            newOption.value = parsedOption.value
-                            newOption.text = parsedOption.textContent
-                            selectElement.appendChild(newOption)
-                        })
-                        $("#global-search-link-value").selectpicker('refresh')   
-                    },
-                    error: function(responseData, error){
-                        //alert("An error ocured! " + error)
+
+    /*//LIVE FUNCTIONS*/
+
+
+
+    /*GLOBAL SEARCH*/
+
+    // Global state
+    let searchFeatures = null;
+    let searchResults = [];
+    let selectedIndex = -1;
+    let searchTimeout = null;
+    let isLoading = false;
+    const CACHE_KEY = 'searchFeatures';
+    const CACHE_TIME_KEY = 'searchFeaturesTime';
+    const CACHE_DURATION = 3600; // 1 hour in milliseconds
+
+    // Initialize search when modal opens
+    $(document).ready(function() {
+        // Load features when modal is shown
+        $('#searchModal').on('shown.bs.modal', function() {
+            loadSearchFeatures();
+            // Focus the input
+            setTimeout(() => {
+                document.getElementById('globalSearchInput').focus();
+            }, 300);
+        });
+        
+        // Clear search when modal is hidden
+        $('#searchModal').on('hidden.bs.modal', function() {
+            const input = document.getElementById('globalSearchInput');
+            input.value = '';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchResults').innerHTML = '';
+            searchResults = [];
+            selectedIndex = -1;
+        });
+        
+        // Setup search input
+        const searchInput = document.getElementById('globalSearchInput');
+        
+        $(searchInput).on('input', function() {
+            clearTimeout(searchTimeout);
+            const query = $(this).val().trim();
+            
+            if (query.length < 1) {
+                document.getElementById('searchResults').style.display = 'none';
+                return;
+            }
+            
+            // Debounce search
+            searchTimeout = setTimeout(function() {
+                performClientSearch(query);
+            }, 200);
+        });
+        
+        // Keyboard navigation
+        $(searchInput).on('keydown', function(e) {
+            const items = document.querySelectorAll('.search-result-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateActiveItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateActiveItem(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && searchResults[selectedIndex]) {
+                    openSearchResult(searchResults[selectedIndex]);
+                } else if (items.length > 0) {
+                    // Open first result if nothing selected
+                    const firstItem = items[0];
+                    const index = parseInt(firstItem.dataset.index);
+                    if (searchResults[index]) {
+                        openSearchResult(searchResults[index]);
                     }
+                }
+            } else if (e.key === 'Escape') {
+                document.getElementById('searchResults').style.display = 'none';
+                $(searchInput).blur();
+            }
+        });
+        
+        // Close results when clicking outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.search-container').length) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+    });
+
+    // Load features from localStorage or API
+    function loadSearchFeatures() {
+        return new Promise((resolve, reject) => {
+            // Check if features are already loaded in memory
+            if (searchFeatures !== null && searchFeatures.length > 0) {
+                console.log('Using features from memory');
+                resolve(searchFeatures);
+                return;
+            }
+            
+            // Check localStorage
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+            
+            if (cachedData && cacheTime) {
+                const age = Date.now() - parseInt(cacheTime);
+                if (age < CACHE_DURATION) {
+                    try {
+                        searchFeatures = JSON.parse(cachedData);
+                        console.log('Using features from localStorage');
+                        resolve(searchFeatures);
+                        return;
+                    } catch (e) {
+                        console.error('Error parsing cached data:', e);
+                        // Clear invalid cache
+                        localStorage.removeItem(CACHE_KEY);
+                        localStorage.removeItem(CACHE_TIME_KEY);
+                    }
+                } else {
+                    console.log('Cache expired');
+                    localStorage.removeItem(CACHE_KEY);
+                    localStorage.removeItem(CACHE_TIME_KEY);
+                }
+            }
+            
+            // Check if we're already loading
+            if (isLoading) {
+                console.log('Already loading, waiting...');
+                // Wait for loading to complete
+                const checkInterval = setInterval(() => {
+                    if (!isLoading) {
+                        clearInterval(checkInterval);
+                        if (searchFeatures) {
+                            resolve(searchFeatures);
+                        } else {
+                            reject(new Error('Failed to load features'));
+                        }
+                    }
+                }, 100);
+                return;
+            }
+            
+            isLoading = true;
+            
+            // Show loading state
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = `
+                <div class="search-loading">
+                    <i class="notika-icon notika-refresh"></i> Loading search data...
+                </div>
+            `;
+            resultsContainer.style.display = 'block';
+            
+            console.log('Fetching features from API...');
+            
+            // Fetch from API
+            $.ajax({
+                url: "{% url 'load_all_search_features' %}", // Update this URL
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log('API response received:', response);
+                    
+                    if (response && response.features && Array.isArray(response.features)) {
+                        searchFeatures = response.features;
+                        
+                        // Save to localStorage
+                        try {
+                            localStorage.setItem(CACHE_KEY, JSON.stringify(searchFeatures));
+                            localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+                            console.log('Features cached in localStorage');
+                        } catch (e) {
+                            console.error('Error caching to localStorage:', e);
+                        }
+                        
+                        isLoading = false;
+                        resultsContainer.style.display = 'none';
+                        resolve(searchFeatures);
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('API Error:', status, error);
+                    console.error('Response:', xhr.responseText);
+                    isLoading = false;
+                    
+                    // Show error message
+                    resultsContainer.innerHTML = `
+                        <div class="no-results">
+                            <i class="notika-icon notika-close"></i> 
+                            Error loading search data. Please refresh.
+                            <br><small style="color:#999;">${error || 'Unknown error'}</small>
+                        </div>
+                    `;
+                    resultsContainer.style.display = 'block';
+                    
+                    reject(new Error('Failed to load features: ' + error));
+                }
+            });
+        });
+    }
+
+    // Perform client-side search
+    function performClientSearch(query) {
+        const resultsContainer = document.getElementById('searchResults');
+        
+        if (!searchFeatures || searchFeatures.length === 0) {
+            // Try to load features first
+            loadSearchFeatures()
+                .then(() => {
+                    performClientSearch(query);
+                })
+                .catch((error) => {
+                    console.error('Failed to load features:', error);
+                    resultsContainer.innerHTML = `
+                        <div class="no-results">
+                            <i class="notika-icon notika-close"></i> 
+                            Unable to load search data
+                            <br><small style="color:#999;">Please refresh the page</small>
+                        </div>
+                    `;
+                    resultsContainer.style.display = 'block';
+                });
+            return;
+        }
+        
+        // Search in cached features
+        const searchTerms = query.toLowerCase().split(' ');
+        const results = [];
+        
+        console.log('Searching through', searchFeatures.length, 'features...');
+        
+        for (const feature of searchFeatures) {
+            let score = 0;
+            let matchCount = 0;
+            
+            // Create searchable text
+            const searchableText = [
+                feature.name || '',
+                feature.description || '',
+                ...(feature.keywords || [])
+            ].join(' ').toLowerCase();
+            
+            // Calculate score
+            for (const term of searchTerms) {
+                if (searchableText.includes(term)) {
+                    matchCount++;
+                    // Boost score for name matches
+                    if ((feature.name || '').toLowerCase().includes(term)) {
+                        score += 3;
+                    }
+                    // Boost for keyword matches
+                    if (feature.keywords && feature.keywords.some(kw => kw.toLowerCase().includes(term))) {
+                        score += 2;
+                    }
+                    // Regular match
+                    score += 1;
+                }
+            }
+            
+            // Require at least one term match
+            if (matchCount > 0) {
+                // Boost score for exact phrase match
+                if (searchableText.includes(query.toLowerCase())) {
+                    score += 5;
+                }
+                
+                results.push({
+                    ...feature,
+                    score: score,
+                    matchedTerms: matchCount
                 });
             }
-        })
+        }
+        
+        // Sort by score (highest first)
+        results.sort((a, b) => b.score - a.score);
+        
+        // Limit results
+        const limitedResults = results.slice(0, 15);
+        searchResults = limitedResults;
+        selectedIndex = -1;
+        
+        if (limitedResults.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="no-results">
+                    <i class="notika-icon notika-search"></i> 
+                    No results found for "${query}"
+                </div>
+            `;
+            resultsContainer.style.display = 'block';
+            return;
+        }
+        
+        // Render results
+        renderSearchResults(limitedResults, query);
+    }
 
-    /*LIVE FUNCTIONS*/
+    function renderSearchResults(results, query) {
+        const resultsContainer = document.getElementById('searchResults');
+        
+        // Group by category
+        const grouped = {};
+        for (const result of results) {
+            const category = result.category || 'Other';
+            if (!grouped[category]) {
+                grouped[category] = [];
+            }
+            grouped[category].push(result);
+        }
+        
+        let html = '';
+        for (const [category, items] of Object.entries(grouped)) {
+            html += `<div class="result-group">
+                <div class="result-group-title">${category}</div>`;
+            
+            items.forEach((result) => {
+                const globalIndex = searchResults.indexOf(result);
+                const highlightedName = highlightText(result.name || 'Untitled', query);
+                const highlightedDesc = highlightText(result.description || '', query);
+                
+                // Fix icon rendering - use the actual icon class
+                const iconClass = result.icon || 'notika-icon notika-search';
+                
+                html += `
+                    <div class="search-result-item" data-index="${globalIndex}" onclick="selectResult(${globalIndex})">
+                        <div class="result-icon">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="result-content">
+                            <div class="result-title">${highlightedName}</div>
+                            ${result.description ? `<div class="result-description">${highlightedDesc}</div>` : ''}
+                        </div>
+                        ${result.badge ? `<div class="result-badge">${result.badge}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
+        resultsContainer.innerHTML = html;
+        resultsContainer.style.display = 'block';
+    }
 
+    function highlightText(text, query) {
+        if (!text || !query) return text || '';
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    function updateActiveItem(items) {
+        items.forEach((item, index) => {
+            item.classList.toggle('active', index === selectedIndex);
+        });
+        
+        if (selectedIndex >= 0 && items[selectedIndex]) {
+            items[selectedIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function selectResult(index) {
+        if (searchResults[index]) {
+            openSearchResult(searchResults[index]);
+        }
+    }
+
+    function openSearchResult(result) {
+        if (result && result.link) {
+            // Close modal
+            $('#searchModal').modal('hide');
+            // Navigate to the link
+            if (result.link.startsWith('http') || result.link.startsWith('//')) {
+                window.open(result.link, '_blank');
+            } else {
+                window.location.href = result.link;
+            }
+        }
+    }
+
+    function openSelectedSearchResult() {
+        if (selectedIndex >= 0 && searchResults[selectedIndex]) {
+            openSearchResult(searchResults[selectedIndex]);
+        } else {
+            // Open first result
+            const firstItem = document.querySelector('.search-result-item');
+            if (firstItem) {
+                const index = parseInt(firstItem.dataset.index);
+                if (searchResults[index]) {
+                    openSearchResult(searchResults[index]);
+                }
+            }
+        }
+    }
+
+    // Helper to clear cache (useful for development)
+    function clearSearchCache() {
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_TIME_KEY);
+        searchFeatures = null;
+        console.log('Search cache cleared');
+    }
+
+    // Debug helper - check cache status
+    function checkSearchCache() {
+        const cached = localStorage.getItem(CACHE_KEY);
+        const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+        console.log('Cache exists:', !!cached);
+        console.log('Cache age:', cacheTime ? Math.round((Date.now() - parseInt(cacheTime)) / 60000) + ' minutes' : 'N/A');
+        console.log('Features in memory:', searchFeatures ? searchFeatures.length : 0);
+    }
+    /*//GLOBAL SEARCH*/
+        
 
 </script>

@@ -1,4 +1,4 @@
-﻿APScheduler==3.11.2
+APScheduler==3.11.2
 asgiref==3.8.0
 bson==0.5.10
 certifi==2026.2.25
@@ -13,6 +13,7 @@ django-humanize==0.1.2
 django-mathfilters==1.0.0
 djangorestframework==3.15.1
 dnspython==2.8.0
+fontawesomefree==6.0.0
 gunicorn==23.0.0
 humanize==4.9.0
 idna==3.11

@@ -68,6 +68,16 @@ urlpatterns = [
 
 
 
+    # NEW SETTINGS
+    path('update_company_details', views.update_company_details, name='update_company_details'),
+    path('update_branch_settings', views.update_branch_settings, name='update_branch_settings'),
+    path('update_invoice_settings', views.update_invoice_settings, name='update_invoice_settings'),
+    path('update_display_settings', views.update_display_settings, name='update_display_settings'),
+
+
+
+
+
 
     
     

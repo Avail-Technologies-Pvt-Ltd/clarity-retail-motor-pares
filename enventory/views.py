@@ -1699,7 +1699,13 @@ def add_batch_invoice_patching(request):
         
     else:
         message = "You can not use the selected markup type."
-        return JsonResponse({'message': message})
+        return JsonResponse({'title': "Error", 'text': message, 'type': "error"})
+        
+
+    stock.selling_price = selling_price
+    stock.markup = markup
+    stock.save()
+
 
     # create invoice item
     new_invoice_item = InvoiceItem()
@@ -1738,6 +1744,10 @@ def add_batch_invoice_patching(request):
     new_batch.save()
 
 
+    content = f"New independent batch, Batch ID: { new_batch.id }, { new_batch.total_units } units added to INVOICE NUMBER { invoice.invoice_number}. SELLING PRICE: type: { selling_price_type }, price: { selling_price_type }, markup: { markup }"
+    log_activity(content, request.user)
+
+
     # take care of payment
     if payment_instruction == "AUTO":
         payments = Payment.objects.filter(payment_for="INVOICE", payment_for_id=invoice.id)
@@ -1748,7 +1758,12 @@ def add_batch_invoice_patching(request):
             amount_paid = Decimal(new_invoice_item.subtotal) * Decimal(dominant_payment.rate)
             dominant_payment.amount_paid += amount_paid
             dominant_payment.save()
+
+            content = f"PAYMENT: { dominant_payment_method.shortcut } { locale.format_string('%.0f', amount_paid, grouping=True) } @ { locale.format_string('%.0f', dominant_payment.rate, grouping=True) } rate."
+            log_activity(content, request.user)
         else:
+            content = f"PAYMENT: No payment recorded"
+            log_activity(content, request.user)
             return JsonResponse({'title': "Added", 'text': "Batch added succesefully, but you need to take care of the payment manualy in invoices", 'type': "info"})
 
 

@@ -7,7 +7,7 @@ from decimal import Decimal
 class FiscalisationSettings(models.Model):
     """Global settings for fiscalisation"""
     
-    fiscalisation_enabled = models.BooleanField(default=True)
+    fiscalisation_enabled = models.BooleanField(default=False)
     paused_at = models.DateTimeField(null=True, blank=True)
     paused_by = models.CharField(max_length=100, blank=True)
     pause_reason = models.TextField(blank=True)

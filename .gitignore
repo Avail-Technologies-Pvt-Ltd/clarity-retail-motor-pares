@@ -3,6 +3,8 @@ venv/
 .venv/
 env/
 .env/
+.env.dev
+.env.prod
 
 # Python
 __pycache__/
@@ -17,6 +19,9 @@ build/
 *.sqlite3
 db.sqlite3
 *.db
+
+*.zip
+*.tar
 
 # Docker
 docker/*.local.yml

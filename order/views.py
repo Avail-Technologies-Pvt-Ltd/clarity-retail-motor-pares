@@ -12,6 +12,129 @@ import os
 from django.conf import settings
 
 from accounts.models import Branch, User, ClientSetting, PrinterCase
+from order.models import SyncManager, SubscriptionPayment
+
+
+
+
+# NEW SETTINGS
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+def activate_subscription(request):
+    if request.method == "POST":
+        return JsonResponse({
+            'title': "Sim subscription",
+            'icon': "success", 
+            'text': "Note: this feature is not yet functional"
+        })
+
+    return JsonResponse({
+        'title': "Error",
+        'icon': "error", 
+        'text': str(e)
+    }, status=400)
+
+
+@require_POST
+def update_notification_settings(request):
+    try:
+        hosting_email = request.POST.get('hosting_email')
+        hosting_email_password = request.POST.get('hosting_email_password')
+        notification_receiving_emails = request.POST.get('notification_receiving_emails')
+        stock_expiration_warning_days = request.POST.get('stock_expiration_warning_days')
+
+        # Parse the JSON string to list
+        try:
+            email_list = json.loads(notification_receiving_emails) if notification_receiving_emails else []
+        except json.JSONDecodeError:
+            email_list = []
+
+        # Update or create ClientSetting
+        client_settings = ClientSetting.objects.filter(status=True)
+        if client_settings:
+            client_setting = client_settings.first()
+            client_setting.hosting_email = hosting_email
+            client_setting.hosting_email_password = hosting_email_password
+            client_setting.notification_receiving_emails = email_list  # Store as list
+            client_setting.expiration_warning = stock_expiration_warning_days
+            client_setting.created_by = request.user
+            client_setting.save()
+        else:
+            client_setting = ClientSetting()
+            client_setting.hosting_email = hosting_email
+            client_setting.hosting_email_password = hosting_email_password
+            client_setting.notification_receiving_emails = email_list  # Store as list
+            client_setting.expiration_warning = stock_expiration_warning_days
+            client_setting.created_by = request.user
+            client_setting.save()
+
+        # Update or create NotificationsManager
+        notifications_managers = NotificationsManager.objects.all()
+        if notifications_managers:
+            notifications_manager = notifications_managers.first()
+            notifications_manager.hosting_email = hosting_email 
+            notifications_manager.hosting_email_password = hosting_email_password 
+            notifications_manager.notification_receiving_emails = email_list  # Store as list
+            notifications_manager.stock_expiration_warning_days = stock_expiration_warning_days 
+            notifications_manager.created_by = request.user 
+            notifications_manager.save() 
+        else:
+            notifications_manager = NotificationsManager()
+            notifications_manager.hosting_email = hosting_email 
+            notifications_manager.hosting_email_password = hosting_email_password 
+            notifications_manager.notification_receiving_emails = email_list  # Store as list
+            notifications_manager.stock_expiration_warning_days = stock_expiration_warning_days 
+            notifications_manager.created_by = request.user 
+            notifications_manager.save() 
+
+        return JsonResponse({
+            'title': "Saved",
+            'icon': "success", 
+            'text': "Notification settings applied successfully!"
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'title': "Error",
+            'icon': "error", 
+            'text': str(e)
+        }, status=400)
+
+
+def update_sync_settings(request):
+    if request.method == "POST":
+        sync_url = request.POST.get('sync_url')
+        sync_intervals_minutes = request.POST.get('sync_intervals_minutes')
+
+        sync_managers = SyncManager.objects.all()
+        if sync_managers:
+            sync_manager = sync_managers.first()
+            sync_manager.sync_url = sync_url
+            sync_manager.sync_intervals_minutes = sync_intervals_minutes
+            sync_manager.created_by = request.user
+            sync_manager.save()
+
+        else:
+            sync_manager = SyncManager()
+            sync_manager.sync_url = sync_url
+            sync_manager.sync_intervals_minutes = sync_intervals_minutes
+            sync_manager.created_by = request.user
+            sync_manager.save()
+
+        return JsonResponse({
+            'title': "Saved",
+            'icon': "success", 
+            'text': "Data sysnc settings applied successfully!"
+        })
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+# ================================================================================
 
 
 
@@ -23,12 +146,49 @@ def system_settings(request):
         context['user'] = request.user
     
     # LOCAL BRANCH - get the branch marked as is_local=True
-    local_branch = Branch.objects.filter(is_local=True).first()
-    context['branch'] = local_branch
+    local_branch = Branch.objects.filter(is_local=True)
+    if local_branch:
+        context['branch'] = local_branch.first()
     
     # Client Settings Data
-    client_setting = ClientSetting.objects.filter(deleted=False).first() if hasattr(ClientSetting, 'deleted') else ClientSetting.objects.first()
-    context['client_setting'] = client_setting
+    client_setting = ClientSetting.objects.filter(status=True)
+    if client_setting:
+        context['client_setting'] = client_setting.first()
+
+    sync_manager = SyncManager.objects.all()
+    if sync_manager:
+        context['sync_manager'] = sync_manager.first()
+
+    notifications_manager = NotificationsManager.objects.all()
+    if notifications_manager:
+        context['notifications_manager'] = notifications_manager.first()
+
+    subscription_payments = SubscriptionPayment.objects.all()
+    if subscription_payments:
+        context['subscription_payments'] = subscription_payments
+
+
+    subscription_manager = SubscriptionManager.objects.first()
+    
+    # Format instructions
+    if subscription_manager and subscription_manager.instructions:
+        formatted_instructions = []
+        for line in subscription_manager.instructions.splitlines():
+            line = line.strip()
+            if line.startswith('---'):
+                formatted_instructions.append({'type': 'divider'})
+            elif line.startswith('--'):
+                formatted_instructions.append({'type': 'subheading', 'text': line[2:].strip()})
+            elif line.startswith('-'):
+                formatted_instructions.append({'type': 'bullet', 'text': line[1:].strip()})
+            elif line:
+                formatted_instructions.append({'type': 'text', 'text': line})
+            else:
+                formatted_instructions.append({'type': 'break'})
+    else:
+        formatted_instructions = None
+    
+    context['formatted_instructions'] = formatted_instructions
     
     # PRINTERS - Get ALL printers (not filtered by branch)
     # Your PrinterCase model doesn't have a branch relationship, so get all
@@ -38,43 +198,7 @@ def system_settings(request):
         printers = PrinterCase.objects.all()
     context['printers'] = printers
     
-    # Subscription Data
-    try:
-        last_subscription = SubscriptionPayment.objects.all().order_by('-created_at').first()
-        if last_subscription:
-            context['subscription_status'] = {
-                'expiration_date': str(last_subscription.date_to)[:10] if last_subscription.date_to else "N/A",
-                'date': str(last_subscription.created_at)[:10] if last_subscription.created_at else "N/A",
-                'active_date': str(last_subscription.date_from)[:10] if last_subscription.date_from else "N/A",
-                'duration': last_subscription.duration,
-            }
-        else:
-            context['subscription_status'] = {
-                'expiration_date': "N/A",
-                'date': "N/A",
-                'active_date': "N/A",
-                'duration': "N/A",
-            }
-        
-        context['old_payments'] = SubscriptionPayment.objects.all().order_by('-created_at')
-        
-        order_profile = OrderProfile.objects.all().first()
-        if order_profile:
-            context['payment_instructions'] = order_profile.payment_instructions
-            context['contact'] = {
-                'whatsapp': getattr(order_profile, 'whatsapp', 'N/A'),
-                'call': getattr(order_profile, 'call', 'N/A'),
-                'email': getattr(order_profile, 'email', 'N/A'),
-                'website': getattr(order_profile, 'website', 'N/A'),
-            }
-    except Exception as e:
-        context['subscription_status'] = {
-            'expiration_date': "N/A",
-            'date': "N/A",
-            'active_date': "N/A",
-            'duration': "N/A",
-        }
-        context['old_payments'] = []
+
     
     return render(request, 'order/system_settings/system_settings.html', context)
 
@@ -194,7 +318,7 @@ def add_subscription_page(request):
 
         today = str(datetime_.today().date())[:10]
 
-        order_profile = OrderProfile.objects.all().first()
+        order_profile = SubscriptionManager.objects.all().first()
 
         monthly_keys_list = order_profile.monthly_keys.rstrip(",").split(",")
         anual_keys_list = order_profile.anual_keys.rstrip(",").split(",")
@@ -260,7 +384,7 @@ def add_subscription_page(request):
 
     try:
         last_subscription = SubscriptionPayment.objects.all().order_by('created_at').last()
-        order_profile = OrderProfile.objects.all().first()
+        order_profile = SubscriptionManager.objects.all().first()
 
         # time_left = order_profile.time_left
         expiration_date = last_subscription.date_to
@@ -276,7 +400,7 @@ def add_subscription_page(request):
 
 
     try:
-        order_profile = OrderProfile.objects.all().first()
+        order_profile = SubscriptionManager.objects.all().first()
 
         whatsapp = order_profile.whatsapp
         call = order_profile.call
@@ -320,18 +444,384 @@ def add_subscription_page(request):
 # HELPER FUNCTIONS
 
 # GLOBAL SEARCH
-def load_global_search_options(request):
-    search_query = request.GET.get('search_query')
 
-    features = [
-    # key_words, link, name, discription
-        { }
-    ]
-    links = [
-        f"<option value='{ feature['link'] }'> { feature['name'] }, <small>{ feature['description'] }</small> </option>" for feature in features
-    ]
+from django.http import JsonResponse
+from django.urls import reverse
+import json
 
-    return JsonResponse({'options':links})
+
+def load_all_search_features(request):
+    """
+    Load all searchable features at once for client-side caching
+    """
+    try:
+        # Build your features list
+        
+        features = [
+            # DASHBOARD & QUICK ACCESS
+            {
+                'name': 'Dashboard',
+                'description': 'Main overview and analytics',
+                'link': reverse('home'),
+                'icon': 'notika-icon notika-home',
+                'category': 'Dashboard',
+                'keywords': ['dashboard', 'home', 'overview', 'analytics'],
+                'badge': None
+            },
+            {
+                'name': 'P.O.S',
+                'description': 'Point of Sale - Quick checkout',
+                'link': reverse('pos'),
+                'icon': 'notika-icon notika-cart',
+                'category': 'Dashboard',
+                'keywords': ['pos', 'point of sale', 'checkout', 'register'],
+                'badge': None
+            },
+            {
+                'name': 'Alerts',
+                'description': 'View recent notifications and updates',
+                'link': reverse('notifications_page'),
+                'icon': 'notika-icon notika-alarm',
+                'category': 'Dashboard',
+                'keywords': ['alerts', 'notifications', 'updates', 'messages', 'unread'],
+                'badge': None
+            },
+            {
+                'name': 'Create Quotation',
+                'description': 'Generate new quotations for customers',
+                'link': reverse('create_quotation_page'),
+                'icon': 'notika-icon notika-file',
+                'category': 'Dashboard',
+                'keywords': ['quotation', 'quote', 'estimate', 'proposal'],
+                'badge': None
+            },
+            
+            # STOCK MANAGEMENT
+            {
+                'name': 'Products',
+                'description': 'Manage product catalog',
+                'link': reverse('products_page'),
+                'icon': 'notika-icon notika-box',
+                'category': 'Stock',
+                'keywords': ['products', 'items', 'goods', 'catalog', 'inventory'],
+                'badge': None
+            },
+            {
+                'name': 'Stock',
+                'description': 'View and manage current stock levels',
+                'link': reverse('stocks_page'),
+                'icon': 'notika-icon notika-warehouse',
+                'category': 'Stock',
+                'keywords': ['stock', 'inventory', 'quantity', 'levels', 'available'],
+                'badge': None
+            },
+            {
+                'name': 'Batches',
+                'description': 'Manage product batches and lots',
+                'link': reverse('batches_page'),
+                'icon': 'notika-icon notika-layers',
+                'category': 'Stock',
+                'keywords': ['batches', 'lots', 'batch numbers', 'expiry'],
+                'badge': None
+            },
+            {
+                'name': 'Stock Adjustments',
+                'description': 'Adjust stock quantities',
+                'link': reverse('batch_adjustments_page'),
+                'icon': 'notika-icon notika-edit',
+                'category': 'Stock',
+                'keywords': ['stock adjustments', 'adjust', 'modify stock', 'quantity change'],
+                'badge': None
+            },
+            {
+                'name': 'Mass Price Adjustment',
+                'description': 'Bulk update product prices',
+                'link': reverse('mass_price_adjustments_page'),
+                'icon': 'notika-icon notika-dollar',
+                'category': 'Stock',
+                'keywords': ['mass price', 'bulk price', 'price update', 'price adjustment'],
+                'badge': None
+            },
+            {
+                'name': 'Categories',
+                'description': 'Organize products into categories',
+                'link': reverse('categories_page'),
+                'icon': 'notika-icon notika-folder',
+                'category': 'Stock',
+                'keywords': ['categories', 'product types', 'classification'],
+                'badge': None
+            },
+            
+            # SALES & TRANSACTIONS
+            {
+                'name': 'Sales',
+                'description': 'View and manage sales records',
+                'link': reverse('sales_page'),
+                'icon': 'notika-icon notika-dollar',
+                'category': 'Sales',
+                'keywords': ['sales', 'revenue', 'income', 'transactions'],
+                'badge': None
+            },
+            {
+                'name': 'Receiving Invoices',
+                'description': 'Manage incoming invoices',
+                'link': reverse('invoices_page'),
+                'icon': 'notika-icon notika-invoice',
+                'category': 'Sales',
+                'keywords': ['receiving invoices', 'incoming invoices', 'purchase invoices'],
+                'badge': None
+            },
+            {
+                'name': 'Credit Notes',
+                'description': 'Manage credit notes and adjustments',
+                'link': reverse('credit_notes_page'),
+                'icon': 'notika-icon notika-credit',
+                'category': 'Sales',
+                'keywords': ['credit notes', 'credit', 'adjustments', 'refund', 'returns'],
+                'badge': None
+            },
+            {
+                'name': 'Transactions',
+                'description': 'View all financial transactions',
+                'link': reverse('sales_transactions_page'),
+                'icon': 'notika-icon notika-credit-card',
+                'category': 'Sales',
+                'keywords': ['transactions', 'payments', 'financial', 'records'],
+                'badge': None
+            },
+            {
+                'name': 'Returns Out',
+                'description': 'Manage outgoing returns to suppliers',
+                'link': reverse('returns_out_page'),
+                'icon': 'notika-icon notika-return',
+                'category': 'Sales',
+                'keywords': ['returns out', 'supplier returns', 'send back'],
+                'badge': None
+            },
+            
+            # EXPENSES
+            {
+                'name': 'Expenses',
+                'description': 'Track and manage business expenses',
+                'link': reverse('expenses_page'),
+                'icon': 'notika-icon notika-wallet',
+                'category': 'Expenses',
+                'keywords': ['expenses', 'costs', 'spending', 'outgoing'],
+                'badge': None
+            },
+            {
+                'name': 'Expense Types',
+                'description': 'Configure expense categories',
+                'link': reverse('expense_types_page'),
+                'icon': 'notika-icon notika-tag',
+                'category': 'Expenses',
+                'keywords': ['expense types', 'cost categories', 'spending types'],
+                'badge': None
+            },
+            
+            # UTILITIES
+            {
+                'name': 'Departments',
+                'description': 'Organize users by department',
+                'link': reverse('departments_page'),
+                'icon': 'notika-icon notika-building',
+                'category': 'Utilities',
+                'keywords': ['departments', 'teams', 'divisions', 'groups'],
+                'badge': None
+            },
+            {
+                'name': 'Batch Adjustment Reasons',
+                'description': 'Configure reasons for batch adjustments',
+                'link': reverse('batch_adjustment_reasons_page'),
+                'icon': 'notika-icon notika-list',
+                'category': 'Utilities',
+                'keywords': ['adjustment reasons', 'stock reasons', 'batch reasons'],
+                'badge': None
+            },
+            {
+                'name': 'Stock Return Reasons',
+                'description': 'Configure reasons for stock returns',
+                'link': reverse('return_reasons_page'),
+                'icon': 'notika-icon notika-question',
+                'category': 'Utilities',
+                'keywords': ['return reasons', 'stock return', 'return causes'],
+                'badge': None
+            },
+            {
+                'name': 'Currencies',
+                'description': 'Configure payment options',
+                'link': reverse('payment_methods_page'),
+                'icon': 'notika-icon notika-payment',
+                'category': 'Utilities',
+                'keywords': ['payment methods', 'payment types', 'currencies', 'rate'],
+                'badge': None
+            },
+            {
+                'name': 'VAT Codes',
+                'description': 'Manage VAT rates and codes',
+                'link': reverse('VATcodes_page'),
+                'icon': 'notika-icon notika-percentage',
+                'category': 'Utilities',
+                'keywords': ['vat', 'tax', 'tax rates', 'gst', 'hst'],
+                'badge': None
+            },
+            
+            # SETTINGS & CONFIGURATION
+            {
+                'name': 'Settings',
+                'description': 'Global system settings and preferences',
+                'link': reverse('system_settings'),
+                'icon': 'notika-icon notika-settings',
+                'category': 'Settings',
+                'keywords': ['settings', 'config', 'preferences', 'system'],
+                'badge': None
+            },
+            {
+                'name': 'Store Configurations',
+                'description': 'Store-specific settings and preferences',
+                'link': reverse('client_settings_page'),
+                'icon': 'notika-icon notika-config',
+                'category': 'Settings',
+                'keywords': ['store config', 'store settings', 'store profile', 'client config'],
+                'badge': None
+            },
+            {
+                'name': 'Fiscalisation',
+                'description': 'Fiscal compliance and reporting',
+                'link': reverse('fiscalisation:dashboard'),
+                'icon': 'notika-icon notika-document',
+                'category': 'Settings',
+                'keywords': ['fiscalisation', 'fiscal', 'compliance', 'tax reporting'],
+                'badge': None
+            },
+            
+            # ACCOUNTS & PEOPLE
+            {
+                'name': 'Customers',
+                'description': 'Manage customer accounts',
+                'link': reverse('customers_page'),
+                'icon': 'notika-icon notika-person',
+                'category': 'Accounts',
+                'keywords': ['customers', 'clients', 'buyers', 'accounts'],
+                'badge': None
+            },
+            {
+                'name': 'Suppliers',
+                'description': 'Manage supplier/vendor accounts',
+                'link': reverse('suppliers_page'),
+                'icon': 'notika-icon notika-truck',
+                'category': 'Accounts',
+                'keywords': ['suppliers', 'vendors', 'providers', 'sourcing'],
+                'badge': None
+            },
+            {
+                'name': 'Manufacturers',
+                'description': 'Manage product manufacturers',
+                'link': reverse('manufacturers_page'),
+                'icon': 'notika-icon notika-factory',
+                'category': 'Accounts',
+                'keywords': ['manufacturers', 'brands', 'producers', 'makers'],
+                'badge': None
+            },
+            {
+                'name': 'Users',
+                'description': 'Manage system users and permissions',
+                'link': reverse('users_page'),
+                'icon': 'notika-icon notika-users',
+                'category': 'Accounts',
+                'keywords': ['users', 'staff', 'employees', 'permissions'],
+                'badge': None
+            },
+            
+            # DATA ANALYSIS & REPORTS
+            {
+                'name': 'Transactions Summary',
+                'description': 'Overview of all transactions',
+                'link': reverse('transactions_summery_page'),
+                'icon': 'notika-icon notika-chart-bar',
+                'category': 'Analysis',
+                'keywords': ['transactions summary', 'summary', 'overview', 'total'],
+                'badge': None
+            },
+            {
+                'name': 'Stock Analysis',
+                'description': 'Analyze stock performance and trends',
+                'link': reverse('stock_analysis_page'),
+                'icon': 'notika-icon notika-chart-line',
+                'category': 'Analysis',
+                'keywords': ['stock analysis', 'inventory analysis', 'trends', 'performance'],
+                'badge': None
+            },
+            {
+                'name': 'Comparative Stock Analysis',
+                'description': 'Compare stock across periods or categories',
+                'link': reverse('comparative_stock_analysis_page'),
+                'icon': 'notika-icon notika-compare',
+                'category': 'Analysis',
+                'keywords': ['comparative', 'compare stock', 'comparison', 'period comparison'],
+                'badge': None
+            },
+            {
+                'name': 'Periodic Reports',
+                'description': 'Generate reports for specific time periods',
+                'link': reverse('periodic_reports_page'),
+                'icon': 'notika-icon notika-calendar',
+                'category': 'Analysis',
+                'keywords': ['periodic reports', 'time period', 'reports', 'date range'],
+                'badge': None
+            },
+            {
+                'name': 'Specified Reports',
+                'description': 'Custom and filtered reports',
+                'link': reverse('specified_reports_page'),
+                'icon': 'notika-icon notika-file-report',
+                'category': 'Analysis',
+                'keywords': ['specified reports', 'custom reports', 'filtered reports'],
+                'badge': None
+            },
+            
+            # DATA & STORAGE
+            {
+                'name': 'Backup',
+                'description': 'System backup and restore',
+                'link': reverse('create_backup'),
+                'icon': 'notika-icon notika-cloud',
+                'category': 'Storage',
+                'keywords': ['backup', 'restore', 'data', 'archive'],
+                'badge': None
+            },
+            
+            # SECURITY
+            {
+                'name': 'Logout',
+                'description': 'Sign out of the system',
+                'link': reverse('user_logout'),
+                'icon': 'notika-icon notika-logout',
+                'category': 'Security',
+                'keywords': ['logout', 'sign out', 'exit', 'log off'],
+                'badge': None
+            }
+        ]
+        # If you have dynamic features from database, add them here
+        # Example: features.extend(get_dynamic_features_from_db())
+        
+        return JsonResponse({
+            'features': features,
+            'total': len(features),
+            'status': 'success'
+        })
+        
+    except Exception as e:
+        print(f"Error loading search features: {str(e)}")
+        return JsonResponse({
+            'features': [],
+            'total': 0,
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+
 
 
 # API
@@ -457,7 +947,7 @@ def api_activate_subscription(request):
                 key = request.POST.get('subscription_key')
             
             today = str(datetime_.today().date())[:10]
-            order_profile = OrderProfile.objects.all().first()
+            order_profile = SubscriptionManager.objects.all().first()
             
             if not order_profile:
                 return JsonResponse({'custome_status': 'Error', 'message': 'Order profile not found'})

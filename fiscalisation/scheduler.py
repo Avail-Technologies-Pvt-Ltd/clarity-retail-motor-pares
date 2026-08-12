@@ -11,8 +11,8 @@ def sync_receipts():
 def start_scheduler():
     def run():
         while True:
+            time.sleep(3600) #time is in seconds
             sync_receipts()
-            time.sleep(300000)  # 5 minutes
     
     thread = threading.Thread(target=run, daemon=True)
     thread.start()

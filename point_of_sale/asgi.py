@@ -1,16 +1,13 @@
 """
 ASGI config for point_of_sale project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 """
 
 import os
-
+from pathlib import Path
 from django.core.asgi import get_asgi_application
+from point_of_sale.env import get_settings_module
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "point_of_sale.settings")
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", get_settings_module())
 
 application = get_asgi_application()

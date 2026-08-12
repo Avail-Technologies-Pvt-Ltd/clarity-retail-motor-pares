@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 from .forms import AddUserForm, UpdateUserForm
-from .models import User, Supplier, Manufacturer, ClientSetting
+from .models import User, Supplier, Manufacturer, ClientSetting, Branch
 from enventory.models import *
 from payments.models import *
 
@@ -90,6 +90,261 @@ def client_settings_page(request):
 #--------------------------------------------------------------------
 #   //HTML PAGE
 #--------------------------------------------------------------------
+
+
+
+# NEW SETTINGS
+
+def update_display_settings(request):
+    if request.method == "POST":
+        pagination_slice_leangth = request.POST.get('pagination_slice_leangth')
+
+        client_settings = ClientSetting.objects.filter(status=True)
+        if client_settings:
+            client_setting = client_settings.first()
+            client_setting.pagination_slice_leangth = pagination_slice_leangth
+            client_setting.created_by = request.user
+            client_setting.save()
+
+        else:
+            client_setting = ClientSetting()
+            client_setting.pagination_slice_leangth = pagination_slice_leangth
+            client_setting.created_by = request.user
+            client_setting.save()
+
+
+        return JsonResponse({
+            'title': "Saved",
+            'icon': "success", 
+            'text': "Display settings applied successfully!"
+        })
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@login_required
+@role_validator(['Supervisor'])
+def update_invoice_settings(request):
+    if request.method == "POST":
+        invoice_number_prefix = request.POST.get('invoice_number_prefix')
+        quotation_number_prefix = request.POST.get('quotation_number_prefix')
+        creditnote_number_prefix = request.POST.get('creditnote_number_prefix')
+
+        client_settings = ClientSetting.objects.filter(status=True)
+        if client_settings:
+            client_setting = client_settings.first()
+            client_setting.invoice_number_prefix = invoice_number_prefix
+            client_setting.quotation_number_prefix = quotation_number_prefix
+            client_setting.creditnote_number_prefix = creditnote_number_prefix
+            client_setting.created_by = request.user
+            client_setting.save()
+
+        else:
+            client_setting = ClientSetting()
+            client_setting.invoice_number_prefix = invoice_number_prefix
+            client_setting.quotation_number_prefix = quotation_number_prefix
+            client_setting.creditnote_number_prefix = creditnote_number_prefix
+            client_setting.created_by = request.user
+            client_setting.save()
+
+
+
+        return JsonResponse({
+            'title': "Saved",
+            'icon': "success", 
+            'text': "Prefixing settings applied successfully!"
+        })
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@login_required
+@role_validator(['Supervisor'])
+def update_branch_settings(request):
+    if request.method == "POST":
+        branch_id = request.POST.get('branch_id')
+        branch_name = request.POST.get('branch_name')
+        address = request.POST.get('address')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        bank_1_bank_name = request.POST.get('bank_1_bank_name')
+        bank_1_account_name = request.POST.get('bank_1_account_name')
+        bank_1_nostro = request.POST.get('bank_1_nostro')
+        bank_1_zig = request.POST.get('bank_1_zig')
+        thank_you_message = request.POST.get('thank_you_message')
+        manager = request.POST.get('manager')
+        city = request.POST.get('city')
+        country = request.POST.get('country')
+        type_ = request.POST.get('type')
+
+        tel = phone
+
+
+        # :::::::::::ClientSetting 
+        client_settings = ClientSetting.objects.filter(status=True)
+        if client_settings:
+            client_setting = client_settings.first()
+            client_setting.branch_id = branch_id
+            client_setting.branch_name = branch_name
+            client_setting.address = address
+            client_setting.tel = tel
+            client_setting.email = email
+            client_setting.bank_1_bank_name = bank_1_bank_name
+            client_setting.bank_1_account_name = bank_1_account_name
+            client_setting.bank_1_nostro = bank_1_nostro
+            client_setting.bank_1_zig = bank_1_zig
+            client_setting.thank_you_message = thank_you_message
+            client_setting.created_by = request.user
+            client_setting.save()
+
+        else:
+            client_setting = ClientSetting()
+            client_setting.branch_id = branch_id
+            client_setting.branch_name = branch_name
+            client_setting.address = address
+            client_setting.tel = tel
+            client_setting.email = email
+            client_setting.bank_1_bank_name = bank_1_bank_name
+            client_setting.bank_1_account_name = bank_1_account_name
+            client_setting.bank_1_nostro = bank_1_nostro
+            client_setting.bank_1_zig = bank_1_zig
+            client_setting.thank_you_message = thank_you_message
+            client_setting.created_by = request.user
+            client_setting.save()
+
+
+        # :::::::::::ClientSetting
+        branchs = Branch.objects.filter(is_local=True, is_active=True)
+        if branchs:
+            branch = branchs.first()
+            branch.branch_id = branch_id
+            branch.branch_name = branch_name
+            branch.address = address
+            branch.phone = phone
+            branch.email = email
+            branch.bank_1_bank_name = bank_1_bank_name
+            branch.bank_1_account_name = bank_1_account_name
+            branch.bank_1_nostro = bank_1_nostro
+            branch.bank_1_zig = bank_1_zig
+            branch.thank_you_message = thank_you_message
+            branch.manager = manager
+            branch.city = city
+            branch.country = country
+            branch.type = type_
+            branch.created_by = request.user
+            branch.save()
+
+        else:
+            branch = Branch()
+            branch.branch_id = branch_id
+            branch.branch_name = branch_name
+            branch.address = address
+            branch.phone = phone
+            branch.email = email
+            branch.bank_1_bank_name = bank_1_bank_name
+            branch.bank_1_account_name = bank_1_account_name
+            branch.bank_1_nostro = bank_1_nostro
+            branch.bank_1_zig = bank_1_zig
+            branch.thank_you_message = thank_you_message
+            branch.manager = manager
+            branch.city = city
+            branch.country = country
+            branch.type = type_
+            branch.is_local = True
+            branch.created_by = request.user
+            branch.save()
+
+
+        return JsonResponse({
+            'title': "Saved",
+            'icon': "success", 
+            'text': "Branch details applied successfully!"
+        })
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@login_required
+@role_validator(['Supervisor'])
+def update_company_details(request):
+    if request.method == 'POST':
+        company_name = request.POST.get('company_name')
+        company_registration = request.POST.get('company_registration')
+        tin_number = request.POST.get('tin_number')
+        prz_number = request.POST.get('prz_number')
+        vat_number = request.POST.get('vat_number')
+        logo = request.FILES.get('logo')  # Get the uploaded file
+
+        print(company_name)
+
+        client_settings = ClientSetting.objects.filter(status=True)
+        
+        if client_settings:
+            client_setting = client_settings.first()
+            client_setting.company_name = company_name
+            client_setting.company_registration = company_registration
+            client_setting.tin_number = tin_number
+            client_setting.prz_number = prz_number
+            client_setting.vat_number = vat_number
+            client_setting.created_by = request.user
+            
+            # Update logo only if a new one was uploaded
+            if logo:
+                # Delete old logo file if it exists (IMPORTANT: use storage.delete)
+                if client_setting.logo:
+                    # Delete the actual file from storage
+                    if client_setting.logo.storage.exists(client_setting.logo.name):
+                        client_setting.logo.storage.delete(client_setting.logo.name)
+                    # Or alternatively:
+                    # client_setting.logo.delete(save=False)  # This also works
+                
+                client_setting.logo = logo
+                
+            client_setting.save()
+
+            return JsonResponse({
+                'title': "Updated",
+                'icon': "success", 
+                'text': "Company details updated successfully!"
+            })
+        else:
+            client_setting = ClientSetting()
+            client_setting.company_name = company_name
+            client_setting.company_registration = company_registration
+            client_setting.tin_number = tin_number
+            client_setting.prz_number = prz_number
+            client_setting.vat_number = vat_number
+            client_setting.created_by = request.user
+            
+            # Set logo if uploaded
+            if logo:
+                client_setting.logo = logo
+                
+            client_setting.save()
+
+            return JsonResponse({
+                'title': "Saved",
+                'icon': "success", 
+                'text': "Company details saved successfully!"
+            })
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -927,8 +1182,6 @@ def home(request):
         'vat_codes':vat_codes,
         'new_alerts':new_alerts,
 
-
-
         #accounts
         'users':users,
         'suppliers':suppliers,
@@ -939,8 +1192,6 @@ def home(request):
         'products':products,
         'returns_out':returns_out,
         'customers':customers,
-
-        
 
         ###
         'window_share_level':window_share_level,

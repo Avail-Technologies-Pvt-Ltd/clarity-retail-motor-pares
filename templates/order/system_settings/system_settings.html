@@ -3,1015 +3,2003 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Clarity POS | System Settings</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clarit: System settings</title>
+    <link href="{% static '' %}fontawesomefree/css/fontawesome.css" rel="stylesheet">
+    <link href="{% static '' %}fontawesomefree/css/brands.css" rel="stylesheet">
+    <link href="{% static '' %}fontawesomefree/css/solid.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static '' %}for_settings_app/sweetalert2.min.css">
     <style>
-        * {
+             * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background: #0a1428;
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
+            background: #f6f8fc;
             height: 100vh;
-        }
-
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
-
-        .app-wrapper {
             display: flex;
             flex-direction: column;
-            height: 100vh;
             overflow: hidden;
+            color: #1e293b;
+            transition: background 0.25s, color 0.2s;
         }
 
-        .app-header {
-            flex-shrink: 0;
-            background: #0f1e2f;
-            border-bottom: 1px solid #1e3a5f;
-            padding: 0 2rem;
-            height: 70px;
+        /* DARK MODE */
+        body.dark-mode {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        body.dark-mode .navbar {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+        body.dark-mode .navbar-brand { color: #f1f5f9; }
+        body.dark-mode .nav-btn { color: #cbd5e1; }
+        body.dark-mode .nav-btn:hover { background: #334155; color: white; }
+        body.dark-mode .dropdown-menu-custom {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body.dark-mode .dropdown-item { color: #e2e8f0; }
+        body.dark-mode .dropdown-item:hover { background: #334155; }
+        body.dark-mode .sidebar {
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+        }
+        body.dark-mode .sidebar-header span { color: #94a3b8; }
+        body.dark-mode .sidebar-btn { color: #cbd5e1; }
+        body.dark-mode .sidebar-btn:hover { background: #1e293b; color: white; }
+        body.dark-mode .sidebar-btn.active {
+            background: transparent;
+            border-left: 3px solid #60a5fa;
+        }
+        body.dark-mode .sidebar-btn.active i { color: #60a5fa; }
+        body.dark-mode .search-wrap { background: #1e293b; }
+        body.dark-mode .search-wrap input { color: #f1f5f9; }
+        body.dark-mode .search-wrap input::placeholder { color: #64748b; }
+        body.dark-mode .content-panel { background: #0f172a; }
+        body.dark-mode .section-header { border-bottom-color: #1e293b; }
+        body.dark-mode .section-header h2 { color: #f1f5f9; }
+        body.dark-mode .placeholder-card {
+            background: #1e293b;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode .save-btn-bottom {
+            background: #2563eb;
+            color: white;
+        }
+        body.dark-mode .save-btn-bottom:hover { background: #1d4ed8; }
+        body.dark-mode .form-control {
+            background: #1e293b;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode .form-control:focus { border-color: #60a5fa; background: #1e293b; }
+        body.dark-mode .form-label { color: #cbd5e1; }
+        body.dark-mode .form-check-label { color: #cbd5e1; }
+        body.dark-mode .form-check-input:checked { background-color: #3b82f6; border-color: #3b82f6; }
+        body.dark-mode .collapse-toggle { color: #94a3b8; }
+        body.dark-mode .collapse-toggle:hover { background: #1e293b; color: white; }
+        body.dark-mode .select-search-input { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+        body.dark-mode .select-search-dropdown { background: #1e293b; border-color: #334155; }
+        body.dark-mode .select-search-dropdown li:hover { background: #334155; }
+        body.dark-mode .select-search-dropdown li { color: #e2e8f0; }
+        body.dark-mode .note-modal-content {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-color: #334155;
+        }
+        body.dark-mode .note-modal-table td {
+            border-bottom-color: #334155;
+        }
+        body.dark-mode .note-modal-input {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode .note-modal-input:focus {
+            border-color: #60a5fa;
+        }
+        body.dark-mode .note-modal-close {
+            color: #94a3b8;
+        }
+        body.dark-mode .note-modal-close:hover {
+            color: #e2e8f0;
+        }
+        body.dark-mode .readonly-field {
+            background: #1a2538;
+            color: #94a3b8;
+        }
+        body.dark-mode .sub-history-table th {
+            background: #1a2538;
+            color: #94a3b8;
+        }
+        body.dark-mode .sub-history-table td {
+            border-bottom-color: #334155;
+        }
+        body.dark-mode .how-to-pay-box {
+            background: #1a2538;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+        body.dark-mode .system-info-card {
+            background: #1a2538;
+            border-color: #334155;
+        }
+        body.dark-mode .system-info-item { border-bottom-color: #334155; }
+        body.dark-mode .system-info-item .value { color: #e2e8f0; }
+        body.dark-mode .save-btn-outline {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        body.dark-mode .save-btn-outline:hover { background: #1e293b; }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* navbar */
+        .navbar {
+            background: #ffffff;
+            padding: 0 1.8rem;
+            height: 58px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 100;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .logo-area h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #ffffff, #90caf9);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .app-main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        .nav-sidebar {
-            width: 300px;
-            background: linear-gradient(180deg, #0b2b4f 0%, #07233e 100%);
-            border-right: 1px solid #1e4a76;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
+            border-bottom: 1px solid #eef2f6;
             flex-shrink: 0;
-            scrollbar-width: thin;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            user-select: none;
         }
-
-        .nav-sidebar::-webkit-scrollbar {
-            width: 5px;
+        .navbar-brand {
+            font-weight: 500;
+            font-size: 1.1rem;
+            letter-spacing: -0.2px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
         }
-
-        .nav-sidebar::-webkit-scrollbar-track {
-            background: #0a2a44;
+        .navbar-brand i { color: #2563eb; font-size: 1.2rem; opacity: 0.8; }
+        .navbar-actions { display: flex; align-items: center; gap: 0.1rem; }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #475569;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 450;
         }
+        .nav-btn i { font-size: 1rem; opacity: 0.7; }
+        .nav-btn:hover { background: #f1f5f9; color: #0f172a; }
+        .nav-btn:active { background: #e2e8f0; }
 
-        .nav-sidebar::-webkit-scrollbar-thumb {
-            background: #2f6ea2;
-            border-radius: 10px;
+        .dropdown-wrap { position: relative; }
+        .dropdown-menu-custom {
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: #ffffff;
+            border: 1px solid #e9edf2;
+            border-radius: 16px;
+            padding: 0.3rem 0;
+            min-width: 190px;
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.12);
+            display: none;
+            z-index: 999;
         }
+        .dropdown-menu-custom.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.55rem 1.2rem;
+            color: #1e293b;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.08s;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            font-weight: 450;
+        }
+        .dropdown-item i { width: 20px; color: #64748b; font-size: 0.95rem; }
+        .dropdown-item:hover { background: #f1f5f9; border-radius: 8px; }
 
-        .nav-menu {
-            padding: 24px 16px;
+        /* main */
+        .app-main { display: flex; flex: 1; overflow: hidden; background: #f6f8fc; }
+
+        /* sidebar */
+        .sidebar {
+            background: #ffffff;
+            width: 250px;
+            transition: width 0.22s ease;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            flex-shrink: 0;
+            border-right: 1px solid #eef2f6;
+            height: 100%;
+            padding: 0.6rem 0.4rem 0.8rem 0.4rem;
         }
+        .sidebar.collapsed { width: 68px; }
+        .sidebar.collapsed .sidebar-label,
+        .sidebar.collapsed .search-wrap input { display: none; }
+        .sidebar.collapsed .search-wrap { justify-content: center; }
 
-        .nav-link-side {
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            margin: 0.2rem 0.3rem 0.8rem 0.3rem;
+            transition: 0.15s;
+            border: 1px solid transparent;
+        }
+        .search-wrap:focus-within {
+            border-color: #b4c6e7;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px #e2e8f0;
+        }
+        .search-wrap i { color: #64748b; font-size: 0.9rem; opacity: 0.7; }
+        .search-wrap input {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 0.4rem;
+            font-size: 0.85rem;
+            width: 100%;
+            outline: none;
+            color: #0f172a;
+            font-weight: 400;
+        }
+        .search-wrap input::placeholder { color: #94a3b8; font-weight: 350; }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.2rem 0.6rem 0.6rem 0.6rem;
+            border-bottom: 1px solid #f1f5f9;
+            min-height: 40px;
+        }
+        .sidebar-header span {
+            font-weight: 450;
+            font-size: 0.7rem;
+            letter-spacing: 0.4px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .collapse-toggle {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.1rem 0.4rem;
+            border-radius: 30px;
+        }
+        .collapse-toggle:hover { background: #f1f5f9; color: #0f172a; }
+
+        .sidebar-menu {
+            padding: 0.2rem 0.1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .sidebar-menu::-webkit-scrollbar { width: 3px; }
+        .sidebar-menu::-webkit-scrollbar-thumb { background: #d1d9e6; border-radius: 12px; }
+
+        .sidebar-btn {
+            background: transparent;
+            border: none;
+            color: #334155;
+            width: 100%;
+            padding: 0.55rem 0.8rem;
+            margin: 0.1rem 0;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 12px 20px;
-            border-radius: 16px;
-            color: #cae3ff;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 450;
+            cursor: pointer;
+            transition: 0.1s;
+            text-align: left;
+            white-space: nowrap;
+            letter-spacing: -0.1px;
         }
-
-        .nav-link-side i {
+        .sidebar-btn i {
             width: 24px;
             font-size: 1.1rem;
+            text-align: center;
+            color: #64748b;
+            transition: 0.1s;
         }
-
-        .nav-link-side:hover {
-            background: #1e5782;
-            color: white;
-            transform: translateX(4px);
+        .sidebar-btn:hover { background: #f1f5f9; color: #0f172a; }
+        .sidebar-btn.active {
+            background: transparent;
+            border-left: 3px solid #2563eb;
+            border-radius: 0 12px 12px 0;
+            padding-left: calc(0.8rem - 3px);
+            color: #0f172a;
+            font-weight: 500;
         }
+        .sidebar-btn.active i { color: #2563eb; }
 
-        .nav-link-side.active {
-            background: #1976c4;
-            color: white;
-            box-shadow: 0 6px 14px rgba(0, 35, 70, 0.4);
-        }
-
-        .section-title-nav {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6c9bc2;
-            padding: 16px 20px 8px 20px;
-            font-weight: 600;
-        }
-
+        /* content */
         .content-panel {
             flex: 1;
+            padding: 2rem 2.5rem;
             overflow-y: auto;
-            background: #f0f4f9;
-            padding: 28px 32px;
-            scrollbar-width: thin;
+            background: #f6f8fc;
         }
+        .section { display: none; animation: fade 0.15s ease; }
+        .section.active { display: block; }
+        @keyframes fade { 0% { opacity: 0.4; transform: translateY(4px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        .content-panel::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .content-panel::-webkit-scrollbar-track {
-            background: #e2e8f0;
-        }
-
-        .content-panel::-webkit-scrollbar-thumb {
-            background: #8aa9c9;
-            border-radius: 10px;
-        }
-
-        .settings-section {
-            display: none;
-            animation: fadeIn 0.25s ease-out;
-        }
-
-        .settings-section.active-section {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-
-        .settings-card {
-            background: white;
-            border-radius: 28px;
-            border: none;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
-            margin-bottom: 28px;
-            overflow: hidden;
-        }
-
-        .card-header-modern {
-            padding: 1.3rem 2rem;
-            background: white;
-            border-bottom: 1px solid #edf2f7;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #0f2b40;
-        }
-
-        .card-body-modern {
-            padding: 2rem;
-        }
-
-        .form-label {
-            font-weight: 600;
-            font-size: 0.8rem;
-            color: #2c4e6e;
-            margin-bottom: 0.4rem;
-        }
-
-        .form-control, .form-select {
-            border-radius: 14px;
-            border: 1.5px solid #e2edf7;
-            padding: 0.6rem 1rem;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #1976c4;
-            box-shadow: 0 0 0 3px rgba(25, 118, 196, 0.1);
-        }
-
-        .btn-primary-save {
-            background: #0f5b8c;
-            border: none;
-            border-radius: 40px;
-            padding: 10px 24px;
-            font-weight: 600;
-            background: linear-gradient(100deg, #136b9e, #0a4b73);
-            transition: all 0.2s;
-        }
-
-        .btn-primary-save:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(0, 70, 110, 0.2);
-        }
-
-        .subscription-history-item {
-            border-left: 3px solid #1976c4;
-            padding: 12px 16px;
-            background: #f9fbfd;
-            border-radius: 16px;
-            margin-bottom: 12px;
-        }
-
-        .update-log-entry {
-            padding: 12px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .update-log-entry:last-child {
-            border-bottom: none;
-        }
-        .update-log-entry li {
-            margin-bottom: 6px;
-            color: #4a5568;
-            line-height: 1.4;
-        }
-        .version-badge {
-            background: #1976c4;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-        .loading-spinner-sm {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid #e2edf7;
-            border-top-color: #1976c4;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .system-info-row {
-            background: #f8fafc;
-            padding: 12px 16px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-        }
-        .system-info-row strong {
-            color: #1e4a76;
-            min-width: 180px;
-            display: inline-block;
-        }
-        .printer-item {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            border-left: 3px solid #2ecc71;
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid #e9edf2;
+            padding-bottom: 0.7rem;
         }
-        .info-row {
+        .section-header h2 {
+            font-weight: 450;
+            font-size: 1.4rem;
+            color: #0f172a;
             display: flex;
-            padding: 10px 0;
-            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
         }
-        .info-label {
-            font-weight: 600;
-            width: 180px;
-            color: #1e4a76;
+        .section-header h2 i { color: #2563eb; opacity: 0.7; font-size: 1.2rem; }
+
+        .placeholder-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.8rem 2rem;
+            border: 1px solid #eef2f6;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+            max-width: 100%;
+            color: #1e293b;
+            line-height: 1.6;
         }
-        .info-value {
-            color: #2c3e50;
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem 1.5rem;
+            margin-bottom: 1rem;
         }
+        .form-grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-label {
+            font-weight: 450;
+            font-size: 0.75rem;
+            color: #475569;
+            letter-spacing: -0.1px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.45rem 0.8rem;
+            border: 1px solid #d1d9e6;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            background: #ffffff;
+            transition: 0.15s;
+            outline: none;
+            color: #0f172a;
+        }
+        .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+        .form-control.readonly-field {
+            background: #f1f5f9;
+            color: #475569;
+            cursor: default;
+        }
+        .form-check { display: flex; align-items: center; gap: 8px; margin: 0.3rem 0; }
+        .form-check-input { width: 17px; height: 17px; accent-color: #2563eb; cursor: pointer; }
+        .form-check-label { font-size: 0.85rem; color: #1e293b; cursor: pointer; }
+
+        .select-search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .select-search-input {
+            width: 100%;
+            padding: 0.45rem 0.8rem;
+            border: 1px solid #d1d9e6;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            background: #ffffff;
+            outline: none;
+            color: #0f172a;
+            cursor: pointer;
+        }
+        .select-search-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+        .select-search-dropdown {
+            position: absolute;
+            top: 105%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d9e6;
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            list-style: none;
+            padding: 0.2rem 0;
+            margin: 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .select-search-dropdown.show { display: block; }
+        .select-search-dropdown li {
+            padding: 0.4rem 0.9rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #1e293b;
+            transition: 0.08s;
+        }
+        .select-search-dropdown li:hover { background: #f1f5f9; }
+        .select-search-dropdown li.selected { background: #dbeafe; font-weight: 500; }
+
+        .save-bottom {
+            margin-top: 1.5rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid #e9edf2;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .save-btn-bottom {
+            background: #2563eb;
+            border: none;
+            padding: 0.6rem 2.2rem;
+            border-radius: 60px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .save-btn-bottom:hover { background: #1d4ed8; }
+        .save-btn-bottom i { color: white; }
+        .save-btn-outline {
+            background: transparent;
+            border: 1px solid #2563eb;
+            padding: 0.6rem 2.2rem;
+            border-radius: 60px;
+            font-weight: 500;
+            color: #2563eb;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .save-btn-outline:hover { background: #eff6ff; }
+
+        .theme-toggle-nav {
+            background: transparent;
+            border: none;
+            color: #475569;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 450;
+        }
+        .theme-toggle-nav:hover { background: #f1f5f9; color: #0f172a; }
+        .theme-toggle-nav i { font-size: 1rem; opacity: 0.7; }
+
+        /* subscription */
+        .sub-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        .sub-history-table th {
+            text-align: left;
+            padding: 0.5rem 0.6rem;
+            background: #f1f5f9;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .sub-history-table td {
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid #eef2f6;
+        }
+        .sub-history-table tr:last-child td { border-bottom: none; }
+        .sub-section-title {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #0f172a;
+            margin: 1rem 0 0.3rem 0;
+        }
+        .how-to-pay-box {
+            background: #f8fafc;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin: 0.5rem 0 1rem 0;
+            color: #1e293b;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+        .how-to-pay-box strong { color: #2563eb; }
+
+        /* system info */
+        .system-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem 2rem;
+        }
+        .system-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .system-info-item .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 450;
+            letter-spacing: 0.3px;
+        }
+        .system-info-item .value {
+            font-size: 0.95rem;
+            color: #0f172a;
+            font-weight: 450;
+        }
+
+        /* note modal */
+        .note-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .note-modal-overlay.show { display: flex; }
+        .note-modal-content {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 2rem 2.5rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eef2f6;
+        }
+        .note-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eef2f6;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.2rem;
+        }
+        .note-modal-header h3 {
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .note-modal-header h3 i { color: #2563eb; }
+        .note-modal-close {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0 0.4rem;
+            transition: 0.1s;
+        }
+        .note-modal-close:hover { color: #0f172a; }
+        .note-modal-body {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        .note-modal-body::-webkit-scrollbar { width: 4px; }
+        .note-modal-body::-webkit-scrollbar-thumb { background: #d1d9e6; border-radius: 12px; }
+
+        .note-modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .note-modal-table td {
+            padding: 0.5rem 0.3rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .note-modal-table .note-date { color: #64748b; font-size: 0.8rem; white-space: nowrap; }
+        .note-modal-table .note-text { color: #1e293b; word-break: break-word; }
+        .note-modal-table .note-delete-btn {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+            transition: 0.1s;
+        }
+        .note-modal-table .note-delete-btn:hover { background: #fef2f2; }
+        .note-modal-table .note-divider td { padding: 0; border-bottom: none; }
+        .note-modal-table .note-divider hr { border: none; border-top: 1px solid #f1f5f9; margin: 0.2rem 0; }
+
+        .note-modal-footer {
+            border-top: 1px solid #eef2f6;
+            padding-top: 1rem;
+            display: flex;
+            gap: 0.8rem;
+        }
+        .note-modal-footer .note-input {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border: 1px solid #d1d9e6;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.15s;
+            background: #f8fafc;
+        }
+        .note-modal-footer .note-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px #dbeafe;
+            background: white;
+        }
+        .note-modal-footer .note-save-btn {
+            background: #2563eb;
+            border: none;
+            padding: 0.6rem 1.8rem;
+            border-radius: 30px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .note-modal-footer .note-save-btn:hover { background: #1d4ed8; }
+        .note-loading {
+            text-align: center;
+            color: #94a3b8;
+            padding: 2rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 820px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-grid-2 { grid-template-columns: 1fr; }
+            .system-info-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .sidebar { width: 68px; }
+            .sidebar .sidebar-label, .sidebar .search-wrap input { display: none; }
+            .sidebar .search-wrap { justify-content: center; }
+            .navbar-actions .nav-btn span { display: none; }
+            .content-panel { padding: 1.2rem; }
+            .note-modal-content { padding: 1.5rem; width: 95%; }
+            .note-modal-footer { flex-wrap: wrap; }
+            .note-modal-footer .note-save-btn { width: 100%; justify-content: center; }
+        }
+    </style>
     </style>
 </head>
 <body>
-<div class="app-wrapper">
-    <div class="app-header">
-        <div class="logo-area">
-            <h2><i class="fas fa-cubes me-2"></i><a style="text-decoration: none;" href="{% url 'home' %}"> Clarity POS</a> · System Settings</h2>
+    <!-- NAVBAR (keep as is) -->
+    <nav class="navbar">
+        <div class="navbar-brand"><a href="{% url 'home' %}"><i class="fas fa-cash-register"></i>&nbsp<span>POS</span></a></div>
+        <div class="navbar-actions">
+            <button class="nav-btn" id="notePadBtn"><i class="fas fa-sticky-note"></i><span>Note Pad</span></button>
+            <button class="theme-toggle-nav" id="themeToggleNav"><i class="fas fa-moon"></i><span>Theme</span></button>
+            <div class="dropdown-wrap">
+                <button class="nav-btn" id="settingsDropdownToggle"><i class="fas fa-gear"></i><span>Settings</span></button>
+                <div class="dropdown-menu-custom" id="settingsDropdown">
+                    <button class="dropdown-item" data-link="settings">
+                        <a href="{% url 'system_settings' %}"><i class="fas fa-sliders-h"></i> Settings</a>
+                    </button>
+                    <button class="dropdown-item" data-link="backup">
+                        <a href="{% url 'create_backup' %}"><i class="fas fa-cloud-upload-alt"></i> Backup</a>
+                    </button>
+                    <button class="dropdown-item" data-link="fiscalisation">
+                        <a href="{% url 'fiscalisation:dashboard' %}"><i class="fas fa-receipt"></i> Fiscalisation</a>
+                    </button>
+                    <button class="dropdown-item" data-link="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+            <button class="nav-btn" id="openNewTabBtn"><i class="fas fa-external-link-alt"></i><span>New tab</span></button>
         </div>
-        <div class="header-actions">
-            <i class="fas fa-sync-alt me-3"></i>
-            <i class="fas fa-user-shield"></i>
-        </div>
-    </div>
+    </nav>
 
+    <!-- MAIN -->
     <div class="app-main">
-        <!-- Sidebar Navigation -->
-        <div class="nav-sidebar">
-            <div class="section-title-nav"><i class="fas fa-user-circle me-1"></i> USER & COMPANY</div>
-            <ul class="nav-menu">
-                <li class="nav-item" style="display: none;">
-                    <div class="nav-link-side" data-section="profile">
-                        <i class="fas fa-id-card"></i> My Profile
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <div class="nav-link-side active" data-section="branch">
-                        <i class="fas fa-store"></i> Local Branch
-                    </div>
-                </li>
-                <li class="nav-item"><div class="nav-link-side" data-section="clientsetting"><i class="fas fa-building"></i> Client Settings</div></li>
-                <li class="nav-item"><div class="nav-link-side" data-section="printer"><i class="fas fa-print"></i> Printers</div></li>
-            </ul>
-            <div class="section-title-nav"><i class="fas fa-cog me-1"></i> SYSTEM & SUBSCRIPTION</div>
-            <ul class="nav-menu">
-                <li class="nav-item"><div class="nav-link-side" data-section="system"><i class="fas fa-info-circle"></i> System Details</div></li>
-                <li class="nav-item"><div class="nav-link-side" data-section="subscription"><i class="fas fa-ticket-alt"></i> Subscription</div></li>
-            </ul>
-            <div class="mt-auto p-3 text-center" style="color:#6f9ac2; font-size:11px;">
-                <i class="fas fa-database"></i> Clarity POS • Enterprise
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><span class="sidebar-label">Menu</span><button class="collapse-toggle" id="collapseSidebarBtn"><i class="fas fa-chevron-left"></i></button></div>
+            <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="sidebarSearch" placeholder="Search settings..."></div>
+            <div class="sidebar-menu" id="sidebarMenu">
+                <button class="sidebar-btn active" data-section="company" data-keywords="company details name registration tin prz vat logo"><i class="fas fa-building sidebar-icon"></i><span class="sidebar-label">Company</span></button>
+                <button class="sidebar-btn" data-section="branch" data-keywords="branch verification key id name address tel email bank manager city country type local"><i class="fas fa-store-alt sidebar-icon"></i><span class="sidebar-label">Branch</span></button>
+                <button class="sidebar-btn" data-section="invoices" data-keywords="invoice quotation credit note prefix number"><i class="fas fa-file-invoice sidebar-icon"></i><span class="sidebar-label">Prefixes</span></button>
+                <button class="sidebar-btn" data-section="sync" data-keywords="sync url last time user online interval"><i class="fas fa-sync sidebar-icon"></i><span class="sidebar-label">Sync</span></button>
+                <button class="sidebar-btn" data-section="display" data-keywords="display pagination slice length"><i class="fas fa-desktop sidebar-icon"></i><span class="sidebar-label">Display</span></button>
+                <button class="sidebar-btn" data-section="notifications" data-keywords="notification email password receiving expiration warning"><i class="fas fa-bell sidebar-icon"></i><span class="sidebar-label">Notifications</span></button>
+                <button class="sidebar-btn" data-section="subscription" data-keywords="subscription key history expiration date duration"><i class="fas fa-crown sidebar-icon"></i><span class="sidebar-label">Subscription</span></button>
+                <button class="sidebar-btn" data-section="system" data-keywords="system info version updates technologies company"><i class="fas fa-info-circle sidebar-icon"></i><span class="sidebar-label">System Info</span></button>
+                <span style="display:none;" id="searchCatalogue">company details name registration tin prz vat logo branch verification key id name address tel email bank manager city country type local invoice quotation credit note prefix number sync url last time user online interval display pagination slice length notification email password receiving expiration warning subscription key history expiration date duration system info version updates technologies company</span>
             </div>
-        </div>
+            <div style="padding:0.4rem; font-size:0.65rem; color:#94a3b8; text-align:center; border-top:1px solid #f1f5f9;" class="sidebar-label">v2.0</div>
+        </aside>
 
-        <!-- Main Content -->
-        <div class="content-panel">
-            <!-- ========== PROFILE SECTION ========== -->
-            <div id="profile-section" class="settings-section">
-                <div class="settings-card">
-                    <div class="card-header-modern"><i class="fas fa-user-edit me-2"></i>User Profile</div>
-                    <div class="card-body-modern">
-                        <form id="userProfileForm">
-                            <div class="row g-3">
-                                <div class="col-md-6"><label class="form-label">Username</label><input type="text" class="form-control" id="profile-username" value="{{ user.username }}"></div>
-                                <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" id="profile-email" value="{{ user.email }}"></div>
-                                <div class="col-md-6"><label class="form-label">Phone Number</label><input type="text" class="form-control" id="profile-phone" value="{{ user.phone_number|default:'' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Address</label><input type="text" class="form-control" id="profile-address" value="{{ user.address|default:'' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Roles</label>
-                                    <select class="form-select" id="profile-roles">
-                                        <option value="Sales Rep" {% if user.roles == "Sales Rep" %}selected{% endif %}>Sales Rep</option>
-                                        <option value="Supervisor" {% if user.roles == "Supervisor" %}selected{% endif %}>Supervisor</option>
-                                        <option value="Data Analyst" {% if user.roles == "Data Analyst" %}selected{% endif %}>Data Analyst</option>
-                                        <option value="Supervisor, Sales Rep" {% if user.roles == "Supervisor, Sales Rep" %}selected{% endif %}>Supervisor, Sales Rep</option>
-                                        <option value="Data Analyst, Sales Rep" {% if user.roles == "Data Analyst, Sales Rep" %}selected{% endif %}>Data Analyst, Sales Rep</option>
-                                        <option value="Data Analyst, Supervisor" {% if user.roles == "Data Analyst, Supervisor" %}selected{% endif %}>Data Analyst, Supervisor</option>
-                                        <option value="Data Analyst, Supervisor, Sales Rep" {% if user.roles == "Data Analyst, Supervisor, Sales Rep" %}selected{% endif %}>Data Analyst, Supervisor, Sales Rep</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6"><label class="form-label">Status</label>
-                                    <select class="form-select" id="profile-status">
-                                        <option value="true" {% if user.status %}selected{% endif %}>Active</option>
-                                        <option value="false" {% if not user.status %}selected{% endif %}>Inactive</option>
-                                    </select>
-                                </div>
-                                <div class="col-12"><label class="form-label">E-signature Link</label><input type="text" class="form-control" id="profile-signature" value="{{ user.e_signature_link|default:'' }}"></div>
+        <!-- CONTENT -->
+        <div class="content-panel" id="contentPanel">
+
+            <!-- COMPANY SECTION -->
+            <div class="section active" id="section-company">
+                <div class="section-header"><h2><i class="fas fa-building"></i> Company Details</h2></div>
+                <div class="placeholder-card">
+                    
+                        <form id="companyForm" class="form-grid" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label class="form-label">Company Name</label>
+                                <input class="form-control" id="company_name" value="{{ client_setting.company_name|default:'' }}">
                             </div>
-                            <div class="mt-4 d-flex justify-content-end"><button type="button" class="btn btn-primary-save" id="updateProfileBtn"><i class="fas fa-save me-2"></i>Update Profile</button></div>
+                            <div class="form-group">
+                                <label class="form-label">Company Registration</label>
+                                <input class="form-control" id="company_registration" value="{{ client_setting.company_registration|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">TIN Number</label>
+                                <input class="form-control" id="tin_number" value="{{ client_setting.tin_number|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">PRZ Number</label>
+                                <input class="form-control" id="prz_number" value="{{ client_setting.prz_number|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">VAT Number</label>
+                                <input class="form-control" id="vat_number" value="{{ client_setting.vat_number|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Logo</label>
+                                <!-- 1. Added a fixed height and alignment styles to the parent wrapper -->
+                                <div class="form-control" style="display: flex; align-items: center; gap: 10px; height: 33px;">
+                                    {% if client_setting.logo %}
+                                    <!-- 2. Changed to max-height: 100% and added object-fit to prevent distortion -->
+                                    <img src="{{ client_setting.logo.url }}" alt="Company Logo" style="max-height: 100%; object-fit: contain;">
+                                    {% endif %}
+                                    <input type="file" id="logo_upload" name="logo" accept="image/*">
+                                </div>
+                            </div>
                         </form>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveCompanyBtn"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ========== BRANCH SECTION - EDITABLE LOCAL BRANCH ========== -->
-            <div id="branch-section" class="settings-section active-section">
-                <div class="settings-card">
-                    <div class="card-header-modern"><i class="fas fa-store me-2"></i>Local Branch Settings</div>
-                    <div class="card-body-modern">
-                        <div class="alert alert-info rounded-4 mb-4">
-                            <i class="fas fa-info-circle me-2"></i> 
-                            This is your <strong>local branch</strong> configuration. Update your branch details below.
+            <!-- BRANCH SECTION -->
+            <div class="section" id="section-branch">
+                <div class="section-header"><h2><i class="fas fa-store-alt"></i> Branch</h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Branch ID</label>
+                            <input class="form-control readonly-field" id="branch_id" value="{{ branch.branch_id|default:'' }}" readonly>
                         </div>
-                        
-                        {% if branch %}
-                        <form id="branchForm">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Branch Name *</label>
-                                    <input type="text" class="form-control" id="branch_name" value="{{ branch.branch_name }}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Branch Code</label>
-                                    <input type="text" class="form-control" value="{{ branch.code }}" readonly disabled>
-                                    <small class="text-muted">Auto-generated from branch type</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Manager</label>
-                                    <input type="text" class="form-control" id="manager" value="{{ branch.manager|default:'' }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" class="form-control" id="phone" value="{{ branch.phone|default:'' }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" value="{{ branch.email|default:'' }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Address</label>
-                                    <input type="text" class="form-control" id="address" value="{{ branch.address|default:'' }}">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">City</label>
-                                    <input type="text" class="form-control" id="city" value="{{ branch.city|default:'' }}">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Country</label>
-                                    <input type="text" class="form-control" id="country" value="{{ branch.country|default:'ZW' }}">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Type</label>
-                                    <select class="form-select" id="type" disabled>
-                                        <option value="STORE" {% if branch.type == "STORE" %}selected{% endif %}>STORE</option>
-                                        <option value="WAREHOUSE" {% if branch.type == "WAREHOUSE" %}selected{% endif %}>WAREHOUSE</option>
-                                        <option value="HEADQUARTERS" {% if branch.type == "HEADQUARTERS" %}selected{% endif %}>HEADQUARTERS</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Sync URL</label>
-                                    <input type="text" class="form-control" id="sync_url" value="{{ branch.sync_url|default:'' }}" readonly>
-                                    <small class="text-muted">URL for syncing with central server</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Status</label>
-                                    <select class="form-select" id="is_active" disabled>
-                                        <option value="true" {% if branch.is_active %}selected{% endif %}>Active</option>
-                                        <option value="false" {% if not branch.is_active %}selected{% endif %}>Inactive</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <div class="alert alert-secondary">
-                                        <small>
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            <strong>Branch ID (UUID):</strong> {{ branch.branch_id|default:"Not synced yet" }}<br>
-                                            <strong>Last Sync:</strong> {{ branch.last_sync_time|default:"Never" }} by {{ branch.last_sync_user|default:"N/A" }}
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-primary-save" id="updateBranchBtn">
-                                        <i class="fas fa-save me-2"></i>Update Local Branch
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                        {% else %}
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>No local branch configured!</strong><br>
-                            Please create your local branch configuration below.
+                        <div class="form-group">
+                            <label class="form-label">Branch Name</label>
+                            <input class="form-control" id="branch_name" value="{{ branch.branch_name|default:'' }}">
                         </div>
-                        <form id="createBranchForm">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Branch Name *</label>
-                                    <input type="text" class="form-control" id="new_branch_name" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Manager</label>
-                                    <input type="text" class="form-control" id="new_manager">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" class="form-control" id="new_phone">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="new_email">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Address</label>
-                                    <input type="text" class="form-control" id="new_address">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">City</label>
-                                    <input type="text" class="form-control" id="new_city">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Country</label>
-                                    <input type="text" class="form-control" id="new_country" value="ZW">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Type</label>
-                                    <select class="form-select" id="new_type">
-                                        <option value="STORE">STORE</option>
-                                        <option value="WAREHOUSE">WAREHOUSE</option>
-                                        <option value="HEADQUARTERS">HEADQUARTERS</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-primary-save" id="createBranchBtn">
-                                        <i class="fas fa-plus me-2"></i>Create Local Branch
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                        {% endif %}
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input class="form-control" id="branch_address" value="{{ branch.address|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tel</label>
+                            <input class="form-control" id="branch_phone" value="{{ branch.phone|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" id="branch_email" value="{{ branch.email|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Bank 1 Name</label>
+                            <input class="form-control" id="bank_1_bank_name" value="{{ branch.bank_1_bank_name|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Name</label>
+                            <input class="form-control" id="bank_1_account_name" value="{{ branch.bank_1_account_name|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Bank 1 Nostro</label>
+                            <input class="form-control" id="bank_1_nostro" value="{{ branch.bank_1_nostro|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Bank 1 ZIG</label>
+                            <input class="form-control" id="bank_1_zig" value="{{ branch.bank_1_zig|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Thank You Message</label>
+                            <input class="form-control" id="thank_you_message" value="{{ branch.thank_you_message|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Manager</label>
+                            <input class="form-control" id="branch_manager" value="{{ branch.manager|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input class="form-control" id="branch_city" value="{{ branch.city|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <input class="form-control" id="branch_country" value="{{ branch.country|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select class="form-control" id="branch_type">
+                                <option value="STORE" {% if branch.type == 'STORE' %}selected{% endif %}>Store</option>
+                                <option value="WAREHOUSE" {% if branch.type == 'WAREHOUSE' %}selected{% endif %}>Warehouse</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveBranchBtn"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ========== CLIENT SETTINGS SECTION ========== -->
-            <div id="clientsetting-section" class="settings-section">
-                <div class="settings-card">
-                    <div class="card-header-modern"><i class="fas fa-building me-2"></i>Client Configuration</div>
-                    <div class="card-body-modern">
-                        <form id="clientSettingForm">
-                            <div class="row g-3">
-                                <div class="col-md-6"><label class="form-label">Company Name</label><input type="text" class="form-control" id="client_company" value="{{ client_setting.company_name|default:'' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Configuration Name</label><input type="text" class="form-control" id="client_config_name" value="{{ client_setting.configuration_name|default:'' }}"></div>
-                                <div class="col-md-4"><label class="form-label">TIN Number</label><input type="text" class="form-control" id="client_tin" value="{{ client_setting.tin_number|default:'' }}"></div>
-                                <div class="col-md-4"><label class="form-label">VAT Number</label><input type="text" class="form-control" id="client_vat" value="{{ client_setting.vat_number|default:'' }}"></div>
-                                <div class="col-md-4"><label class="form-label">PRZ Number</label><input type="text" class="form-control" id="client_prz" value="{{ client_setting.prz_number|default:'' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Invoice Prefix</label><input type="text" class="form-control" id="client_invoice_prefix" value="{{ client_setting.invoice_number_prefix|default:'INV-' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Company Registration</label><input type="text" class="form-control" id="client_registration" value="{{ client_setting.company_registration|default:'' }}"></div>
-                                <div class="col-12"><label class="form-label">Address</label><input type="text" class="form-control" id="client_address" value="{{ client_setting.address|default:'' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Bank Name</label><input type="text" class="form-control" id="client_bank" value="{{ client_setting.bank_1_bank_name|default:'' }}"></div>
-                                <div class="col-md-6"><label class="form-label">Account Name</label><input type="text" class="form-control" id="client_account_name" value="{{ client_setting.bank_1_account_name|default:'' }}"></div>
-                                <div class="col-12"><label class="form-label">Thank You Message</label><textarea class="form-control" id="client_thanks" rows="2">{{ client_setting.thank_you_message|default:'' }}</textarea></div>
-                            </div>
-                            <div class="mt-4"><button type="button" class="btn btn-primary-save" id="updateClientSettingBtn"><i class="fas fa-save me-2"></i>Save Client Settings</button></div>
-                        </form>
+            <!-- INVOICES SECTION -->
+            <div class="section" id="section-invoices">
+                <div class="section-header"><h2><i class="fas fa-file-invoice"></i> Invoices</h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Invoice Number Prefix</label>
+                            <input class="form-control" id="invoice_prefix" value="{{ client_setting.invoice_number_prefix|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quotation Number Prefix</label>
+                            <input class="form-control" id="quotation_prefix" value="{{ client_setting.quotation_number_prefix|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Credit Note Prefix</label>
+                            <input class="form-control" id="creditnote_prefix" value="{{ client_setting.creditnote_number_prefix|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveInvoicesBtn"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ========== PRINTER SECTION ========== -->
-            <div id="printer-section" class="settings-section">
-                <div class="settings-card">
-                    <div class="card-header-modern"><i class="fas fa-print me-2"></i>Printer Configuration</div>
-                    <div class="card-body-modern">
-                        <form id="printerForm">
-                            <div class="row g-3">
-                                <div class="col-md-6"><label class="form-label">Printer Name</label><input type="text" class="form-control" id="printer_name" placeholder="E.g., EPSON TM-T88"></div>
-                                <div class="col-md-6"><label class="form-label">Client Node</label><input type="text" class="form-control" id="client_node" placeholder="Main Terminal / Kitchen"></div>
-                                <div class="col-12"><button type="button" class="btn btn-primary-save" id="addPrinterBtn"><i class="fas fa-plus me-2"></i>Add Printer</button></div>
+            <!-- SYNC SECTION -->
+            <div class="section" id="section-sync">
+                <div class="section-header"><h2><i class="fas fa-sync"></i> Sync</h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Sync URL</label>
+                            <input class="form-control" id="sync_url" value="{{ sync_manager.sync_url|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Sync Time</label>
+                            <input class="form-control readonly-field" value="{{ sync_manager.last_sync_date|default:'Never' }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Sync User</label>
+                            <input class="form-control readonly-field" value="{{ sync_manager.last_sync_user|default:'N/A' }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Online Update Interval (mins)</label>
+                            <input class="form-control" type="number" id="sync_interval" value="{{ sync_manager.sync_intervals_minutes|default:5 }}">
+                        </div>
+                    </div>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveSyncBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DISPLAY SECTION -->
+            <div class="section" id="section-display">
+                <div class="section-header"><h2><i class="fas fa-desktop"></i> Display</h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Pagination Slice Length</label>
+                            <input class="form-control" type="number" id="pagination_slice" value="{{ client_setting.pagination_slice_leangth|default:10 }}">
+                        </div>
+                    </div>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveDisplayBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOTIFICATIONS SECTION -->
+            <div class="section" id="section-notifications">
+                <div class="section-header"><h2><i class="fas fa-bell"></i> Notifications</h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Hosting Email</label>
+                            <input class="form-control" type="email" id="hosting_email" value="{{ notifications_manager.hosting_email|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hosting Email Password</label>
+                            <input class="form-control" type="password" id="hosting_password" value="{{ notifications_manager.hosting_email_password|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notification Receiving Emails</label>
+                            <input class="form-control" type="text" id="notification_emails" value="{% if notifications_manager.notification_receiving_emails %}{{ notifications_manager.notification_receiving_emails|join:', ' }}{% endif %}" placeholder="Separate emails with commas">
+                            <small style="color:#64748b; font-size:0.7rem;">Separate multiple emails with commas</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stock Expiration Warning (days)</label>
+                            <input class="form-control" type="number" id="stock_warning_days" value="{{ notifications_manager.stock_expiration_warning_days|default:30 }}">
+                        </div>
+                    </div>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveNotificationsBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBSCRIPTION SECTION -->
+            <div class="section" id="section-subscription">
+                <div class="section-header"><h2><i class="fas fa-crown"></i> Subscription</h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Subscription Key</label>
+                            <div style="display:flex; gap:10px;">
+                                <input class="form-control" id="subscriptionKeyInput" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" style="flex:1; text-transform:uppercase;">
+                                <button class="save-btn-bottom" id="activateKeyBtn" style="padding:0.6rem 1.5rem; white-space:nowrap;"><i class="fas fa-key"></i> Activate</button>
                             </div>
-                        </form>
-                        <hr class="my-4">
-                        <h6><i class="fas fa-list me-2"></i>Configured Printers</h6>
-                        <div id="printersList" class="mt-3">
-                            {% if printers %}
-                                {% for printer in printers %}
-                                <div class="printer-item">
-                                    <div>
-                                        <strong><i class="fas fa-print me-2"></i>{{ printer.printer_name }}</strong><br>
-                                        <small class="text-muted">Node: {{ printer.client_node }} | Status: {% if printer.status %}Active{% else %}Inactive{% endif %}</small>
-                                    </div>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deletePrinter({{ printer.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Expiration Date</label>
+                            <input class="form-control readonly-field" id="expiration_date" value="{% if subscription_manager.expiration_date %}{{ subscription_manager.expiration_date|date:'Y-m-d H:i' }}{% else %}Not set{% endif %}" readonly>
+                            {% if subscription_manager.expiration_date %}
+                                {% with days_left=subscription_manager.expiration_date|timeuntil %}
+                                    <small style="color:#2563eb; font-weight:500;">
+                                        <i class="fas fa-clock"></i> 
+                                        {% if days_left %}
+                                            {{ days_left }} remaining
+                                        {% else %}
+                                            Expired
+                                        {% endif %}
+                                    </small>
+                                {% endwith %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+
+                    <!-- HOW TO PAY -->
+                    
+
+                    <div class="sub-section-title">Subscription History</div>
+                    <table class="sub-history-table">
+                        <thead><tr><th>Duration</th><th>Date From</th><th>Date To</th><th>Subscription Key</th></tr></thead>
+                        <tbody>
+                            {% if subscription_payments %}
+                                {% for payment in subscription_payments %}
+                                    <tr {% if forloop.first %}style="background:#f0f7ff;"{% endif %}>
+                                        <td>{{ payment.duration|default:'N/A' }}</td>
+                                        <td>{{ payment.date_from|date:'Y-m-d' }}</td>
+                                        <td>{{ payment.date_to|date:'Y-m-d' }}</td>
+                                        <td><code>{{ payment.subscription_key|default:'N/A' }}</code></td>
+                                    </tr>
                                 {% endfor %}
                             {% else %}
-                                <div class="alert alert-info">No printers configured. Add your first printer above.</div>
+                                <tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:1rem;">No subscription history found.</td></tr>
                             {% endif %}
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- ========== SYSTEM DETAILS SECTION ========== -->
-            <div id="system-section" class="settings-section">
-                <div class="settings-card">
-                    <div class="card-header-modern"><i class="fas fa-code-branch me-2"></i>System Information</div>
-                    <div class="card-body-modern">
-                        <div id="systemInfoContainer">
-                            <div class="text-muted"><span class="loading-spinner-sm"></span> Loading system information...</div>
-                        </div>
-                        <hr>
-                        <h6><i class="fas fa-list-ul me-2"></i>Version Update Log</h6>
-                        <div id="updateLogContainer" style="max-height: 400px; overflow-y: auto; background: #fafcff; border-radius: 20px; padding: 6px 12px;">
-                            <div class="text-muted text-center py-3"><span class="loading-spinner-sm"></span> Loading changelog from updates.txt ...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========== SUBSCRIPTION SECTION ========== -->
-            <div id="subscription-section" class="settings-section">
-                <div class="settings-card">
-                    <div class="card-header-modern"><i class="fas fa-key me-2"></i>Subscription Management</div>
-                    <div class="card-body-modern">
-                        <div class="alert alert-primary rounded-4">Enter a valid subscription key to activate or extend your plan</div>
-                        <div class="input-group mb-4">
-                            <input type="text" class="form-control" id="subscriptionKeyInput" placeholder="Enter subscription key">
-                            <button class="btn btn-primary-save" id="activateSubscriptionBtn">Activate Key</button>
-                        </div>
-                        <h6>📜 Current Subscription Status</h6>
-                        <div id="subscriptionStatus" class="mb-4">
-                            {% if subscription_status.expiration_date != "N/A" %}
-                            <div class="subscription-history-item">
-                                <strong>Plan:</strong> {{ subscription_status.duration }}<br>
-                                <strong>Active from:</strong> {{ subscription_status.active_date }}<br>
-                                <strong>Expires on:</strong> {{ subscription_status.expiration_date }}<br>
-                                <strong>Purchased on:</strong> {{ subscription_status.date }}
-                            </div>
+            <!-- SYSTEM INFO SECTION -->
+            <div class="section" id="section-system">
+                <div class="section-header"><h2><i class="fas fa-info-circle"></i> About / System Info</h2></div>
+                <div class="placeholder-card">
+                    <div class="system-info-grid">
+                        <div class="system-info-item"><span class="label">Company</span><span class="value">{{ system_info.company|default:'N/A' }}</span></div>
+                        <div class="system-info-item"><span class="label">Website</span><span class="value">{{ system_info.website|default:'N/A' }}</span></div>
+                        <div class="system-info-item"><span class="label">Version</span><span class="value">v{{ system_info.virsion|default:'2.0' }}</span></div>
+                        <div class="system-info-item"><span class="label">Last Update</span><span class="value">{{ system_info.last_update|date:'Y-m-d H:i'|default:'N/A' }}</span></div>
+                        <div class="system-info-item"><span class="label">Technologies</span><span class="value">
+                            {% if system_info.technologies %}
+                                {{ system_info.technologies|join:', ' }}
                             {% else %}
-                            <div class="text-muted">No active subscription. Enter a key above to activate.</div>
+                                Django 4.2 · PostgreSQL · Redis
                             {% endif %}
-                        </div>
-                        <h6>📋 Subscription History</h6>
-                        <div id="subscriptionHistoryList">
-                            {% for payment in old_payments %}
-                            <div class="subscription-history-item">
-                                <i class="fas fa-calendar-alt me-2"></i>
-                                <strong>{{ payment.duration }}</strong> – 
-                                {{ payment.date_from|date:"Y-m-d" }} to {{ payment.date_to|date:"Y-m-d" }}
-                                {% if forloop.first %}<span class="badge bg-success ms-2">Current</span>{% endif %}
-                            </div>
-                            {% empty %}
-                            <div class="text-muted">No subscription history found.</div>
-                            {% endfor %}
-                        </div>
+                        </span></div>
+                        <div class="system-info-item"><span class="label">Support Call</span><span class="value">{{ system_info.support_call|default:'N/A' }}</span></div>
+                        <div class="system-info-item"><span class="label">Support WhatsApp</span><span class="value">{{ system_info.support_whatsapp|default:'N/A' }}</span></div>
+                        <div class="system-info-item"><span class="label">Support Email</span><span class="value">{{ system_info.support_email|default:'N/A' }}</span></div>
+                        <div class="system-info-item"><span class="label">Environment</span><span class="value">Production</span></div>
+                        <div class="system-info-item"><span class="label">Framework</span><span class="value">Django 4.2.11</span></div>
+                    </div>
+                    <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid #eef2f6; font-size:0.85rem; color:#64748b;">
+                        <i class="fas fa-copyright"></i> {{ system_info.company|default:'My POS' }} — All rights reserved.
                     </div>
                 </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NOTE PAD MODAL -->
+    <div class="note-modal-overlay" id="noteModal">
+        <div class="note-modal-content">
+            <div class="note-modal-header">
+                <h3><i class="far fa-sticky-note"></i> Note Pad</h3>
+                <button class="note-modal-close" id="noteModalClose">&times;</button>
+            </div>
+            <div class="note-modal-body" id="noteModalBody">
+                <div class="note-loading" id="noteLoading">Loading notes...</div>
+                <table class="note-modal-table" id="noteTable" style="display:none;">
+                    <tbody id="noteTableBody"></tbody>
+                </table>
+            </div>
+            <div class="note-modal-footer">
+                <input class="note-input" id="noteInput" placeholder="Write a note..." maxlength="500">
+                <button class="note-save-btn" id="noteSaveBtn"><i class="fas fa-save"></i> Save</button>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-// ========== SIDEBAR NAVIGATION ==========
-const navLinks = document.querySelectorAll('.nav-link-side');
-const sections = document.querySelectorAll('.settings-section');
+    <script src="{% static '' %}jquery.min.js"></script>
+    <script src="{% static '' %}for_settings_app/sweetalert2.min.js"></script>
+    <script>
+    (function() {
+        "use strict";
 
-function switchToSection(sectionId) {
-    sections.forEach(section => section.classList.remove('active-section'));
-    const activeSection = document.getElementById(`${sectionId}-section`);
-    if (activeSection) activeSection.classList.add('active-section');
-    navLinks.forEach(link => {
-        const linkSection = link.getAttribute('data-section');
-        if (linkSection === sectionId) link.classList.add('active');
-        else link.classList.remove('active');
-    });
-    if (sectionId === 'system') loadUpdateLog();
-}
+        // ---- SIDEBAR COLLAPSE ----
+        const sidebar = document.getElementById('sidebar');
+        const collapseBtn = document.getElementById('collapseSidebarBtn');
+        let collapsed = false;
+        collapseBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            collapsed = !collapsed;
+            sidebar.classList.toggle('collapsed', collapsed);
+            this.innerHTML = collapsed ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-chevron-left"></i>';
+        });
 
-navLinks.forEach(link => {
-    link.addEventListener('click', function() {
-        const sectionName = this.getAttribute('data-section');
-        if (sectionName) switchToSection(sectionName);
-    });
-});
+        // ---- SWITCH SECTION ----
+        const sidebarBtns = document.querySelectorAll('.sidebar-btn');
+        const sections = document.querySelectorAll('.section');
+        function switchSection(sectionId) {
+            sidebarBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.section === sectionId) btn.classList.add('active');
+            });
+            sections.forEach(sec => {
+                sec.classList.remove('active');
+                if (sec.id === 'section-' + sectionId) sec.classList.add('active');
+            });
+            document.getElementById('settingsDropdown').classList.remove('show');
+            document.getElementById('sidebarSearch').value = '';
+            resetSearch();
+        }
+        sidebarBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const section = this.dataset.section;
+                if (section) switchSection(section);
+            });
+        });
 
-// ========== DEFAULT METADATA ==========
-var defaultMetadata = {
-    version: '2.4.1 (Enterprise)',
-    developed_by: 'Avail Technologies (PVT) Ltd',
-    software: 'Clarity POS - Inventory Management System',
-    technologies: 'PostgreSQL, Redis, Python 3.11, Django, Bootstrap 5, JavaScript, AJAX, HTML5, CSS3, Sentry'
-};
-
-// ========== LOAD UPDATE LOG FROM TXT FILE ==========
-function loadUpdateLog() {
-    $.ajax({
-        url: "{% url 'api_get_update_log' %}",
-        method: 'GET',
-        success: function(responseData) {
-            var container = document.getElementById('updateLogContainer');
-            if(responseData.custome_status === "Success" && responseData.content) {
-                var parsed = parseUpdateLogWithMetadata(responseData.content);
-                updateSystemInfoDisplay(parsed.metadata);
-                container.innerHTML = parsed.changelogHtml;
-            } else {
-                container.innerHTML = '<div class="alert alert-warning m-3">updates.txt file not found in root directory.</div>';
-                updateSystemInfoDisplay(defaultMetadata);
+        // ---- DROPDOWN ----
+        const dropdownToggle = document.getElementById('settingsDropdownToggle');
+        const dropdownMenu = document.getElementById('settingsDropdown');
+        dropdownToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+        });
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const link = this.dataset.link;
+                dropdownMenu.classList.remove('show');
+                if (link === 'settings') switchSection('company');
+                else if (link === 'backup') {
+                    Swal.fire({ icon: 'info', title: 'Backup', text: 'Backup module', confirmButtonColor: '#2563eb' });
+                } else if (link === 'fiscalisation') {
+                    Swal.fire({ icon: 'info', title: 'Fiscalisation', text: 'Fiscalisation module', confirmButtonColor: '#2563eb' });
+                } else if (link === 'logout') {
+                    Swal.fire({
+                        icon: 'question',
+                        title: 'Logout',
+                        text: 'Are you sure you want to logout?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Logout',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#2563eb'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'user_logout' %}";
+                        }
+                    });
+                }
+            });
+        });
+        document.addEventListener('click', function(e) {
+            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
             }
-        },
-        error: function() {
-            document.getElementById('updateLogContainer').innerHTML = '<div class="alert alert-warning m-3">Unable to load updates.txt. Please create this file in your project root.</div>';
-            updateSystemInfoDisplay(defaultMetadata);
-        }
-    });
-}
+        });
 
-function parseUpdateLogWithMetadata(rawText) {
-    var lines = rawText.split(/\r?\n/);
-    var metadata = {};
-    var changelogHtml = '<div class="p-2">';
-    var currentVersion = '';
-    var currentDate = '';
-    var currentBullets = [];
-    var inChangelog = false;
-    
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i].trim();
-        if (line === "") continue;
-        
-        if (line.includes(':') && !line.match(/^\[?\d/)) {
-            var colonIndex = line.indexOf(':');
-            var key = line.substring(0, colonIndex).trim().toLowerCase().replace(/ /g, '_');
-            var value = line.substring(colonIndex + 1).trim();
-            if (key === 'version') metadata.version = value;
-            else if (key === 'developed_by') metadata.developed_by = value;
-            else if (key === 'software') metadata.software = value;
-            else if (key === 'technologies') metadata.technologies = value;
-            continue;
-        }
-        
-        var versionMatch = line.match(/^\[?([0-9]+\.[0-9]+\.[0-9]+)\]?\s*[-–]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/);
-        if (!versionMatch) {
-            versionMatch = line.match(/^([0-9]+\.[0-9]+\.[0-9]+)\s*\(([0-9]{4}-[0-9]{2}-[0-9]{2})\)/);
-        }
-        
-        if (versionMatch) {
-            if (currentVersion && currentBullets.length > 0) {
-                changelogHtml += renderVersionBlock(currentVersion, currentDate, currentBullets);
+        // ---- THEME TOGGLE ----
+        const themeToggleNav = document.getElementById('themeToggleNav');
+        themeToggleNav.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            this.innerHTML = isDark ? '<i class="fas fa-sun"></i><span>Theme</span>' : '<i class="fas fa-moon"></i><span>Theme</span>';
+        });
+
+        // ---- OPEN NEW TAB ----
+        document.getElementById('openNewTabBtn').addEventListener('click', () => {
+            window.open("{% url 'home' %}", '_blank');
+        });
+
+        // ---- SUBSCRIPTION KEY FORMATTING ----
+        const keyInput = document.getElementById('subscriptionKeyInput');
+        keyInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            let formatted = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formatted += '-';
+                }
+                formatted += value[i];
             }
-            currentVersion = versionMatch[1];
-            currentDate = versionMatch[2];
-            currentBullets = [];
-            inChangelog = true;
-        }
-        else if (inChangelog && (line.startsWith('-') || line.startsWith('•') || line.startsWith('*'))) {
-            var bulletText = line.replace(/^[-•*]\s*/, '');
-            if (bulletText.trim()) {
-                currentBullets.push(bulletText);
+            this.value = formatted;
+        });
+
+        // ---- ACTIVATE SUBSCRIPTION KEY ----
+        document.getElementById('activateKeyBtn').addEventListener('click', function() {
+            // Get the subscription key
+            var subscription_key = document.getElementById('subscriptionKeyInput').value.trim();
+
+            // Validation - using else if
+            var error = "";
+
+            if (subscription_key == "") {
+                error = "Please enter a subscription key";
+            } else if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(subscription_key)) {
+                error = "Invalid key format. Please use format: XXXX-XXXX-XXXX-XXXX";
             }
-        }
-    }
-    
-    if (currentVersion && currentBullets.length > 0) {
-        changelogHtml += renderVersionBlock(currentVersion, currentDate, currentBullets);
-    }
-    
-    if (changelogHtml === '<div class="p-2">') {
-        changelogHtml += '<div class="text-muted text-center py-3">No changelog entries found in updates.txt</div>';
-    }
-    changelogHtml += '</div>';
-    
-    var finalMetadata = {
-        version: metadata.version || defaultMetadata.version,
-        developed_by: metadata.developed_by || defaultMetadata.developed_by,
-        software: metadata.software || defaultMetadata.software,
-        technologies: metadata.technologies || defaultMetadata.technologies
-    };
-    
-    return { metadata: finalMetadata, changelogHtml: changelogHtml };
-}
 
-function renderVersionBlock(version, date, bullets) {
-    var bulletHtml = '';
-    for (var i = 0; i < bullets.length; i++) {
-        bulletHtml += '<li><i class="fas fa-caret-right text-primary me-2"></i>' + escapeHtml(bullets[i]) + '</li>';
-    }
-    return `
-        <div class="update-log-entry mb-3 pb-2">
-            <div class="d-flex align-items-center gap-3 mb-2">
-                <span class="version-badge">v${escapeHtml(version)}</span>
-                <span class="text-muted small"><i class="far fa-calendar-alt me-1"></i>${escapeHtml(date)}</span>
-            </div>
-            <ul class="list-unstyled ms-2 mb-0" style="font-size: 0.85rem;">${bulletHtml}</ul>
-        </div>
-    `;
-}
-
-function updateSystemInfoDisplay(metadata) {
-    var systemInfoHtml = `
-        <div class="system-info-row"><strong>Version:</strong> ${escapeHtml(metadata.version)}</div>
-        <div class="system-info-row"><strong>Developed by:</strong> ${escapeHtml(metadata.developed_by)}</div>
-        <div class="system-info-row"><strong>Software:</strong> ${escapeHtml(metadata.software)}</div>
-        <div class="system-info-row"><strong>Technologies:</strong> ${escapeHtml(metadata.technologies)}</div>
-    `;
-    var systemInfoContainer = document.getElementById('systemInfoContainer');
-    if (systemInfoContainer) systemInfoContainer.innerHTML = systemInfoHtml;
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if(m === '&') return '&amp;';
-        if(m === '<') return '&lt;';
-        if(m === '>') return '&gt;';
-        return m;
-    });
-}
-
-// ========== USER PROFILE FUNCTIONS ==========
-function updateUserProfile() {
-    var userData = {
-        username: document.getElementById('profile-username').value,
-        email: document.getElementById('profile-email').value,
-        phone_number: document.getElementById('profile-phone').value,
-        address: document.getElementById('profile-address').value,
-        roles: document.getElementById('profile-roles').value,
-        status: document.getElementById('profile-status').value === 'true',
-        e_signature_link: document.getElementById('profile-signature').value
-    };
-    $.ajax({
-        url: "{% url 'api_update_user_profile' %}",
-        data: userData,
-        success: function(responseData) {
-            if(responseData.custome_status === "Error") {
-                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
-            } else {
-                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
+            // If there's an error, show it and stop
+            if (error) {
+                Swal.fire({
+                    title: "Validation Error",
+                    text: error,
+                    icon: "error",
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
             }
-        },
-        error: function() {
-            Swal.fire({title: "Error", text: "Request failed", icon: "error"});
-        }
-    });
-}
 
-// ========== BRANCH FUNCTIONS ==========
-function updateBranch() {
-    var branchData = {
-        branch_name: document.getElementById('branch_name').value,
-        manager: document.getElementById('manager').value,
-        phone: document.getElementById('phone').value,
-        email: document.getElementById('email').value,
-        address: document.getElementById('address').value,
-        city: document.getElementById('city').value,
-        country: document.getElementById('country').value,
-        type: document.getElementById('type').value,
-        sync_url: document.getElementById('sync_url')?.value || '',
-        is_active: document.getElementById('is_active')?.value === 'true'
-    };
-    
-    if (!branchData.branch_name) {
-        Swal.fire({title: "Error", text: "Branch name is required", icon: "error"});
-        return;
-    }
-    
-    $.ajax({
-        url: "{% url 'api_update_branch' %}",
-        data: branchData,
-        success: function(responseData) {
-            if(responseData.custome_status === "Error") {
-                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
-            } else {
-                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
-                setTimeout(function() { location.reload(); }, 1500);
-            }
-        },
-        error: function() {
-            Swal.fire({title: "Error", text: "Branch update failed", icon: "error"});
-        }
-    });
-}
+            // Show loading
+            Swal.fire({
+                title: 'Activating...',
+                text: 'Please wait while we validate your subscription key.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-function createBranch() {
-    var branchData = {
-        branch_name: document.getElementById('new_branch_name').value,
-        manager: document.getElementById('new_manager').value,
-        phone: document.getElementById('new_phone').value,
-        email: document.getElementById('new_email').value,
-        address: document.getElementById('new_address').value,
-        city: document.getElementById('new_city').value,
-        country: document.getElementById('new_country').value,
-        type: document.getElementById('new_type').value
-    };
-    
-    if (!branchData.branch_name) {
-        Swal.fire({title: "Error", text: "Branch name is required", icon: "error"});
-        return;
-    }
-    
-    $.ajax({
-        url: "{% url 'api_create_branch' %}",
-        data: branchData,
-        success: function(responseData) {
-            if(responseData.custome_status === "Error") {
-                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
-            } else {
-                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
-                setTimeout(function() { location.reload(); }, 1500);
-            }
-        },
-        error: function() {
-            Swal.fire({title: "Error", text: "Branch creation failed", icon: "error"});
-        }
-    });
-}
-
-// ========== CLIENT SETTINGS FUNCTIONS ==========
-function updateClientSetting() {
-    var clientData = {
-        company_name: document.getElementById('client_company').value,
-        configuration_name: document.getElementById('client_config_name').value,
-        tin_number: document.getElementById('client_tin').value,
-        vat_number: document.getElementById('client_vat').value,
-        prz_number: document.getElementById('client_prz').value,
-        invoice_number_prefix: document.getElementById('client_invoice_prefix').value,
-        address: document.getElementById('client_address').value,
-        bank_1_bank_name: document.getElementById('client_bank').value,
-        bank_1_account_name: document.getElementById('client_account_name').value,
-        thank_you_message: document.getElementById('client_thanks').value,
-        company_registration: document.getElementById('client_registration').value
-    };
-    $.ajax({
-        url: "{% url 'api_update_client_setting' %}",
-        data: clientData,
-        success: function(responseData) {
-            if(responseData.custome_status === "Error") {
-                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
-            } else {
-                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
-            }
-        },
-        error: function() {
-            Swal.fire({title: "Error", text: "Save failed", icon: "error"});
-        }
-    });
-}
-
-// ========== PRINTER FUNCTIONS ==========
-function addPrinter() {
-    var printerData = {
-        printer_name: document.getElementById('printer_name').value,
-        client_node: document.getElementById('client_node').value
-    };
-    
-    if (!printerData.printer_name) {
-        Swal.fire({title: "Error", text: "Printer name is required", icon: "error"});
-        return;
-    }
-    
-    $.ajax({
-        url: "{% url 'api_update_printer' %}",
-        data: printerData,
-        success: function(responseData) {
-            if(responseData.custome_status === "Error") {
-                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
-            } else {
-                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
-                setTimeout(function() { location.reload(); }, 1500);
-            }
-        },
-        error: function() {
-            Swal.fire({title: "Error", text: "Printer save failed", icon: "error"});
-        }
-    });
-}
-
-function deletePrinter(printerId) {
-    Swal.fire({
-        title: 'Delete Printer?',
-        text: 'This action cannot be undone.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete'
-    }).then((result) => {
-        if (result.isConfirmed) {
+            // Send AJAX request
             $.ajax({
-                url: "{% url 'api_delete_printer' %}",
-                data: { printer_id: printerId },
+                url: "{% url 'activate_subscription' %}",
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    subscription_key: subscription_key
+                },
                 success: function(responseData) {
-                    if(responseData.custome_status === "Error") {
-                        Swal.fire({title: "Error", text: responseData.message, icon: "error"});
-                    } else {
-                        Swal.fire({title: "Deleted", text: responseData.message, icon: "success"});
-                        setTimeout(function() { location.reload(); }, 1500);
+                    Swal.fire({
+                        title: responseData.title,
+                        text: responseData.text,
+                        icon: responseData.icon,
+                        confirmButtonColor: '#2563eb'
+                    }).then(() => {
+                        if (responseData.icon == 'success') {
+                            location.reload();
+                        }
+                    });
+                },
+                error: function(responseData, error) {
+                    Swal.fire({
+                        title: "Error",
+                        text: "An error occurred! " + error,
+                        icon: "error",
+                        confirmButtonColor: '#2563eb'
+                    });
+                }
+            });
+        });
+
+        // ---- SAVE FUNCTIONS ----
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved!',
+                text: message || 'Changes saved successfully.',
+                timer: 2000,
+                showConfirmButton: false,
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message || 'An error occurred.',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
+        function validateRequired(field, fieldName) {
+            if (!field || field.trim() === '') {
+                showError(fieldName + ' cannot be blank.');
+                return false;
+            }
+            return true;
+        }
+
+        // ---- SAVE COMPANY ----
+        document.getElementById('saveCompanyBtn').addEventListener('click', function() {
+            var company_name = document.getElementById('company_name').value;
+            var company_registration = document.getElementById('company_registration').value;
+            var tin_number = document.getElementById('tin_number').value;
+            var prz_number = document.getElementById('prz_number').value;
+            var vat_number = document.getElementById('vat_number').value;
+            var logo_file = document.getElementById('logo_upload').files[0]; // Get the file
+
+            var error = ""
+
+            if (company_name.trim() == ""){
+                error = "Company name can not be blank"
+            }
+
+            if (error == ""){
+                Swal.fire({
+                    title: 'Save changes?',
+                    text: 'Are you sure you want to apply these changes?.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#94a3b8'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create FormData object
+                        var formData = new FormData();
+                        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                        formData.append('company_name', company_name);
+                        formData.append('company_registration', company_registration);
+                        formData.append('tin_number', tin_number);
+                        formData.append('prz_number', prz_number);
+                        formData.append('vat_number', vat_number);
+                        
+                        // Append logo if a file was selected
+                        if (logo_file) {
+                            formData.append('logo', logo_file);
+                        }
+
+                        $.ajax({
+                            url: "{% url 'update_company_details' %}",
+                            method: 'POST',
+                            data: formData,
+                            processData: false,  // Important for file uploads
+                            contentType: false,  // Important for file uploads
+                            success: function(responseData) {
+                                Swal.fire({
+                                    title: responseData.title,
+                                    icon: responseData.icon,
+                                    text: responseData.text,
+                                }).then(() => {
+                                    // Reload page to show updated logo and data
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                console.log("Error:", xhr.responseText);
+                                showError(error); 
+                            }
+                        });
                     }
+                });
+            } else {
+                showError(error)  
+            }
+        });
+
+        // ---- SAVE BRANCH ----
+        document.getElementById('saveBranchBtn').addEventListener('click', function() {
+            // Get all values
+            var branch_id = document.getElementById('branch_id').value;
+            var branch_name = document.getElementById('branch_name').value.trim();
+            var branch_address = document.getElementById('branch_address').value.trim();
+            var branch_phone = document.getElementById('branch_phone').value.trim();
+            var branch_email = document.getElementById('branch_email').value.trim();
+            var bank_1_bank_name = document.getElementById('bank_1_bank_name').value.trim();
+            var bank_1_account_name = document.getElementById('bank_1_account_name').value.trim();
+            var bank_1_nostro = document.getElementById('bank_1_nostro').value.trim();
+            var bank_1_zig = document.getElementById('bank_1_zig').value.trim();
+            var thank_you_message = document.getElementById('thank_you_message').value.trim();
+            var branch_manager = document.getElementById('branch_manager').value.trim();
+            var branch_city = document.getElementById('branch_city').value.trim();
+            var branch_country = document.getElementById('branch_country').value.trim();
+            var branch_type = document.getElementById('branch_type').value;
+
+            // Validation - using else if to stop at first error
+            var errors = "";
+
+            if (branch_name == "") {
+                errors = "Branch Name field can not be blank";
+            } else if (branch_address == "") {
+                errors = "Address field can not be blank";
+            } else if (branch_email != "") {
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(branch_email)) {
+                    errors = "Invalid email format";
+                }
+            }
+
+            if (errors == "") {
+                // Show confirmation
+                Swal.fire({
+                    title: 'Save Branch Changes?',
+                    text: 'Confirm to update branch settings.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, save',
+                    cancelButtonText: 'Cancel',
+                    background: '#fff',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#94a3b8'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Saving...',
+                            text: 'Please wait while we update branch settings.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Send AJAX request
+                        $.ajax({
+                            url: "{% url 'update_branch_settings' %}",
+                            method: 'POST',
+                            data: {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                branch_id: branch_id,
+                                branch_name: branch_name,
+                                address: branch_address,
+                                phone: branch_phone,
+                                email: branch_email,
+                                bank_1_bank_name: bank_1_bank_name,
+                                bank_1_account_name: bank_1_account_name,
+                                bank_1_nostro: bank_1_nostro,
+                                bank_1_zig: bank_1_zig,
+                                thank_you_message: thank_you_message,
+                                manager: branch_manager,
+                                city: branch_city,
+                                country: branch_country,
+                                type: branch_type
+                            },
+                            success: function(responseData) {
+                                if (responseData.status == "Error") {
+                                    Swal.fire({
+                                        title: "Error",
+                                        text: responseData.message || "An error occurred while saving.",
+                                        icon: "error",
+                                        confirmButtonColor: '#2563eb'
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: "Success",
+                                        text: responseData.message || "Branch settings updated successfully!",
+                                        icon: "success",
+                                        confirmButtonColor: '#2563eb'
+                                    }).then(() => {
+                                        //location.reload();
+                                    });
+                                }
+                            },
+                            error: function(responseData, error) {
+                                Swal.fire({
+                                    title: "Error",
+                                    text: "An error occurred! " + error,
+                                    icon: "error",
+                                    confirmButtonColor: '#2563eb'
+                                });
+                            }
+                        });
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: "Validation Error",
+                    text: errors,
+                    icon: "error",
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        });
+
+        // ---- SAVE INVOICES ----
+        document.getElementById('saveInvoicesBtn').addEventListener('click', function() {
+            // Get all values (empty values are allowed, no restrictions)
+            var invoice_prefix = document.getElementById('invoice_prefix').value;
+            var quotation_prefix = document.getElementById('quotation_prefix').value;
+            var creditnote_prefix = document.getElementById('creditnote_prefix').value;
+
+            // Show confirmation
+            Swal.fire({
+                title: 'Save Invoice Settings?',
+                text: 'Confirm to update invoice prefix settings.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save',
+                cancelButtonText: 'Cancel',
+                background: '#fff',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#94a3b8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Saving...',
+                        text: 'Please wait while we update invoice settings.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Send AJAX request
+                    $.ajax({
+                        url: "{% url 'update_invoice_settings' %}",
+                        method: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            invoice_number_prefix: invoice_prefix,
+                            quotation_number_prefix: quotation_prefix,
+                            creditnote_number_prefix: creditnote_prefix
+                        },
+                        success: function(responseData) {
+                            Swal.fire({
+                                title: responseData.title,
+                                text: responseData.text,
+                                icon: responseData.icon,
+                                confirmButtonColor: '#2563eb'
+                            });
+                            
+                        },
+                        error: function(responseData, error) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "An error occurred! " + error,
+                                icon: "error",
+                                confirmButtonColor: '#2563eb'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // ---- SAVE SYNC ----
+        document.getElementById('saveSyncBtn').addEventListener('click', function() {
+            // Get all values
+            var sync_url = document.getElementById('sync_url').value.trim();
+            var sync_interval = document.getElementById('sync_interval').value.trim();
+
+            // Validation - using else if
+            var error = "";
+
+            // Both or none logic
+            if (sync_url == "" && sync_interval != "") {
+                error = "Sync URL is required when interval is provided";
+            } else if (sync_url != "" && sync_interval == "") {
+                error = "Online Update Interval is required when Sync URL is provided";
+            } else if (sync_url != "" && sync_interval != "") {
+                // Both are provided, validate interval
+                if (isNaN(sync_interval) || parseInt(sync_interval) < 1) {
+                    error = "Online Update Interval must be a number greater than 0";
+                } else if (parseInt(sync_interval) > 1440) {
+                    error = "Online Update Interval cannot exceed 1440 minutes (24 hours)";
+                }
+            }
+            // If both are empty, it's valid (no validation needed)
+
+            // If there's an error, show it and stop
+            if (error) {
+                Swal.fire({
+                    title: "Validation Error",
+                    text: error,
+                    icon: "error",
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Show confirmation
+            Swal.fire({
+                title: 'Save Sync Settings?',
+                text: 'Confirm to update sync settings.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save',
+                cancelButtonText: 'Cancel',
+                background: '#fff',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#94a3b8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Saving...',
+                        text: 'Please wait while we update sync settings.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Send AJAX request
+                    $.ajax({
+                        url: "{% url 'update_sync_settings' %}",
+                        method: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            sync_url: sync_url,
+                            sync_intervals_minutes: sync_interval
+                        },
+                        success: function(responseData) {
+                            Swal.fire({
+                                title: responseData.title,
+                                text: responseData.text,
+                                icon: responseData.icon,
+                                confirmButtonColor: '#2563eb'
+                            });
+                        },
+                        error: function(responseData, error) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "An error occurred! " + error,
+                                icon: "error",
+                                confirmButtonColor: '#2563eb'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // ---- SAVE DISPLAY ----
+        document.getElementById('saveDisplayBtn').addEventListener('click', function() {
+            // Get all values
+            var pagination_slice = document.getElementById('pagination_slice').value.trim();
+
+            // Validation - using else if
+            var error = "";
+
+            if (pagination_slice == "") {
+                error = "Pagination Slice Length field can not be blank";
+            } else if (isNaN(pagination_slice) || parseInt(pagination_slice) < 1) {
+                error = "Pagination Slice Length must be a number greater than 0";
+            } else if (parseInt(pagination_slice) > 1000) {
+                error = "Pagination Slice Length cannot exceed 1000";
+            }
+
+            // If there's an error, show it and stop
+            if (error) {
+                Swal.fire({
+                    title: "Validation Error",
+                    text: error,
+                    icon: "error",
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Show confirmation
+            Swal.fire({
+                title: 'Save Display Settings?',
+                text: 'Confirm to update display settings.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save',
+                cancelButtonText: 'Cancel',
+                background: '#fff',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#94a3b8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Saving...',
+                        text: 'Please wait while we update display settings.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Send AJAX request
+                    $.ajax({
+                        url: "{% url 'update_display_settings' %}",
+                        method: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            pagination_slice_leangth: pagination_slice
+                        },
+                        success: function(responseData) {
+                            Swal.fire({
+                                title: responseData.title,
+                                text: responseData.text,
+                                icon: responseData.icon,
+                                confirmButtonColor: '#2563eb'
+                            });
+                        },
+                        error: function(responseData, error) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "An error occurred! " + error,
+                                icon: "error",
+                                confirmButtonColor: '#2563eb'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // ---- SAVE NOTIFICATIONS ----
+        document.getElementById('saveNotificationsBtn').addEventListener('click', function() {
+            // Get all values
+            var hosting_email = document.getElementById('hosting_email').value.trim();
+            var hosting_password = document.getElementById('hosting_password').value;
+            var notification_emails = document.getElementById('notification_emails').value.trim();
+            var stock_warning_days = document.getElementById('stock_warning_days').value.trim();
+
+            // Validation - using else if
+            var error = "";
+
+            if (hosting_email == "") {
+                error = "Hosting Email field can not be blank";
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hosting_email)) {
+                error = "Invalid Hosting Email format";
+            } else if (hosting_password == "") {
+                error = "Hosting Email Password field can not be blank";
+            } else if (stock_warning_days == "") {
+                error = "Stock Expiration Warning field can not be blank";
+            } else if (isNaN(stock_warning_days) || parseInt(stock_warning_days) < 1) {
+                error = "Stock Expiration Warning must be a number greater than 0";
+            } else if (parseInt(stock_warning_days) > 365) {
+                error = "Stock Expiration Warning cannot exceed 365 days";
+            }
+
+            // If there's an error, show it and stop
+            if (error) {
+                Swal.fire({
+                    title: "Validation Error",
+                    text: error,
+                    icon: "error",
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Split emails and validate each one (allow empty)
+            var emailList = [];
+            if (notification_emails) {
+                emailList = notification_emails.split(',').map(function(email) {
+                    return email.trim();
+                }).filter(function(email) {
+                    return email !== '';
+                });
+
+                // Validate each email
+                for (var i = 0; i < emailList.length; i++) {
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailList[i])) {
+                        Swal.fire({
+                            title: "Validation Error",
+                            text: "Invalid email format: " + emailList[i],
+                            icon: "error",
+                            confirmButtonColor: '#2563eb'
+                        });
+                        return;
+                    }
+                }
+            }
+
+            // Show confirmation
+            Swal.fire({
+                title: 'Save Notification Settings?',
+                text: 'Confirm to update notification settings.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save',
+                cancelButtonText: 'Cancel',
+                background: '#fff',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#94a3b8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Saving...',
+                        text: 'Please wait while we update notification settings.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: "{% url 'update_notification_settings' %}",
+                        method: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            hosting_email: hosting_email,
+                            hosting_email_password: hosting_password,
+                            notification_receiving_emails: JSON.stringify(emailList), // Will be [] if empty
+                            stock_expiration_warning_days: stock_warning_days
+                        },
+                        success: function(responseData) {
+                            Swal.fire({
+                                title: responseData.title,
+                                text: responseData.text,
+                                icon: responseData.icon,
+                                confirmButtonColor: '#2563eb'
+                            });
+                        },
+                        error: function(responseData, error) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "An error occurred! " + error,
+                                icon: "error",
+                                confirmButtonColor: '#2563eb'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // ---- SIDEBAR SEARCH ----
+        function resetSearch() {
+            sidebarBtns.forEach(btn => { btn.style.display = 'flex'; btn.style.opacity = '1'; });
+        }
+        const searchInput = document.getElementById('sidebarSearch');
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            if (query === '') { resetSearch(); return; }
+            sidebarBtns.forEach(btn => {
+                const label = btn.querySelector('.sidebar-label')?.textContent?.toLowerCase() || '';
+                const keywords = (btn.dataset.keywords || '') + ' ' + label;
+                const match = keywords.includes(query);
+                btn.style.display = match ? 'flex' : 'none';
+                btn.style.opacity = match ? '1' : '0.3';
+            });
+        });
+
+        // ============================================================
+        //  NOTE PAD MODAL
+        // ============================================================
+        const noteModal = document.getElementById('noteModal');
+        const noteModalClose = document.getElementById('noteModalClose');
+        const notePadBtn = document.getElementById('notePadBtn');
+        const noteTableBody = document.getElementById('noteTableBody');
+        const noteTable = document.getElementById('noteTable');
+        const noteLoading = document.getElementById('noteLoading');
+        const noteInput = document.getElementById('noteInput');
+        const noteSaveBtn = document.getElementById('noteSaveBtn');
+
+        function fetchNotes() {
+            noteLoading.style.display = 'block';
+            noteTable.style.display = 'none';
+            
+            $.ajax({
+                url: "get_notes",
+                method: 'GET',
+                success: function(response) {
+                    renderNotes(response.notes || []);
                 },
                 error: function() {
-                    Swal.fire({title: "Error", text: "Delete failed", icon: "error"});
+                    noteLoading.innerHTML = 'Error loading notes.';
                 }
             });
         }
-    });
-}
 
-// ========== SUBSCRIPTION FUNCTIONS ==========
-function activateSubscription() {
-    var key = document.getElementById('subscriptionKeyInput').value.trim();
-    if(!key) {
-        Swal.fire({title: "Error", text: "Please enter a subscription key", icon: "error"});
-        return;
-    }
-    $.ajax({
-        url: "{% url 'api_activate_subscription' %}",
-        data: { subscription_key: key },
-        success: function(responseData) {
-            if(responseData.custome_status === "Error") {
-                Swal.fire({title: "Error", text: responseData.message, icon: "error"});
+        function renderNotes(notes) {
+            let html = '';
+            if (notes.length === 0) {
+                html = `<tr><td colspan="3" style="text-align:center; padding:2rem 0; color:#94a3b8;">No notes found.</td></tr>`;
             } else {
-                Swal.fire({title: "Success", text: responseData.message, icon: "success"});
-                setTimeout(function() { location.reload(); }, 1500);
+                notes.reverse().forEach((note) => {
+                    const date = new Date(note.created_at);
+                    const formattedDate = date.toLocaleDateString('en-GB', {
+                        day: '2-digit', month: 'long', year: 'numeric'
+                    });
+                    html += `
+                        <tr>
+                            <td class="note-date">${formattedDate}</td>
+                            <td class="note-text">${escapeHtml(note.text)}</td>
+                            <td style="text-align:right;">
+                                <button class="note-delete-btn" onclick="window.deleteNote(${note.id})" title="Delete note">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="note-divider"><td colspan="3"><hr></td></tr>
+                    `;
+                });
             }
-        },
-        error: function() {
-            Swal.fire({title: "Error", text: "Activation failed", icon: "error"});
+            noteTableBody.innerHTML = html;
+            noteLoading.style.display = 'none';
+            noteTable.style.display = 'table';
         }
-    });
-}
 
-// ========== ATTACH EVENT LISTENERS ==========
-document.getElementById('updateProfileBtn')?.addEventListener('click', updateUserProfile);
-document.getElementById('updateBranchBtn')?.addEventListener('click', updateBranch);
-document.getElementById('createBranchBtn')?.addEventListener('click', createBranch);
-document.getElementById('updateClientSettingBtn')?.addEventListener('click', updateClientSetting);
-document.getElementById('addPrinterBtn')?.addEventListener('click', addPrinter);
-document.getElementById('activateSubscriptionBtn')?.addEventListener('click', activateSubscription);
-</script>
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.deleteNote = function(noteId) {
+            Swal.fire({
+                title: 'Delete note?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "delete_note",
+                        method: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            note_id: noteId
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                fetchNotes();
+                                Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Note removed.', timer: 1500, showConfirmButton: false });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not delete note.' });
+                        }
+                    });
+                }
+            });
+        };
+
+        function addNote() {
+            const text = noteInput.value.trim();
+            if (!text) {
+                Swal.fire({ icon: 'warning', title: 'Empty note', text: 'Please write something.', confirmButtonColor: '#2563eb' });
+                return;
+            }
+
+            $.ajax({
+                url: "save_note",
+                method: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    note_text: text
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        fetchNotes();
+                        noteInput.value = '';
+                        Swal.fire({ icon: 'success', title: 'Added!', text: 'Note saved.', timer: 1200, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+                    }
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save note.' });
+                }
+            });
+        }
+
+        notePadBtn.addEventListener('click', function() {
+            noteModal.classList.add('show');
+            fetchNotes();
+            noteInput.value = '';
+            setTimeout(() => noteInput.focus(), 300);
+        });
+
+        function closeNoteModal() {
+            noteModal.classList.remove('show');
+        }
+
+        noteModalClose.addEventListener('click', closeNoteModal);
+        noteModal.addEventListener('click', function(e) {
+            if (e.target === this) closeNoteModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && noteModal.classList.contains('show')) closeNoteModal();
+        });
+
+        noteSaveBtn.addEventListener('click', addNote);
+        noteInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addNote();
+            }
+        });
+
+    })();
+    </script>
 </body>
 </html>

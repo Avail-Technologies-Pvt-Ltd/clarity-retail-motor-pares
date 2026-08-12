@@ -58,6 +58,15 @@ Write-Host "Waiting for database to be ready..." -ForegroundColor Cyan
 Start-Sleep -Seconds 10
 
 Write-Host ""
+Write-Host "Collecting static files..." -ForegroundColor Cyan
+docker exec pos-app python manage.py collectstatic --noinput
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to collect static files!" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ""
 Write-Host "Running migrations..." -ForegroundColor Cyan
 docker exec pos-app python manage.py migrate --noinput
 

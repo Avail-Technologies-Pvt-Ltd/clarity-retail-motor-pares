@@ -1,21 +1,66 @@
-"""
-Development settings - SQLite for local development
-"""
-
+from dotenv import load_dotenv
 from .settings import *
 
-# Use SQLite
+load_dotenv(BASE_DIR / ".env.dev")
+
+
+# ------------------------------------------------------------------------------
+# Validate Required Environment Variables
+# ------------------------------------------------------------------------------
+
+required = [
+    "SECRET_KEY",
+]
+
+missing = [name for name in required if not os.getenv(name)]
+
+if missing:
+    raise RuntimeError(
+        "Missing required variables in .env.prod:\n"
+        + "\n".join(f" - {name}" for name in missing)
+    )
+
+
+# ------------------------------------------------------------------------------
+# Django Debug Toolbar
+# ------------------------------------------------------------------------------
+
+INSTALLED_APPS += [
+    "debug_toolbar",
+]
+
+MIDDLEWARE.insert(
+    1,
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+)
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "localhost",
+]
+
+# ------------------------------------------------------------------------------
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+DEBUG = True
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
-# Development settings
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
-print("=" * 50)
-print("DEVELOPMENT MODE - Using SQLite Database")
-print("=" * 50)
+ZIMRA_DEVICE_ID = os.getenv("ZIMRA_DEVICE_ID")
+ZIMRA_SERIAL_NO = os.getenv("ZIMRA_SERIAL_NO")
+ZIMRA_ACTIVATION_KEY = os.getenv("ZIMRA_ACTIVATION_KEY")
+ZIMRA_TEST_MODE = os.getenv("ZIMRA_TEST_MODE", "True").lower() == "true"
+ZIMRA_MODEL_NAME = os.getenv("ZIMRA_MODEL_NAME", "Server")
+ZIMRA_MODEL_VERSION = os.getenv("ZIMRA_MODEL_VERSION", "v1")
+ZIMRA_COMPANY_NAME = os.getenv("ZIMRA_COMPANY_NAME", "ClarityPOS")
