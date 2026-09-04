@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:13
+    container_name: dev-postgres
+    environment:
+      POSTGRES_DB: dev_pos
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d dev_pos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dev-pos-app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8001:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: point_of_sale.settings_dev_docker
+      DEBUG: "True"
+      SECRET_KEY: dev-secret-key-12345
+      DB_NAME: dev_pos
+      DB_USER: dev_user
+      DB_PASSWORD: dev_password
+      DB_HOST: db
+      DB_PORT: "5432"
+      SENTRY_DSN: ""
+      # Print Server Configuration
+      PRINT_SERVER_IP: 192.168.43.68
+      PRINT_SERVER_PORT: 9101
+      PRINT_TIMEOUT: 15
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    # This is the fix - explicitly run the development server
+    command: python manage.py runserver 0.0.0.0:8000
+
+volumes:
+  dev_postgres_data:

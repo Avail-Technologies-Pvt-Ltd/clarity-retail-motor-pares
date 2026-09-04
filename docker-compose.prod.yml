@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:13
+    container_name: pos-postgres
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ${DOCKER_REGISTRY:-tinashemp}/clarity-pos:${TAG:-latest}
+
+    container_name: pos-app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    ports:
+      - "8085:8000"
+
+    environment:
+      DJANGO_SETTINGS_MODULE: point_of_sale.settings_prod
+      DEBUG: "False"
+
+      SECRET_KEY: ${SECRET_KEY}
+
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: "5432"
+
+      SENTRY_DSN: ${SENTRY_DSN}
+
+      ZIMRA_DEVICE_ID: ${ZIMRA_DEVICE_ID}
+      ZIMRA_SERIAL_NO: ${ZIMRA_SERIAL_NO}
+      ZIMRA_ACTIVATION_KEY: ${ZIMRA_ACTIVATION_KEY}
+      ZIMRA_TEST_MODE: ${ZIMRA_TEST_MODE}
+      ZIMRA_COMPANY_NAME: ${ZIMRA_COMPANY_NAME}
+      ZIMRA_MODEL_NAME: ${ZIMRA_MODEL_NAME}
+      ZIMRA_MODEL_VERSION: ${ZIMRA_MODEL_VERSION}
+
+    volumes:
+      - ./certs:/app/certs
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
+      - ./logs:/app/logs
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

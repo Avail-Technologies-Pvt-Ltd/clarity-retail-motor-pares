@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "fiscalisation",
     "order",
     "knowledge_base",
+    "print_out",
 
     # Third-party apps
     "django_filters",
@@ -169,10 +170,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Certificates
 # ------------------------------------------------------------------------------
 
-CERTS_DIR = BASE_DIR / "certs"
 
-CERTS_DIR.mkdir(exist_ok=True)
 
-ZIMRA_CERT_PATH = CERTS_DIR / "certificate.crt"
-ZIMRA_KEY_PATH = CERTS_DIR / "decrypted_key.key"
-ZIMRA_FOLDER_NAME = CERTS_DIR
+
+# Print Server Configuration
+PRINT_SERVER_IP = '192.168.43.68'  # Change to your Windows IP
+PRINT_SERVER_PORT = 9101
+PRINT_TIMEOUT = 10
+PRINT_LOGO_PATH = os.path.join(BASE_DIR, 'static', 'images', 'logo.png')

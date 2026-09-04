@@ -12,6 +12,20 @@ __pycache__/
 dist/
 build/
 
+
+# Ignore python cache files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+
+# Ignore local dev environment files
+.env
+.env.dev
+.env.dev.docker
+.git/
+
 # Database (IMPORTANT! Exclude your dev database)
 *.sqlite3
 db.sqlite3
@@ -34,6 +48,7 @@ Thumbs.db
 
 # Docker
 docker/*.local.yml
+.env.dev.docker
 
 # Deployment
 deploy/*.env
@@ -131,3 +146,5 @@ tokens/
 updates/
 tests/
 envvv
+
+Clarity Retail.bat

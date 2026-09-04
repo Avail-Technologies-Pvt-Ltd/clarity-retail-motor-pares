@@ -1315,11 +1315,376 @@ from django.http import JsonResponse
 from fiscalisation.models import FiscalisationSettings
 # from fiscalisation.services import FiscalisationService
 from fiscalisation.services import create_fiscal_receipt, sync_receipt
+import os 
+from print_out.models import Printer
+from print_out.print_client import print_this_document
 
 logger = logging.getLogger(__name__)
 
-@transaction.atomic
 def check_out(request):
+    NEW_PRINT = os.getenv("NEW_PRINT")
+    if NEW_PRINT:
+        return check_out_new(request)
+
+    else:
+        return check_out_old(request)
+
+
+def check_out_new(request):
+    try:
+        # ============================================================
+        # STEP 1: Check if fiscalisation is active
+        # ============================================================
+        fiscal_settings = FiscalisationSettings.get_settings()
+        fiscalisation_active = fiscal_settings.is_fiscalisation_active()
+        fiscalisation_bypass_reason = ""
+        
+        essential = ReceiptPaymentEssential.objects.filter(user=request.user).first()
+
+        # ---------- Check payments
+        payments = Payment.objects.filter(
+            payment_for="RECEIPT",
+            created_by=request.user,
+            loose_status=True
+        )
+        
+        if not payments.exists():
+            return JsonResponse({
+                "custome_status": "Error",
+                "message": "No payment found"
+            })
+        
+        dominant_payment_method = payments.first().payment_method
+        
+        # Currency check
+        allowed_currencies = [c.strip().upper() for c in fiscal_settings.allowed_currences.split(',')]
+        if dominant_payment_method.shortcut.upper() not in allowed_currencies:
+            fiscalisation_active = False
+            fiscalisation_bypass_reason = f"Currency '{dominant_payment_method.shortcut}' not allowed by ZIMRA"
+        
+        # Multiple payment methods in same currency - ALLOWED
+        # Multiple currencies - NOT ALLOWED
+        payment_currencies = set(p.payment_method.shortcut.upper() for p in payments)
+        if len(payment_currencies) > 1:
+            fiscalisation_active = False
+            fiscalisation_bypass_reason = f"Multiple currencies not allowed: {', '.join(payment_currencies)}"
+        
+        # Discount check
+        if essential and essential.discount > 0:
+            fiscalisation_active = False
+            fiscalisation_bypass_reason = "Discounts must be applied as negative line items for fiscalisation"
+
+        # ============================================================
+        # STEP 2: Get customer ID
+        # ============================================================
+        customer_id = request.GET.get('customer_id')
+
+        # ============================================================
+        # STEP 3: Validate cart
+        # ============================================================
+        cart_items = CartItem.objects.filter(user=request.user)
+        if not cart_items.exists():
+            return JsonResponse({
+                "custome_status": "Error",
+                "message": "Your cart is empty"
+            })
+
+        # ============================================================
+        # STEP 4: Get or create sale transaction
+        # ============================================================
+        sale_transactions = SaleTransaction.objects.filter(
+            created_by=request.user, 
+            open_state=True
+        )
+        
+        if sale_transactions.exists():
+            sale_transaction = sale_transactions[0]
+            for trans in sale_transactions:
+                if trans.recipt_number != sale_transaction.recipt_number:
+                    trans.open_state = False
+                    trans.save()
+        else:
+            new_sale_transaction = SaleTransaction()
+            new_sale_transaction.discount = essential.discount if essential else 0
+            new_sale_transaction.created_by = request.user
+
+            try:
+                customer = CustomerAccount.objects.get(id=int(customer_id))
+                new_sale_transaction.buyer_name = customer.company_name or "Walk In Customer"
+                new_sale_transaction.buyer_tin = customer.tin_number or ""
+                new_sale_transaction.buyer_vat = customer.vat_number or ""
+                new_sale_transaction.buyer_address = customer.address or ""
+                new_sale_transaction.buyer_tel = customer.phone_number or ""
+                new_sale_transaction.buyer_email = customer.email or ""
+            except (CustomerAccount.DoesNotExist, ValueError, TypeError):
+                new_sale_transaction.buyer_name = "Walk In Customer"
+
+            new_sale_transaction.save()
+            sale_transaction = new_sale_transaction
+
+        # ============================================================
+        # STEP 5: Process cart items and build receipt lines
+        # ============================================================
+        subtotal = Decimal('0')
+        discount = essential.discount if essential else Decimal('0')
+        receipt_lines_payload = []
+
+        # Tax accumulators
+        nontaxible_sales_amt_total = Decimal('0')
+        document_total = Decimal('0')
+        zero_per_taxamt = Decimal('0')
+        zero_perc_sales_amt_total = Decimal('0')
+        tax_amt_15_perc = Decimal('0')
+        tax_15_perc_sales_total = Decimal('0')
+        invoice_number_to_credit_debit = Decimal('0')
+        qr_url = ""
+
+        for cart_item in cart_items:
+            # Create sale record
+            new_sale = Sale()
+            new_sale.sale_transaction = sale_transaction
+            new_sale.buying_unit_price = cart_item.buying_unit_price
+            new_sale.stock = cart_item.stock
+            new_sale.selling_price = cart_item.unit_price * cart_item.quantity
+            new_sale.VAT = 0
+            new_sale.unit_price = cart_item.unit_price
+            new_sale.quantity = cart_item.quantity
+            new_sale.used_batches = cart_item.used_baches_data
+            new_sale.used_batch_quantities = cart_item.used_baches_quantities_data
+            new_sale.created_by = request.user
+            new_sale.save()
+
+            try:
+                stock_quantity_notification(new_sale.stock.id)
+            except:
+                pass
+
+            # Calculate subtotal
+            item_total = cart_item.quantity * cart_item.unit_price * dominant_payment_method.rate
+            subtotal += item_total
+            document_total += item_total
+
+            # Determine tax code
+            int_tax_code = 2  # Default Zero%
+            tax_percentage = 0
+            
+            if cart_item.stock.product.vat_code:
+                int_tax_code = cart_item.stock.product.vat_code.zimra_tax_id or 2
+            
+            
+            if int_tax_code == 1:  # Exempt
+                str_tax_code = "A"
+                tax_percentage = ""
+                nontaxible_sales_amt_total += item_total
+
+            elif int_tax_code == 2:  # Zero %
+                str_tax_code = "B"
+                tax_percentage = str(round(0, 2))
+                zero_perc_sales_amt_total += item_total
+
+            elif int_tax_code == 3:  # 15% VAT Inclusive
+                str_tax_code = "C"
+                tax_percentage = str(round(15, 2))
+                # CORRECT: Tax = Total × (15 / 115)
+                tax_amt_15_perc += Decimal(str(15 / 115)) * Decimal(str(item_total))
+                tax_15_perc_sales_total += item_total
+
+            elif int_tax_code == 4 or int_tax_code == 517:  # 15.5% VAT Inclusive
+                int_tax_code = 517
+                str_tax_code = "D"
+                tax_percentage = str(round(15.5, 2))
+                # CORRECT: Tax = Total × (15.5 / 115.5)
+                tax_amt_15_perc += Decimal(str(15.5 / 115.5)) * Decimal(str(item_total))
+                tax_15_perc_sales_total += item_total
+
+            else:
+                str_tax_code = "B"
+                tax_percentage = str(round(0, 2))
+                zero_perc_sales_amt_total += item_total
+
+            # Get HS code
+            hs_code = cart_item.stock.product.zimra_hs_code
+            if not is_correct_hs_code_format(str(hs_code)):
+                hs_code = cart_item.stock.product.vat_code.default_hs_code
+                if not is_correct_hs_code_format(str(hs_code)):
+                    hs_code = '95069100'
+
+
+            payment_method = dominant_payment_method
+
+            receipt_lines_payload.append({
+                "LineDescription": f"{cart_item.stock.product.title} {cart_item.stock.product.details}",
+                "UnitPrice": str(round(cart_item.unit_price * payment_method.rate, 2)),
+                "Quantity": str(round(cart_item.quantity, 2)),
+                "Total": str(round(cart_item.unit_price * cart_item.quantity * dominant_payment_method.rate, 2)),
+                "IntTaxCode": int_tax_code,
+                "StrTaxCode": str_tax_code,
+                "TaxPercentage": tax_percentage,
+                "receiptLineHSCode": hs_code,
+            })
+
+            cart_item.delete()
+
+        # Calculate total after discount
+        total_cost = subtotal - discount
+
+        # ============================================================
+        # STEP 6: Process payments
+        # ============================================================
+        payment_method = dominant_payment_method.zimra_money_type_text.upper()
+        currency = dominant_payment_method.shortcut.upper()
+        payment_amount = 0
+        payments_list = []
+
+        for payment in payments:
+            payment.payment_for_id = sale_transaction.recipt_number
+            payment.loose_status = False
+            payment.save()
+            
+            payment_amount += Decimal(str(payment.amount_paid))
+            
+            payments_list.append({
+                "PaymentMethodName": payment.payment_method.zimra_money_type_text.upper(),
+                "PaymentAmt": str(round(payment.amount_paid, 2)),
+            })
+
+        # Clear discount
+        if essential:
+            essential.discount = 0
+            essential.save()
+
+        # Close sale transaction
+        sale_transaction.open_state = False
+        sale_transaction.save()
+
+        # ============================================================
+        # STEP 7: Handle fiscalisation
+        # ============================================================
+
+        if fiscalisation_active:
+            locale_receipt_number = sale_transaction.recipt_number
+            # fiscal_details = get_fiscal_details(locale_receipt_number)
+
+
+            # custome_status, message = print_receipt(sale_transaction.recipt_number, " ", fiscal_details)
+            # print_receipt(sale_transaction.recipt_number, "(COPY)", fiscal_details)
+            # print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+
+
+            # return JsonResponse({
+            #     "custome_status": custome_status or "",
+            #     "message": f"{message} <br> Fiscalisation is paused.({fiscalisation_bypass_reason})"
+            # })
+
+            # ============================================================
+            # STEP 8: Create fiscal receipt
+            # ============================================================
+            the_password = ""
+            role = ""
+            payment_lines = payments_list
+            line_items = receipt_lines_payload
+            doc_type = "FISCALINVOICE"
+            doc_currency = currency
+            my_yyy_mm_dd_date = sale_transaction.created_at.strftime('%Y-%m-%d')
+            my_24hr_time_format_with_seconds = sale_transaction.created_at.strftime('%H:%M:%S')
+            document_total = document_total
+            nontaxible_sales_amt_total = nontaxible_sales_amt_total
+            zero_per_taxamt = zero_per_taxamt
+            zero_perc_sales_amt_total = zero_perc_sales_amt_total
+            tax_amt_15_perc = tax_amt_15_perc
+            tax_15_perc_sales_total = tax_15_perc_sales_total
+            invoice_number_to_credit_debit = invoice_number_to_credit_debit
+            local_invoice_number_to_credit_debit = 0
+            
+            buyer_register_name = sale_transaction.buyer_name or "Walk In Customer"
+            buyer_TIN = sale_transaction.buyer_tin or ""
+            VAT_number = sale_transaction.buyer_vat or "" 
+            phone_no = sale_transaction.buyer_tel or "" 
+            email = sale_transaction.buyer_email or "" 
+            local_receipt_number = sale_transaction.recipt_number
+            status = "PENDING"
+
+            fiscal_receipt = create_fiscal_receipt(
+                the_password,
+                role,
+                payment_lines,
+                line_items,
+                doc_type,
+                doc_currency,
+                my_yyy_mm_dd_date,
+                my_24hr_time_format_with_seconds,
+                document_total,
+                nontaxible_sales_amt_total,
+                zero_per_taxamt,
+                zero_perc_sales_amt_total,
+                tax_amt_15_perc,
+                tax_15_perc_sales_total,
+                invoice_number_to_credit_debit,
+                local_invoice_number_to_credit_debit,
+                buyer_register_name,
+                buyer_TIN,
+                VAT_number,
+                phone_no,
+                email,
+                local_receipt_number,
+                status
+            )
+
+
+            # ============================================================
+            # STEP 9: Start background sync (NON-BLOCKING)
+            # ============================================================
+            from fiscalisation.services import sync_receipt_async
+            
+            # Start sync in background - doesn't block checkout
+            sync_receipt_async(fiscal_receipt.id)
+
+            time.sleep(5)
+
+            
+            logger.info(f"Receipt {sale_transaction.recipt_number} queued for background sync")
+
+        # ============================================================
+        # STEP 10: Print receipt
+        # ============================================================
+        
+        # fiscal_details = get_fiscal_details(sale_transaction.recipt_number)
+        # custome_status, message = print_receipt(sale_transaction.recipt_number, " ", fiscal_details)
+        # print_receipt(sale_transaction.recipt_number, "(COPY)", fiscal_details)
+
+        # ============================================================
+        # STEP 11: Return response
+        # ============================================================
+        # if custome_status == "":
+        #     return JsonResponse({
+        #         "custome_status": "",
+        #         "message": f"Transaction successful. Fiscal receipt #{fiscal_receipt.inv_number or 'pending'}",
+        #         "qr_code": fiscal_receipt.qr_code_url or "",
+        #         "fiscal_receipt_id": fiscal_receipt.id,
+        #         "fiscal_receipt_number": fiscal_receipt.inv_number,
+        #     })
+        # else:
+
+
+        printer = Printer.objects.get(id=1)  # or by name
+
+        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+        return JsonResponse({
+            "custome_status": "",
+            "message": "Done"
+        })
+
+
+
+    except Exception as e:
+        logger.exception("Checkout failed")
+        return JsonResponse({
+            "custome_status": "Error",
+            "message": str(e)
+        })
+
+@transaction.atomic
+def check_out_old(request):
     try:
         # ============================================================
         # STEP 1: Check if fiscalisation is active
@@ -1891,22 +2256,6 @@ def add_stock_to_cart(request):
                     current_cart_item.used_baches_quantities_data += f"{available_in_batch},"
 
             current_cart_item.save()
-
-
-            # # ---------------------------------------------------
-            # last_subscription = SubscriptionPayment.objects.all().order_by('created_at').last()
-            # today = datetime.now()
-            # if last_subscription.date_to <= today:
-            #     sub = "PASS"
-            #     print(sub)
-
-            # else:
-            #     sub = "FAILED"
-            #     print(sub)
-
-            #     return render(request, 'order/subscriptions/add_subscription_page.html')
-            # # ---------------------------------------------------
-
 
             message = "Added succesfully"
             return JsonResponse({"custome_status":"", "message":message})

@@ -4,6 +4,8 @@ from django.conf import settings
 from django.db import models
 from datetime import datetime, date, timezone
 from django.utils.timezone import localdate
+import base64
+
 
 
 
@@ -32,8 +34,8 @@ class User(AbstractUser):
 
 		('Data Analyst, Supervisor, Sales Rep','Data Analyst, Supervisor, Sales Rep'),
 	}
-	phone_number = models.CharField(max_length=30)
-	address = models.TextField(max_length=255)
+	phone_number = models.CharField(max_length=30, blank=True)
+	address = models.TextField(max_length=255, blank=True)
 	roles = models.CharField(max_length=1000)
 	e_signature_link = models.TextField(max_length=255, default="", blank=True, null=True)
 	created_by = models.ForeignKey('User', on_delete=models.DO_NOTHING, null=True)
@@ -165,8 +167,25 @@ class ClientSetting(models.Model):
 	# notification_receiving_phone_number = models.CharField(max_length=100, default="")
 
 
+	def get_client_logo_base64(self):
+		try:
+			# Check if the logo file actually exists
+			if self.logo and self.logo.storage.exists(self.logo.name):
+				#Open and read the file bytes
+				with self.logo.open('rb') as image_file:
+					encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+				return encoded_string
+				
+		except ClientSetting.DoesNotExist:
+			return None
+			
+		return None
+
+	logo_base64 = property(get_client_logo_base64)
+
 	def __str__(self):
 		return f'{self.configuration_name}'
+
 
 
 class Manufacturer(models.Model):

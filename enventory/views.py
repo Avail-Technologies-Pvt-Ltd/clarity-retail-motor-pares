@@ -134,6 +134,73 @@ def mass_price_adjustments_page(request):
 
 
 
+from django.db.models import Sum
+
+def get_stock_value_summary(request):
+    try:
+        today = datetime.now().date()
+        
+        # Active batches: not deleted, status True, not expired
+        active_batches = Batch.objects.filter(
+            deleted=False,
+            status=True,
+            expiration_date__gt=today
+        )
+        
+        # Calculate total purchase value using buying_unit_price * total_units
+        total_purchase = Decimal('0.00')
+        for batch in active_batches:
+            if batch.buying_unit_price and batch.total_units:
+                # buying_unit_price is the cost per unit
+                total_purchase += batch.buying_unit_price * batch.total_units
+        
+        # Calculate total units
+        total_units = active_batches.aggregate(
+            total=Sum('total_units')
+        )['total'] or 0
+        
+        # Calculate selling value from stock (available units × selling price)
+        total_selling = Decimal('0.00')
+        stocks_with_batches = Stock.objects.filter(
+            deleted=False,
+            status=True,
+            batch__in=active_batches
+        ).distinct()
+        
+        for stock in stocks_with_batches:
+            stock_units = Batch.objects.filter(
+                stock=stock,
+                deleted=False,
+                status=True,
+                expiration_date__gt=today
+            ).aggregate(total=Sum('total_units'))['total'] or 0
+            
+            # Selling value = available units × selling price per unit
+            total_selling += stock.selling_price * stock_units
+        
+        total_profit = total_selling - total_purchase
+        
+        return JsonResponse({
+            'custome_status': 'Success',
+            'total_purchase_value': float(total_purchase),
+            'total_selling_value': float(total_selling),
+            'total_profit_potential': float(total_profit),
+            'profit_margin_percentage': float(
+                (total_profit / total_selling * 100) 
+                if total_selling > 0 else 0
+            ),
+            'total_units': total_units,
+            'total_products': stocks_with_batches.count(),
+            'generated_at': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return JsonResponse({
+            'custome_status': 'Error', 
+            'message': str(e)
+        })
+
+
+
 
 @login_required
 @role_validator(['Supervisor'])
@@ -989,37 +1056,44 @@ NOTE: Only active stock is printed.
 @role_validator(['Data Analyst','Supervisor','Sales Rep'])
 def print_out_order_list(request):
     try:
-        order_list_array = request.GET.getlist('order_list_array')
-        order_list_array = str(order_list_array)[2:-2]
+        from reports.views import tester
+        from print_out.print_client import print_this_document
+        from print_out.models import Printer
+        from print_out.print_client import test_printer, print_this_document
+    
+        # Get printer from database
+        printer = Printer.objects.get(id=1)  # or by name
+        print_this_document(request ,printer, "ORDERLIST", 0, "")
+#         order_list_array = request.GET.getlist('order_list_array')
+#         order_list_array = str(order_list_array)[2:-2]
 
-        # Parse the JSON string into a Python list of dictionaries
-        data = json.loads(order_list_array)
+#         # Parse the JSON string into a Python list of dictionaries
+#         data = json.loads(order_list_array)
 
-        # Iterate over the list of dictionaries and print the values
-        order_list_print_out = f"""----------------------------------------------
-DATE: {datetime.strptime(str(datetime.today())[:10],"%Y-%m-%d").date()}
-PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title() }
-----------------------------------------------
-PRODUCT                           [STOCK]  BUY
-----------------------------------------------
-        """
-        for item in data:
-            product_line = f"""\n{str(item['productDescription'])[:34]:<34} [{item['totalUnitsAvailable']:>3}] {item['orderQuantity']:>5}"""
+#         # Iterate over the list of dictionaries and print the values
+#         order_list_print_out = f"""----------------------------------------------
+# DATE: {datetime.strptime(str(datetime.today())[:10],"%Y-%m-%d").date()}
+# PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title() }
+# ----------------------------------------------
+# PRODUCT                           [STOCK]  BUY
+# ----------------------------------------------
+#         """
+#         for item in data:
+#             product_line = f"""\n{str(item['productDescription'])[:34]:<34} [{item['totalUnitsAvailable']:>3}] {item['orderQuantity']:>5}"""
 
-            order_list_print_out += product_line
-        order_list_print_out += """
-----------------------------------------------
+#             order_list_print_out += product_line
+#         order_list_print_out += """
+# ----------------------------------------------
 
-                *STAMP*
-        \n\n\n"""
+#                 *STAMP*
+#         \n\n\n"""
         
-        print(order_list_print_out)
-        custome_status, message = print_formated_text(order_list_print_out)
-        return JsonResponse({"custome_status": custome_status, "message": message,})
+#         print(order_list_print_out)
+#         custome_status, message = print_formated_text(order_list_print_out)
+#         return JsonResponse({"custome_status": custome_status, "message": message,})
 
     except Exception as e:
         return JsonResponse({"custome_status": "Error", "message": f"{e}"})
-
 
 @login_required
 @role_validator(['Data Analyst','Supervisor','Sales Rep'])
@@ -3931,7 +4005,7 @@ def ajax_stock_live_search(request):
                 <td style="text-align: right;">{ locale.format_string('%.0f', stock_.reorder_quantity, grouping=True) }</td>
                 <td style="text-align: right;">{ locale.format_string('%.2f', stock_.avarage_unit_cost, grouping=True) }</td>
                 <td style="text-align: right;">{ locale.format_string('%.2f', stock_.selling_price, grouping=True) }</td>
-                <td><a href="disable_enable_stock/{ stock_.id }">{  stock_.status }</a></td>
+                <td><a href="" title="Deactivate" class="btn btn-primary" data-object-id="{ stock_.id }" type="button" disabled>{  stock_.status }</a></td>
                 <td><a href="" title="Update" class="btn btn-primary" data-object-id="{ stock_.id }" type="button"  data-toggle="modal" data-target="#adjustStockModal" id="payment-modal-button"><i class="notika-icon notika-edit"></a></td>
                 <td><a href="" title="Details" class="btn btn-primary" data-object-id="{ stock_.id }" type="button"  data-toggle="modal" data-target="#stockDetailsModal" id="payment-modal-button"><i class="notika-icon notika-menus"></a></td>
             </tr>

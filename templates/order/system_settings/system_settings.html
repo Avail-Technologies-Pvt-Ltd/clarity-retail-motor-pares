@@ -10,7 +10,7 @@
     <link href="{% static '' %}fontawesomefree/css/solid.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static '' %}for_settings_app/sweetalert2.min.css">
     <style>
-             * {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -138,6 +138,59 @@
         }
         body.dark-mode .save-btn-outline:hover { background: #1e293b; }
 
+        /* Printer Table Styles - Exactly like printers.html */
+        body.dark-mode .printer-table {
+            border-color: #334155;
+        }
+        body.dark-mode .printer-table th {
+            background: #1a2538;
+            color: #94a3b8;
+            border-bottom-color: #334155;
+        }
+        body.dark-mode .printer-table td {
+            border-bottom-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode .printer-table tr:hover td {
+            background: #1a2538;
+        }
+        body.dark-mode .printer-name-cell .name {
+            color: #f1f5f9;
+        }
+        body.dark-mode .printer-server {
+            color: #94a3b8;
+        }
+        body.dark-mode .printer-actions .btn-check {
+            background: #334155;
+            color: #cbd5e1;
+        }
+        body.dark-mode .printer-actions .btn-check:hover {
+            background: #475569;
+        }
+        body.dark-mode .swal2-popup {
+            background: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .swal2-title,
+        body.dark-mode .swal2-html-container {
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .swal-field label {
+            color: #cbd5e1 !important;
+        }
+        body.dark-mode .swal-field input {
+            background: #0f172a !important;
+            border-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .swal-check label {
+            color: #cbd5e1 !important;
+        }
+        body.dark-mode .logo-upload {
+            background: #0f172a !important;
+            border-color: #334155 !important;
+        }
+
         a {
             text-decoration: none;
             color: inherit;
@@ -153,7 +206,6 @@
             justify-content: space-between;
             border-bottom: 1px solid #eef2f6;
             flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
             user-select: none;
         }
         .navbar-brand {
@@ -356,6 +408,8 @@
             margin-bottom: 1.8rem;
             border-bottom: 1px solid #e9edf2;
             padding-bottom: 0.7rem;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .section-header h2 {
             font-weight: 450;
@@ -373,7 +427,6 @@
             border-radius: 24px;
             padding: 1.8rem 2rem;
             border: 1px solid #eef2f6;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
             max-width: 100%;
             color: #1e293b;
             line-height: 1.6;
@@ -452,7 +505,6 @@
             list-style: none;
             padding: 0.2rem 0;
             margin: 0;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
         }
         .select-search-dropdown.show { display: block; }
         .select-search-dropdown li {
@@ -716,11 +768,162 @@
             font-size: 0.9rem;
         }
 
+        /* Printer Table Styles - Exactly like printers.html */
+        .printer-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .printer-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .printer-table th {
+            padding: 14px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #64748b;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .printer-table td {
+            padding: 16px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .printer-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .printer-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .printer-name-cell .name {
+            font-weight: 700;
+            color: #172554;
+        }
+
+        .printer-name-cell .real-name {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        .printer-server {
+            font-family: monospace;
+            color: #475569;
+        }
+
+        .printer-status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .printer-status-badge.enabled {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .printer-status-badge.disabled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .printer-status-badge.default {
+            background: #fef3c7;
+            color: #92400e;
+            margin-left: 5px;
+        }
+
+        .printer-actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .printer-actions button {
+            border: none;
+            border-radius: 7px;
+            padding: 9px 13px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .printer-actions button:hover {
+            transform: translateY(-1px);
+        }
+
+        .printer-actions .btn-test {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .printer-actions .btn-edit {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .printer-actions .btn-check {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .printer-actions .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .printer-actions .btn-default {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .printer-empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #94a3b8;
+        }
+
+        .logo-upload {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8fafc;
+            display: block;
+        }
+        .logo-upload:hover {
+            border-color: #172554;
+        }
+        .logo-preview {
+            display: none;
+            max-width: 200px;
+            max-height: 80px;
+            margin-top: 10px;
+            object-fit: contain;
+        }
+
         /* Responsive */
         @media (max-width: 820px) {
             .form-grid { grid-template-columns: repeat(2, 1fr); }
             .form-grid-2 { grid-template-columns: 1fr; }
             .system-info-grid { grid-template-columns: 1fr; }
+            .section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
         }
         @media (max-width: 600px) {
             .form-grid { grid-template-columns: 1fr; }
@@ -732,14 +935,17 @@
             .note-modal-content { padding: 1.5rem; width: 95%; }
             .note-modal-footer { flex-wrap: wrap; }
             .note-modal-footer .note-save-btn { width: 100%; justify-content: center; }
+            .section-header h2 { font-size: 1.1rem; }
+            .placeholder-card { padding: 1rem; }
+            .printer-actions { flex-direction: column; }
+            .printer-actions button { width: 100%; }
         }
-    </style>
     </style>
 </head>
 <body>
-    <!-- NAVBAR (keep as is) -->
+    <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="navbar-brand"><a href="{% url 'home' %}"><i class="fas fa-cash-register"></i>&nbsp<span>POS</span></a></div>
+        <div class="navbar-brand"><a href="{% url 'home' %}"><i class="fas fa-cash-register"></i>&nbsp;<span>POS</span></a></div>
         <div class="navbar-actions">
             <button class="nav-btn" id="notePadBtn"><i class="fas fa-sticky-note"></i><span>Note Pad</span></button>
             <button class="theme-toggle-nav" id="themeToggleNav"><i class="fas fa-moon"></i><span>Theme</span></button>
@@ -766,7 +972,7 @@
     <div class="app-main">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><span class="sidebar-label">Menu</span><button class="collapse-toggle" id="collapseSidebarBtn"><i class="fas fa-chevron-left"></i></button></div>
-            <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="sidebarSearch" placeholder="Search settings..."></div>
+            <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="sidebarSearch" autocomplete="false" placeholder="Search settings..."></div>
             <div class="sidebar-menu" id="sidebarMenu">
                 <button class="sidebar-btn active" data-section="company" data-keywords="company details name registration tin prz vat logo"><i class="fas fa-building sidebar-icon"></i><span class="sidebar-label">Company</span></button>
                 <button class="sidebar-btn" data-section="branch" data-keywords="branch verification key id name address tel email bank manager city country type local"><i class="fas fa-store-alt sidebar-icon"></i><span class="sidebar-label">Branch</span></button>
@@ -775,8 +981,9 @@
                 <button class="sidebar-btn" data-section="display" data-keywords="display pagination slice length"><i class="fas fa-desktop sidebar-icon"></i><span class="sidebar-label">Display</span></button>
                 <button class="sidebar-btn" data-section="notifications" data-keywords="notification email password receiving expiration warning"><i class="fas fa-bell sidebar-icon"></i><span class="sidebar-label">Notifications</span></button>
                 <button class="sidebar-btn" data-section="subscription" data-keywords="subscription key history expiration date duration"><i class="fas fa-crown sidebar-icon"></i><span class="sidebar-label">Subscription</span></button>
+                <button class="sidebar-btn" data-section="printers" data-keywords="printers print jobs queue management spool thermal receipt network"><i class="fas fa-print sidebar-icon"></i><span class="sidebar-label">Printers</span></button>
                 <button class="sidebar-btn" data-section="system" data-keywords="system info version updates technologies company"><i class="fas fa-info-circle sidebar-icon"></i><span class="sidebar-label">System Info</span></button>
-                <span style="display:none;" id="searchCatalogue">company details name registration tin prz vat logo branch verification key id name address tel email bank manager city country type local invoice quotation credit note prefix number sync url last time user online interval display pagination slice length notification email password receiving expiration warning subscription key history expiration date duration system info version updates technologies company</span>
+                <span style="display:none;" id="searchCatalogue">company details name registration tin prz vat logo branch verification key id name address tel email bank manager city country type local invoice quotation credit note prefix number sync url last time user online interval display pagination slice length notification email password receiving expiration warning subscription key history expiration date duration printers print jobs queue management spool thermal receipt network system info version updates technologies company</span>
             </div>
             <div style="padding:0.4rem; font-size:0.65rem; color:#94a3b8; text-align:center; border-top:1px solid #f1f5f9;" class="sidebar-label">v2.0</div>
         </aside>
@@ -788,40 +995,37 @@
             <div class="section active" id="section-company">
                 <div class="section-header"><h2><i class="fas fa-building"></i> Company Details</h2></div>
                 <div class="placeholder-card">
-                    
-                        <form id="companyForm" class="form-grid" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label class="form-label">Company Name</label>
-                                <input class="form-control" id="company_name" value="{{ client_setting.company_name|default:'' }}">
+                    <form id="companyForm" class="form-grid" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label class="form-label">Company Name</label>
+                            <input class="form-control" id="company_name" value="{{ client_setting.company_name|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Company Registration</label>
+                            <input class="form-control" id="company_registration" value="{{ client_setting.company_registration|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TIN Number</label>
+                            <input class="form-control" id="tin_number" value="{{ client_setting.tin_number|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">PRZ Number</label>
+                            <input class="form-control" id="prz_number" value="{{ client_setting.prz_number|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">VAT Number</label>
+                            <input class="form-control" id="vat_number" value="{{ client_setting.vat_number|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Logo</label>
+                            <div class="form-control" style="display: flex; align-items: center; gap: 10px; height: 33px;">
+                                {% if client_setting.logo %}
+                                <img src="{{ client_setting.logo.url }}" alt="Company Logo" style="max-height: 100%; object-fit: contain;">
+                                {% endif %}
+                                <input type="file" id="logo_upload" name="logo" accept="image/*">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Company Registration</label>
-                                <input class="form-control" id="company_registration" value="{{ client_setting.company_registration|default:'' }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">TIN Number</label>
-                                <input class="form-control" id="tin_number" value="{{ client_setting.tin_number|default:'' }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">PRZ Number</label>
-                                <input class="form-control" id="prz_number" value="{{ client_setting.prz_number|default:'' }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">VAT Number</label>
-                                <input class="form-control" id="vat_number" value="{{ client_setting.vat_number|default:'' }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Logo</label>
-                                <!-- 1. Added a fixed height and alignment styles to the parent wrapper -->
-                                <div class="form-control" style="display: flex; align-items: center; gap: 10px; height: 33px;">
-                                    {% if client_setting.logo %}
-                                    <!-- 2. Changed to max-height: 100% and added object-fit to prevent distortion -->
-                                    <img src="{{ client_setting.logo.url }}" alt="Company Logo" style="max-height: 100%; object-fit: contain;">
-                                    {% endif %}
-                                    <input type="file" id="logo_upload" name="logo" accept="image/*">
-                                </div>
-                            </div>
-                        </form>
+                        </div>
+                    </form>
                     <div class="save-bottom">
                         <button class="save-btn-bottom" id="saveCompanyBtn"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
@@ -1025,11 +1229,6 @@
                             {% endif %}
                         </div>
                     </div>
-
-
-                    <!-- HOW TO PAY -->
-                    
-
                     <div class="sub-section-title">Subscription History</div>
                     <table class="sub-history-table">
                         <thead><tr><th>Duration</th><th>Date From</th><th>Date To</th><th>Subscription Key</th></tr></thead>
@@ -1048,6 +1247,41 @@
                             {% endif %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- PRINTER MANAGEMENT SECTION - EXACTLY LIKE printers.html -->
+            <!-- ==================================================== -->
+            <div class="section" id="section-printers">
+                <div class="section-header">
+                    <h2><i class="fas fa-print"></i> Printers</h2>
+                    <button class="save-btn-bottom" onclick="openAddPrinter()" style="padding:0.5rem 1.5rem;">
+                        <i class="fas fa-plus"></i> Add Printer
+                    </button>
+                </div>
+
+                <div class="placeholder-card">
+                    <div class="printer-table-wrapper">
+                        <table class="printer-table">
+                            <thead>
+                                <tr>
+                                    <th>Printer</th>
+                                    <th>Print Server</th>
+                                    <th>Status</th>
+                                    <th>Default</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="printerTableBody">
+                                <tr>
+                                    <td colspan="5" class="printer-empty">
+                                        Loading printers...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -1134,6 +1368,13 @@
             document.getElementById('settingsDropdown').classList.remove('show');
             document.getElementById('sidebarSearch').value = '';
             resetSearch();
+            
+            // If switching to printers section, load data
+            if (sectionId === 'printers') {
+                setTimeout(() => {
+                    loadPrinters();
+                }, 100);
+            }
         }
         sidebarBtns.forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1211,19 +1452,13 @@
 
         // ---- ACTIVATE SUBSCRIPTION KEY ----
         document.getElementById('activateKeyBtn').addEventListener('click', function() {
-            // Get the subscription key
             var subscription_key = document.getElementById('subscriptionKeyInput').value.trim();
-
-            // Validation - using else if
             var error = "";
-
             if (subscription_key == "") {
                 error = "Please enter a subscription key";
             } else if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(subscription_key)) {
                 error = "Invalid key format. Please use format: XXXX-XXXX-XXXX-XXXX";
             }
-
-            // If there's an error, show it and stop
             if (error) {
                 Swal.fire({
                     title: "Validation Error",
@@ -1233,8 +1468,6 @@
                 });
                 return;
             }
-
-            // Show loading
             Swal.fire({
                 title: 'Activating...',
                 text: 'Please wait while we validate your subscription key.',
@@ -1243,8 +1476,6 @@
                     Swal.showLoading();
                 }
             });
-
-            // Send AJAX request
             $.ajax({
                 url: "{% url 'activate_subscription' %}",
                 method: 'POST',
@@ -1296,14 +1527,6 @@
             });
         }
 
-        function validateRequired(field, fieldName) {
-            if (!field || field.trim() === '') {
-                showError(fieldName + ' cannot be blank.');
-                return false;
-            }
-            return true;
-        }
-
         // ---- SAVE COMPANY ----
         document.getElementById('saveCompanyBtn').addEventListener('click', function() {
             var company_name = document.getElementById('company_name').value;
@@ -1311,14 +1534,12 @@
             var tin_number = document.getElementById('tin_number').value;
             var prz_number = document.getElementById('prz_number').value;
             var vat_number = document.getElementById('vat_number').value;
-            var logo_file = document.getElementById('logo_upload').files[0]; // Get the file
+            var logo_file = document.getElementById('logo_upload').files[0];
 
             var error = ""
-
             if (company_name.trim() == ""){
                 error = "Company name can not be blank"
             }
-
             if (error == ""){
                 Swal.fire({
                     title: 'Save changes?',
@@ -1331,7 +1552,6 @@
                     cancelButtonColor: '#94a3b8'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Create FormData object
                         var formData = new FormData();
                         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
                         formData.append('company_name', company_name);
@@ -1339,25 +1559,21 @@
                         formData.append('tin_number', tin_number);
                         formData.append('prz_number', prz_number);
                         formData.append('vat_number', vat_number);
-                        
-                        // Append logo if a file was selected
                         if (logo_file) {
                             formData.append('logo', logo_file);
                         }
-
                         $.ajax({
                             url: "{% url 'update_company_details' %}",
                             method: 'POST',
                             data: formData,
-                            processData: false,  // Important for file uploads
-                            contentType: false,  // Important for file uploads
+                            processData: false,
+                            contentType: false,
                             success: function(responseData) {
                                 Swal.fire({
                                     title: responseData.title,
                                     icon: responseData.icon,
                                     text: responseData.text,
                                 }).then(() => {
-                                    // Reload page to show updated logo and data
                                     location.reload();
                                 });
                             },
@@ -1375,7 +1591,6 @@
 
         // ---- SAVE BRANCH ----
         document.getElementById('saveBranchBtn').addEventListener('click', function() {
-            // Get all values
             var branch_id = document.getElementById('branch_id').value;
             var branch_name = document.getElementById('branch_name').value.trim();
             var branch_address = document.getElementById('branch_address').value.trim();
@@ -1391,9 +1606,7 @@
             var branch_country = document.getElementById('branch_country').value.trim();
             var branch_type = document.getElementById('branch_type').value;
 
-            // Validation - using else if to stop at first error
             var errors = "";
-
             if (branch_name == "") {
                 errors = "Branch Name field can not be blank";
             } else if (branch_address == "") {
@@ -1403,9 +1616,7 @@
                     errors = "Invalid email format";
                 }
             }
-
             if (errors == "") {
-                // Show confirmation
                 Swal.fire({
                     title: 'Save Branch Changes?',
                     text: 'Confirm to update branch settings.',
@@ -1418,7 +1629,6 @@
                     cancelButtonColor: '#94a3b8'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Show loading
                         Swal.fire({
                             title: 'Saving...',
                             text: 'Please wait while we update branch settings.',
@@ -1427,8 +1637,6 @@
                                 Swal.showLoading();
                             }
                         });
-
-                        // Send AJAX request
                         $.ajax({
                             url: "{% url 'update_branch_settings' %}",
                             method: 'POST',
@@ -1463,8 +1671,6 @@
                                         text: responseData.message || "Branch settings updated successfully!",
                                         icon: "success",
                                         confirmButtonColor: '#2563eb'
-                                    }).then(() => {
-                                        //location.reload();
                                     });
                                 }
                             },
@@ -1491,12 +1697,10 @@
 
         // ---- SAVE INVOICES ----
         document.getElementById('saveInvoicesBtn').addEventListener('click', function() {
-            // Get all values (empty values are allowed, no restrictions)
             var invoice_prefix = document.getElementById('invoice_prefix').value;
             var quotation_prefix = document.getElementById('quotation_prefix').value;
             var creditnote_prefix = document.getElementById('creditnote_prefix').value;
 
-            // Show confirmation
             Swal.fire({
                 title: 'Save Invoice Settings?',
                 text: 'Confirm to update invoice prefix settings.',
@@ -1509,7 +1713,6 @@
                 cancelButtonColor: '#94a3b8'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading
                     Swal.fire({
                         title: 'Saving...',
                         text: 'Please wait while we update invoice settings.',
@@ -1518,8 +1721,6 @@
                             Swal.showLoading();
                         }
                     });
-
-                    // Send AJAX request
                     $.ajax({
                         url: "{% url 'update_invoice_settings' %}",
                         method: 'POST',
@@ -1536,7 +1737,6 @@
                                 icon: responseData.icon,
                                 confirmButtonColor: '#2563eb'
                             });
-                            
                         },
                         error: function(responseData, error) {
                             Swal.fire({
@@ -1553,29 +1753,21 @@
 
         // ---- SAVE SYNC ----
         document.getElementById('saveSyncBtn').addEventListener('click', function() {
-            // Get all values
             var sync_url = document.getElementById('sync_url').value.trim();
             var sync_interval = document.getElementById('sync_interval').value.trim();
 
-            // Validation - using else if
             var error = "";
-
-            // Both or none logic
             if (sync_url == "" && sync_interval != "") {
                 error = "Sync URL is required when interval is provided";
             } else if (sync_url != "" && sync_interval == "") {
                 error = "Online Update Interval is required when Sync URL is provided";
             } else if (sync_url != "" && sync_interval != "") {
-                // Both are provided, validate interval
                 if (isNaN(sync_interval) || parseInt(sync_interval) < 1) {
                     error = "Online Update Interval must be a number greater than 0";
                 } else if (parseInt(sync_interval) > 1440) {
                     error = "Online Update Interval cannot exceed 1440 minutes (24 hours)";
                 }
             }
-            // If both are empty, it's valid (no validation needed)
-
-            // If there's an error, show it and stop
             if (error) {
                 Swal.fire({
                     title: "Validation Error",
@@ -1585,8 +1777,6 @@
                 });
                 return;
             }
-
-            // Show confirmation
             Swal.fire({
                 title: 'Save Sync Settings?',
                 text: 'Confirm to update sync settings.',
@@ -1599,7 +1789,6 @@
                 cancelButtonColor: '#94a3b8'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading
                     Swal.fire({
                         title: 'Saving...',
                         text: 'Please wait while we update sync settings.',
@@ -1608,8 +1797,6 @@
                             Swal.showLoading();
                         }
                     });
-
-                    // Send AJAX request
                     $.ajax({
                         url: "{% url 'update_sync_settings' %}",
                         method: 'POST',
@@ -1641,12 +1828,8 @@
 
         // ---- SAVE DISPLAY ----
         document.getElementById('saveDisplayBtn').addEventListener('click', function() {
-            // Get all values
             var pagination_slice = document.getElementById('pagination_slice').value.trim();
-
-            // Validation - using else if
             var error = "";
-
             if (pagination_slice == "") {
                 error = "Pagination Slice Length field can not be blank";
             } else if (isNaN(pagination_slice) || parseInt(pagination_slice) < 1) {
@@ -1654,8 +1837,6 @@
             } else if (parseInt(pagination_slice) > 1000) {
                 error = "Pagination Slice Length cannot exceed 1000";
             }
-
-            // If there's an error, show it and stop
             if (error) {
                 Swal.fire({
                     title: "Validation Error",
@@ -1665,8 +1846,6 @@
                 });
                 return;
             }
-
-            // Show confirmation
             Swal.fire({
                 title: 'Save Display Settings?',
                 text: 'Confirm to update display settings.',
@@ -1679,7 +1858,6 @@
                 cancelButtonColor: '#94a3b8'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading
                     Swal.fire({
                         title: 'Saving...',
                         text: 'Please wait while we update display settings.',
@@ -1688,8 +1866,6 @@
                             Swal.showLoading();
                         }
                     });
-
-                    // Send AJAX request
                     $.ajax({
                         url: "{% url 'update_display_settings' %}",
                         method: 'POST',
@@ -1720,15 +1896,12 @@
 
         // ---- SAVE NOTIFICATIONS ----
         document.getElementById('saveNotificationsBtn').addEventListener('click', function() {
-            // Get all values
             var hosting_email = document.getElementById('hosting_email').value.trim();
             var hosting_password = document.getElementById('hosting_password').value;
             var notification_emails = document.getElementById('notification_emails').value.trim();
             var stock_warning_days = document.getElementById('stock_warning_days').value.trim();
 
-            // Validation - using else if
             var error = "";
-
             if (hosting_email == "") {
                 error = "Hosting Email field can not be blank";
             } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hosting_email)) {
@@ -1742,8 +1915,6 @@
             } else if (parseInt(stock_warning_days) > 365) {
                 error = "Stock Expiration Warning cannot exceed 365 days";
             }
-
-            // If there's an error, show it and stop
             if (error) {
                 Swal.fire({
                     title: "Validation Error",
@@ -1753,8 +1924,6 @@
                 });
                 return;
             }
-
-            // Split emails and validate each one (allow empty)
             var emailList = [];
             if (notification_emails) {
                 emailList = notification_emails.split(',').map(function(email) {
@@ -1762,8 +1931,6 @@
                 }).filter(function(email) {
                     return email !== '';
                 });
-
-                // Validate each email
                 for (var i = 0; i < emailList.length; i++) {
                     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailList[i])) {
                         Swal.fire({
@@ -1776,8 +1943,6 @@
                     }
                 }
             }
-
-            // Show confirmation
             Swal.fire({
                 title: 'Save Notification Settings?',
                 text: 'Confirm to update notification settings.',
@@ -1798,7 +1963,6 @@
                             Swal.showLoading();
                         }
                     });
-
                     $.ajax({
                         url: "{% url 'update_notification_settings' %}",
                         method: 'POST',
@@ -1806,7 +1970,7 @@
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                             hosting_email: hosting_email,
                             hosting_email_password: hosting_password,
-                            notification_receiving_emails: JSON.stringify(emailList), // Will be [] if empty
+                            notification_receiving_emails: JSON.stringify(emailList),
                             stock_expiration_warning_days: stock_warning_days
                         },
                         success: function(responseData) {
@@ -1848,7 +2012,7 @@
         });
 
         // ============================================================
-        //  NOTE PAD MODAL
+        // NOTE PAD MODAL
         // ============================================================
         const noteModal = document.getElementById('noteModal');
         const noteModalClose = document.getElementById('noteModalClose');
@@ -1949,7 +2113,6 @@
                 Swal.fire({ icon: 'warning', title: 'Empty note', text: 'Please write something.', confirmButtonColor: '#2563eb' });
                 return;
             }
-
             $.ajax({
                 url: "save_note",
                 method: 'POST',
@@ -1998,6 +2161,528 @@
                 addNote();
             }
         });
+
+                // ============================================================
+        // PRINTER MANAGEMENT - EXACTLY LIKE printers.html
+        // ============================================================
+
+        // ---- CONFIGURATION ----
+        const API_BASE = "{% url 'print_out:printer_list' %}".replace(/\/$/, "");
+
+        // ---- FETCH JSON ----
+        async function apiFetch(url, options = {}) {
+            // Get CSRF token from cookie (Django's default)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            const csrfToken = getCookie('csrftoken');
+            
+            options.headers = {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+                ...(options.headers || {}),
+            };
+
+            const response = await fetch(url, options);
+            const contentType = response.headers.get("content-type") || "";
+
+            if (!contentType.includes("application/json")) {
+                const text = await response.text();
+                console.error("Server returned non-JSON:", text);
+                throw new Error(`Server returned HTTP ${response.status}. Check the Django error page/logs.`);
+            }
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || "Request failed.");
+            }
+            return data;
+        }
+
+        // ---- ALERT HELPERS ----
+        function successAlert(message) {
+            return Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: message,
+                confirmButtonColor: "#172554",
+                timer: 1800,
+                showConfirmButton: false,
+            });
+        }
+
+        function errorAlert(message) {
+            return Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: message,
+                confirmButtonColor: "#172554",
+            });
+        }
+
+        // ---- LOAD PRINTERS ----
+        async function loadPrinters() {
+            const table = document.getElementById("printerTableBody");
+
+            try {
+                const data = await apiFetch(`${API_BASE}/`);
+                if (data.status !== "success") {
+                    throw new Error(data.message || "Failed to load printers.");
+                }
+                renderPrinters(data.printers);
+            } catch (error) {
+                console.error(error);
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="printer-empty">
+                            Failed to load printers.
+                        </td>
+                    </tr>
+                `;
+                errorAlert(error.message);
+            }
+        }
+
+        // ---- RENDER PRINTERS ----
+        function renderPrinters(printers) {
+            const table = document.getElementById("printerTableBody");
+
+            if (!printers || printers.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="printer-empty">
+                            No printers configured.
+                            <br><br>
+                            Add your first printer using the button above.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            table.innerHTML = printers.map(printer => {
+                const statusBadge = printer.enabled
+                    ? `<span class="printer-status-badge enabled">Enabled</span>`
+                    : `<span class="printer-status-badge disabled">Disabled</span>`;
+                
+                const defaultBadge = printer.is_default
+                    ? `<span class="printer-status-badge default">Default</span>`
+                    : "";
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="printer-name-cell">
+                                <div class="name">${escapeHtml(printer.display_name || printer.name)} ${defaultBadge}</div>
+                                <div class="real-name">${escapeHtml(printer.name)}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="printer-server">${escapeHtml(printer.server_ip)}:${printer.server_port}</span>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>${printer.is_default ? "Yes" : "No"}</td>
+                        <td>
+                            <div class="printer-actions">
+                                <button class="btn-test" onclick="openTestPrinter(${printer.id}, '${escapeJs(printer.display_name || printer.name)}')">Test</button>
+                                <button class="btn-edit" onclick="openEditPrinter(${printer.id})">Edit</button>
+                                <button class="btn-check" onclick="checkPrinter(${printer.id})">Check</button>
+                                ${!printer.is_default ? `<button class="btn-default" onclick="setDefault(${printer.id})">Default</button>` : ""}
+                                <button class="btn-delete" onclick="deletePrinter(${printer.id}, '${escapeJs(printer.name)}')">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        // ---- ADD PRINTER (SweetAlert2) ----
+        async function openAddPrinter() {
+            const result = await Swal.fire({
+                title: "Add Printer",
+                width: 500,
+                html: `
+                    <div class="swal-form">
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Windows Printer Name</label>
+                            <input id="swal-name" placeholder="POS-90" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Display Name</label>
+                            <input id="swal-display-name" placeholder="Till 1 Printer" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Windows Print Server IP</label>
+                            <input id="swal-server-ip" placeholder="192.168.1.50" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Print Server Port</label>
+                            <input id="swal-server-port" type="number" value="9101" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <label class="swal-check" style="display:flex; align-items:center; gap:8px; margin:12px 0;">
+                            <input id="swal-enabled" type="checkbox" checked style="width:auto;">
+                            Enabled
+                        </label>
+                        <label class="swal-check" style="display:flex; align-items:center; gap:8px; margin:12px 0;">
+                            <input id="swal-default" type="checkbox" style="width:auto;">
+                            Make this the default printer
+                        </label>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: "Add Printer",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#172554",
+                focusConfirm: false,
+                preConfirm: () => {
+                    const name = document.getElementById("swal-name").value.trim();
+                    const serverIp = document.getElementById("swal-server-ip").value.trim();
+
+                    if (!name) {
+                        Swal.showValidationMessage("Printer name is required.");
+                        return false;
+                    }
+                    if (!serverIp) {
+                        Swal.showValidationMessage("Server IP is required.");
+                        return false;
+                    }
+
+                    return {
+                        name: name,
+                        display_name: document.getElementById("swal-display-name").value.trim(),
+                        server_ip: serverIp,
+                        server_port: document.getElementById("swal-server-port").value,
+                        enabled: document.getElementById("swal-enabled").checked,
+                        is_default: document.getElementById("swal-default").checked,
+                    };
+                },
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const data = await apiFetch(`${API_BASE}/add/`, {
+                    method: "POST",
+                    body: JSON.stringify(result.value),
+                });
+                await successAlert(data.message);
+                loadPrinters();
+            } catch (error) {
+                errorAlert(error.message);
+            }
+        }
+
+        // ---- EDIT PRINTER ----
+        async function openEditPrinter(id) {
+            let printers;
+            try {
+                const data = await apiFetch(`${API_BASE}/`);
+                printers = data.printers;
+            } catch (error) {
+                errorAlert(error.message);
+                return;
+            }
+
+            const printer = printers.find(item => item.id === id);
+            if (!printer) {
+                errorAlert("Printer not found.");
+                return;
+            }
+
+            const result = await Swal.fire({
+                title: "Edit Printer",
+                width: 500,
+                html: `
+                    <div class="swal-form">
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Windows Printer Name</label>
+                            <input id="swal-name" value="${escapeHtml(printer.name)}" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Display Name</label>
+                            <input id="swal-display-name" value="${escapeHtml(printer.display_name || '')}" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Windows Print Server IP</label>
+                            <input id="swal-server-ip" value="${escapeHtml(printer.server_ip)}" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Print Server Port</label>
+                            <input id="swal-server-port" type="number" value="${printer.server_port}" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                        <label class="swal-check" style="display:flex; align-items:center; gap:8px; margin:12px 0;">
+                            <input id="swal-enabled" type="checkbox" ${printer.enabled ? "checked" : ""} style="width:auto;">
+                            Enabled
+                        </label>
+                        <label class="swal-check" style="display:flex; align-items:center; gap:8px; margin:12px 0;">
+                            <input id="swal-default" type="checkbox" ${printer.is_default ? "checked" : ""} style="width:auto;">
+                            Default printer
+                        </label>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: "Save Changes",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#172554",
+                focusConfirm: false,
+                preConfirm: () => {
+                    const name = document.getElementById("swal-name").value.trim();
+                    const serverIp = document.getElementById("swal-server-ip").value.trim();
+
+                    if (!name) {
+                        Swal.showValidationMessage("Printer name is required.");
+                        return false;
+                    }
+                    if (!serverIp) {
+                        Swal.showValidationMessage("Server IP is required.");
+                        return false;
+                    }
+
+                    return {
+                        name: name,
+                        display_name: document.getElementById("swal-display-name").value.trim(),
+                        server_ip: serverIp,
+                        server_port: document.getElementById("swal-server-port").value,
+                        enabled: document.getElementById("swal-enabled").checked,
+                        is_default: document.getElementById("swal-default").checked,
+                    };
+                },
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const data = await apiFetch(`${API_BASE}/${id}/update/`, {
+                    method: "POST",
+                    body: JSON.stringify(result.value),
+                });
+                await successAlert(data.message);
+                loadPrinters();
+            } catch (error) {
+                errorAlert(error.message);
+            }
+        }
+
+        // ---- TEST PRINTER ----
+        let testPrinterId = null;
+
+        function openTestPrinter(id, name) {
+            testPrinterId = id;
+            Swal.fire({
+                title: "Test Printer",
+                width: 500,
+                html: `
+                    <div class="swal-form">
+                        <p style="color:#64748b; margin-top:0;">
+                            Send a test receipt to:
+                            <strong>${escapeHtml(name || 'Printer')}</strong>
+                        </p>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Test Logo</label>
+                            <label class="logo-upload" for="swal-logo">
+                                <div>📷</div>
+                                <strong>Click to select logo</strong>
+                                <div style="font-size:12px; color:#94a3b8;">PNG or JPG recommended</div>
+                                <input id="swal-logo" type="file" accept="image/png,image/jpeg" style="display:none;">
+                                <img id="logo-preview" class="logo-preview">
+                            </label>
+                        </div>
+                        <div class="swal-field" style="margin-bottom:15px;">
+                            <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334155;">Test Message</label>
+                            <input id="swal-test-message" value="Printer test successful" style="width:100%; padding:11px 12px; border:1px solid #cbd5e1; border-radius:7px; outline:none; font-size:14px;">
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: "Print Test",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#172554",
+                focusConfirm: false,
+                didOpen: () => {
+                    const input = document.getElementById("swal-logo");
+                    const preview = document.getElementById("logo-preview");
+                    input.addEventListener("change", () => {
+                        const file = input.files[0];
+                        if (!file) {
+                            preview.style.display = "none";
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = event => {
+                            preview.src = event.target.result;
+                            preview.style.display = "block";
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                },
+                preConfirm: async () => {
+                    const fileInput = document.getElementById("swal-logo");
+                    const message = document.getElementById("swal-test-message").value.trim();
+                    let logoData = null;
+
+                    if (fileInput.files.length) {
+                        const file = fileInput.files[0];
+                        if (!["image/png", "image/jpeg"].includes(file.type)) {
+                            Swal.showValidationMessage("Please select a PNG or JPG image.");
+                            return false;
+                        }
+                        if (file.size > 2 * 1024 * 1024) {
+                            Swal.showValidationMessage("Logo must be smaller than 2 MB.");
+                            return false;
+                        }
+                        logoData = await fileToBase64(file);
+                    }
+
+                    return {
+                        logo_data: logoData,
+                        message: message || "Printer test successful",
+                    };
+                },
+            }).then(async (result) => {
+                if (!result.isConfirmed) return;
+
+                Swal.fire({
+                    title: "Printing...",
+                    text: "Sending test print to the Windows print server.",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => { Swal.showLoading(); },
+                });
+
+                try {
+                    const data = await apiFetch(`${API_BASE}/${testPrinterId}/test/`, {
+                        method: "POST",
+                        body: JSON.stringify(result.value),
+                    });
+                    await successAlert(data.message || "Test print sent successfully.");
+                } catch (error) {
+                    errorAlert(error.message);
+                }
+            });
+        }
+
+        // ---- FILE → BASE64 ----
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result;
+                    const comma = result.indexOf(",");
+                    resolve(comma >= 0 ? result.substring(comma + 1) : result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ---- CHECK PRINTER ----
+        async function checkPrinter(id) {
+            Swal.fire({
+                title: "Checking...",
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); },
+            });
+
+            try {
+                const data = await apiFetch(`${API_BASE}/${id}/health/`);
+                if (data.online) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Print Server Online",
+                        text: data.message,
+                        confirmButtonColor: "#172554",
+                    });
+                } else {
+                    errorAlert(data.message || "Print server is offline.");
+                }
+            } catch (error) {
+                errorAlert(error.message);
+            }
+        }
+
+        // ---- SET DEFAULT ----
+        async function setDefault(id) {
+            try {
+                const data = await apiFetch(`${API_BASE}/${id}/default/`, {
+                    method: "POST",
+                });
+                await successAlert(data.message);
+                loadPrinters();
+            } catch (error) {
+                errorAlert(error.message);
+            }
+        }
+
+        // ---- DELETE PRINTER ----
+        async function deletePrinter(id, name) {
+            const result = await Swal.fire({
+                icon: "warning",
+                title: "Delete Printer?",
+                text: `Are you sure you want to delete "${name}"?`,
+                showCancelButton: true,
+                confirmButtonText: "Yes, Delete",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#dc2626",
+                cancelButtonColor: "#64748b",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const data = await apiFetch(`${API_BASE}/${id}/delete/`, {
+                    method: "POST",
+                });
+                await successAlert(data.message);
+                loadPrinters();
+            } catch (error) {
+                errorAlert(error.message);
+            }
+        }
+
+        // ---- ESCAPE HELPERS ----
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function escapeJs(value) {
+            return String(value)
+                .replaceAll("\\", "\\\\")
+                .replaceAll("'", "\\'");
+        }
+
+        // ---- EXPOSE FUNCTIONS TO GLOBAL ----
+        window.loadPrinters = loadPrinters;
+        window.openAddPrinter = openAddPrinter;
+        window.openEditPrinter = openEditPrinter;
+        window.openTestPrinter = openTestPrinter;
+        window.checkPrinter = checkPrinter;
+        window.setDefault = setDefault;
+        window.deletePrinter = deletePrinter;
+
+        // ---- INITIAL LOAD FOR PRINTERS SECTION ----
+        setTimeout(() => {
+            const activeSection = document.querySelector('.section.active');
+            if (activeSection && activeSection.id === 'section-printers') {
+                loadPrinters();
+            }
+        }, 500);
 
     })();
     </script>

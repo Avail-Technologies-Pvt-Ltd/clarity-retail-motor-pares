@@ -329,7 +329,6 @@ Email    :{configuration.email}
 VAT          :{configuration.vat_number}
 TIN          :{configuration.tin_number}
 PRZ          :{configuration.prz_number}
-DEVICE ID    :{fiscal_device_id}
 Invoice     #:{sale_transaction.ultimate_recipt_number}
 CREDIT NOTE #:{credit_note.ultimate_credit_note_number}
 ----------------------------------------------

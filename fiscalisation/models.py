@@ -147,8 +147,8 @@ class FiscalReceipt(models.Model):
     phone_no = models.CharField(max_length=50, null=True, blank=True, default="")
     email = models.CharField(max_length=50, null=True, blank=True, default="")
 
-    local_receipt_number = models.IntegerField(null=True, blank=True)
-    local_invoice_number_to_credit_debit = models.IntegerField(null=True, blank=True)
+    local_receipt_number = models.IntegerField(null=True, blank=True)  #This is the reciept number rafrence to the model SaleTransaction
+    local_invoice_number_to_credit_debit = models.IntegerField(null=True, blank=True) #This is the Credit note number rafrence to the model CreditNote
 
     binary_server_response = models.JSONField(default=dict, blank=True)
     qr_code_url = models.URLField(max_length=500, blank=True)
@@ -231,7 +231,7 @@ class FiscalReceipt(models.Model):
     #     ]
     
     def __str__(self):
-        return f"[{ str(self.created_at)[:16] }] Fiscal #{self.inv_number or '?'} - Internal: {self.local_receipt_number} - {self.status} ---- {self.doc_type}"
+        return f"[{ str(self.created_at)[:16] }] Fiscal #{self.inv_number or '?'} - Internal: {self.local_receipt_number} - {self.status} ---- {self.doc_type} --- { self.qr_code_url}"
     
     @property
     def display_receipt_number(self):

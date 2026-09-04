@@ -1,7 +1,7 @@
 ﻿"""
 Production settings for point_of_sale.
 
-This file is loaded automatically when .env.prod exists.
+This file is loaded automatically when .env exists.
 """
 
 import os
@@ -9,12 +9,6 @@ import os
 from dotenv import load_dotenv
 
 from .settings import *
-
-# ------------------------------------------------------------------------------
-# Load Production Environment
-# ------------------------------------------------------------------------------
-
-load_dotenv(BASE_DIR / ".env.prod")
 
 
 # ------------------------------------------------------------------------------
@@ -32,7 +26,7 @@ missing = [name for name in required if not os.getenv(name)]
 
 if missing:
     raise RuntimeError(
-        "Missing required variables in .env.prod:\n"
+        "Missing required variables in .env:\n"
         + "\n".join(f" - {name}" for name in missing)
     )
 

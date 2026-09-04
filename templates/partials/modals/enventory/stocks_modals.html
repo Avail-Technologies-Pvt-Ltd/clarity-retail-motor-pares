@@ -1,9 +1,136 @@
 {% load static %}
 
 
+<!-- STOCK SUMMARY -->
+
+
+
+<!-- STOCK SUMMARY -->
+<div class="modal fade animated bounce" id="stockSummaryModal" role="dialog">
+    <div class="modal-dialog modal-large">
+        <div class="modal-content" style="padding: 2rem;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="widget-tabs-int">
+                            <div class="tab-hd">
+                                <h2 id="test">Stock Summary</h2>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="widget-tabs-list">
+                                <!-- Row 1 -->
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Products</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-product-title-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Selling Value</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-selling-price-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Profit Margin</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-markup-price-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Profit Potential</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-reorder-quantity-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2 -->
+                                <div class="row" style="padding-top: 10px;">
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Purchase Value</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-expiration-warning-days-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Status</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-status-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Total Units</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-average-unit-cost-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <div class="col-sm text-start">Avg Value/Product</div>
+                                        <div class="nk-int-mk sl-dp-mn ps-0">
+                                            <label id="stock-details-total-units-value">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr style="background: RGB(0 194 146);">
+
+                            <div class="btn-list">
+                                <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
+                                    <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
+                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- // STOCK SUMMARY -->
+
+
 <!-- REORDER -->
-
-
 
 <div class="modal fade animated bounce" id="reorderModal" role="dialog">
     <div class="modal-dialog modal-large">
@@ -377,6 +504,36 @@
                 }
             });
         })
+
+
+        $('#stockSummaryModal').on('show.bs.modal', function (event) {
+            $.ajax({
+                url: "{% url 'get_stock_value_summary' %}",
+                success: function(response) {
+                    if(response.custome_status == "Error"){
+                        swal({title: "Error", text: response.message, type: "error"});
+                        return;
+                    }
+                    
+                    // Simple formatting
+                    const formatMoney = (num) => '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    const formatNumber = (num) => Math.round(num).toLocaleString();
+                    const formatPercent = (num) => num.toFixed(1) + '%';
+                    
+                    $('#stock-details-product-title-value').text(formatNumber(response.total_products) + ' Products');
+                    $('#stock-details-selling-price-value').text(formatMoney(response.total_selling_value));
+                    $('#stock-details-markup-price-value').text(formatPercent(response.profit_margin_percentage));
+                    $('#stock-details-reorder-quantity-value').text(formatMoney(response.total_profit_potential));
+                    $('#stock-details-expiration-warning-days-value').text(formatMoney(response.total_purchase_value));
+                    $('#stock-details-status-value').text(formatNumber(response.total_products) + ' Active');
+                    $('#stock-details-average-unit-cost-value').text(formatNumber(response.total_units));
+                    $('#stock-details-total-units-value').text(formatMoney(response.total_selling_value / response.total_products));
+                },
+                error: function() {
+                    $('[id$="-value"]').text('Error loading');
+                }
+            });
+        });
 
         $('#stockDetailsModal').on('show.bs.modal', function (event) {
             if ($(event.relatedTarget).is('a')){

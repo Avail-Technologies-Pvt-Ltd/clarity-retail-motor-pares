@@ -50,5 +50,10 @@ urlpatterns = [
 
 
 
-    path('quick_print_test', views.quick_print_test, name='quick_print_test'),
+
+
+
+    
+    path('tester', views.tester, name='tester'),
+    path('viewer', views.viewer, name='viewer'),
 ]

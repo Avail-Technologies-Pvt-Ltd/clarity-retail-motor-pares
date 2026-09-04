@@ -4,7 +4,6 @@ venv/
 env/
 .env/
 .env.dev
-.env.prod
 
 # Python
 __pycache__/
@@ -60,3 +59,5 @@ tokens/
 updates/
 tests/
 envvv
+
+Clarity Retail.bat

@@ -1666,41 +1666,188 @@ def db_fix(request):
 
 
 
+# Example 1: Print to a specific printer by ID
+def tester(request):
+	from print_out.models import Printer
+	from print_out.print_client import test_printer, print_this_document
+	
+	# Get printer from database
+	printer = Printer.objects.get(id=1)  # or by name
+	
+	# Print using the printer object
+
+	fiscal_details = {
+		'is_fiscalised': False,
+		'fiscal_day': "001",
+		'global_count': "001",
+		'fiscal_count': "001",
+		'validation_code': "001",
+		'url': "https://avail.co.zw",
+	}
+
+	# result = print_this_document(request ,printer, "RECEIPT", 714, "(COPY)")
+	# result = print_this_document(request ,printer, "CREDITNOTE", 192, "(COPY)")
+	result = print_this_document(request ,printer, "ORDERLIST", 0, "")
+
+
+	return JsonResponse(result)
+
+
+def tester1(request):
+	from print_out.models import Printer
+	from print_out.print_client import test_printer, print_this_document
+	
+	# Get printer from database
+	printer = Printer.objects.get(id=1)  # or by name
+	
+	# Print using the printer object
+
+	fiscal_details = {
+		'is_fiscalised': False,
+		'fiscal_day': "001",
+		'global_count': "001",
+		'fiscal_count': "001",
+		'validation_code': "001",
+		'url': "https://avail.co.zw",
+	}
+
+	result = print_this_document(printer, "CREDIT_NOTE", 714, "(COPY)")
+
+	return JsonResponse(result)
+
+
+
+
+def viewer(request):
+    document = {
+        "type": "document",
+
+        "printer_name": "printer.name",
+
+        "paper": {
+            "width": 80,
+            "cut": True,
+            "copies": 1,
+        },
+
+        "content": [
+            {
+                "type": "text",
+                "text": "PRINT TEST RECEIPT",
+                "align": "center",
+                "bold": True,
+            },
+
+            {
+                "type": "text",
+                "text": "Normal text test",
+                "align": "left",
+            },
+
+            {
+                "type": "--------------------------------------------------------------",
+            },
+
+            {
+                "type": "row",
+                "columns": [
+                    {
+                        "text": "Item",
+                        "align": "left",
+                        "bold": True,
+                    },
+                    {
+                        "text": "Qty",
+                        "align": "center",
+                        "bold": True,
+                    },
+                    {
+                        "text": "Amount",
+                        "align": "right",
+                        "bold": True,
+                    },
+                ],
+            },
+
+            {
+                "type": "----------------------------------------------------------------------",
+            },
+
+            {
+                "type": "text",
+                "text": "TOTAL: 35.00",
+                "align": "right",
+                "bold": True,
+                "size": 2,
+            },
+
+            {
+                "type": "-----------------------------------------------------------------------",
+            },
+        ],
+
+        "type1": "document",
+    }
+
+
+    document['content'].append({
+                "type": "row",
+                "columns": [
+                    {
+                        "text": "Test Product",
+                        "align": "left",
+                    },
+                    {
+                        "text": "2",
+                        "align": "center",
+                    },
+                    {
+                        "text": "10.00",
+                        "align": "right",
+                    },
+                ],
+            },)
+
+    return JsonResponse(document)
 
 
 
 
 
+def lll():
+    # d = {
+    #             "type": "row",
+    #             "columns": [
+    #                 {
+    #                     "text": "Test Product",
+    #                     "align": "left",
+    #                 },
+    #                 {
+    #                     "text": "2",
+    #                     "align": "center",
+    #                 },
+    #                 {
+    #                     "text": "10.00",
+    #                     "align": "right",
+    #                 },
+    #             ],
+    #         },
 
-def quick_print_test(request):
-    """Simplest working version"""
-    import win32ui
-    from PIL import Image, ImageWin
-    
-    printer_name = "POS-90"
-    
-    hDC = win32ui.CreateDC()
-    hDC.CreatePrinterDC(printer_name)
-    
-    hDC.StartDoc("Test")
-    hDC.StartPage()
-    
-    # Print text
-    font = win32ui.CreateFont({"name": "Arial", "height": 200})
-    hDC.SelectObject(font)
-    hDC.TextOut(100, 100, "Hello World")
-    hDC.TextOut(100, 300, "Line 2")
-    hDC.TextOut(100, 500, "Line 3")
-    
-    # Print image
-    img = Image.open("logo.png")
-    dib = ImageWin.Dib(img)
-    PHYSICALWIDTH = 110
-    printer_width = hDC.GetDeviceCaps(PHYSICALWIDTH)
-    dib.draw(hDC.GetHandleOutput(), (100, 700, printer_width - 100, 1000))
-    
-    hDC.EndPage()
-    hDC.EndDoc()
-    hDC.DeleteDC()
-    
-    return JsonResponse({"response": "Job sent"})
+    #         {
+    #             "type": "row",
+    #             "columns": [
+    #                 {
+    #                     "text": "Another Item",
+    #                     "align": "left",
+    #                 },
+    #                 {
+    #                     "text": "1",
+    #                     "align": "center",
+    #                 },
+    #                 {
+    #                     "text": "25.00",
+    #                     "align": "right",
+    #                 },
+    #             ],
+    #         },
+    return 0

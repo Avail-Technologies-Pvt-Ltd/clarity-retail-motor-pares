@@ -102,6 +102,10 @@ urlpatterns = [
     #   automated functions
     path('batch_expiration_notification', notifications.batch_expiration_notification, name='batch_expiration_notification'),
 
+
+
+    path('get_stock_value_summary', views.get_stock_value_summary, name='get_stock_value_summary'),
+
     
 
 
