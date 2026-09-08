@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render, redirect
 
 from rest_framework import viewsets
@@ -15,7 +17,9 @@ from pos.models import *
 from enventory.models import *
 from accounts.models import *
 from fiscalisation.models import *
+from print_out.print_client import print_this_document, get_printer
 from .models import *
+
 
 from datetime import datetime as datetime_
 import datetime
@@ -249,8 +253,28 @@ def get_expense_type_details(request):
 
 
 def reprint_receipt(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return reprint_receipt_old(request)
+
+    else:
+        return reprint_receipt_new(request)
+
+
+def reprint_receipt_new(request):
     receipt_number = request.GET.get('receipt_number')
-    fiscal_details = get_fiscal_details(receipt_number)
+
+    printer = get_printer(request)
+
+    print_this_document(request, printer, "RECEIPT", receipt_number, "")
+    print_this_document(request, printer, "RECEIPT", receipt_number, "(COPY)")
+
+    return JsonResponse({"message": "Print job successfully!"})
+
+
+def reprint_receipt_old(request):
+    receipt_number = request.GET.get('receipt_number')
+    fiscal_details = get_fiscal_details("RECEIPT", receipt_number)
     
     print_receipt(receipt_number, " ", fiscal_details)
     print_receipt(receipt_number, "(COPY)", fiscal_details)

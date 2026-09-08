@@ -105,9 +105,7 @@ urlpatterns = [
 
 
     path('get_stock_value_summary', views.get_stock_value_summary, name='get_stock_value_summary'),
-
-    
-
+    path('print_out_stock_summary_to_pos', views.print_out_stock_summary_to_pos, name='print_out_stock_summary_to_pos'),
 
 
     # html pages

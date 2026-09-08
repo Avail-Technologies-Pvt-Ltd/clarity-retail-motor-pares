@@ -2,12 +2,21 @@ import json
 import logging
 import socket
 
+from decimal import Decimal
+
+
 from reusable_functions.univesal.client_spacific_functions.client_spacific_functions import custome_wraper
 from reusable_functions.univesal.fiscalisation import get_fiscal_details
 
-from accounts.models import ClientSetting
+from django.http import HttpResponseRedirect
+
+from .models import Printer
+
+from accounts.models import ClientSetting, Branch
 from payments.models import SaleTransaction, Payment, Sale, PaymentMethod
 from enventory.models import CreditNote, ReturnInn
+from pos.models import Quotation, QuotationItem
+
 
 from datetime import datetime
 
@@ -28,23 +37,53 @@ DEFAULT_TIMEOUT = 10
 
 
 # ============================================================
+# PRINTER PICKER
+# ============================================================
+
+def get_printer(request):
+    from .views import printer_health
+    # 1. Try to get the user's assigned printer
+    try:
+        printer = request.user.current_printer
+        if printer and printer.enabled:
+            # Call your existing view function directly
+            health_response = printer_health(request, printer_id=printer.id)
+            health_data = json.loads(health_response.content)
+            
+            if health_data.get("online") is True:
+                return printer
+    except Exception:
+        pass
+
+    # 2. Fallback: Loop through enabled default printers
+    default_printers = Printer.objects.filter(enabled=True, is_default=True)
+    for printer in default_printers:
+        health_response = printer_health(request, printer_id=printer.id)
+        health_data = json.loads(health_response.content)
+        
+        if health_data.get("online") is True:
+            return printer
+
+    # 3. Final Fallback: Loop through all enabled printers
+    all_enabled_printers = Printer.objects.filter(enabled=True)
+    for printer in all_enabled_printers:
+        health_response = printer_health(request, printer_id=printer.id)
+        health_data = json.loads(health_response.content)
+        
+        if health_data.get("online") is True:
+            return printer
+
+    # Ultimate safety net if no printers are enabled and online
+    return None
+
+
+
+
+# ============================================================
 # SEND TO WINDOWS PRINT SERVER
 # ============================================================
 
-def send_to_print_server(
-    server_ip,
-    server_port,
-    printer_name,
-    print_type="text",
-    text="",
-    text1="",
-    text2="",
-    qr_data="",
-    footer="",
-    logo_data=None,
-    document=None,
-    timeout=DEFAULT_TIMEOUT,
-):
+def send_to_print_server(server_ip, server_port, printer_name, print_type="text", text="", text1="", text2="", qr_data="", footer="", logo_data=None, document=None, timeout=DEFAULT_TIMEOUT):
     """
     Send a print request to the Windows Print Server.
     """
@@ -556,12 +595,12 @@ CREDIT NOTE
                         "type": "text",
                         "text": f"""{custome_wraper(configuration.address)}
 {custome_wraper(configuration.tel)}
-Email    : {configuration.email}
+Email        : {configuration.email}
 ------------------------------------------------
-VAT      : {configuration.vat_number}
-TIN      : {configuration.tin_number}
-PRZ      : {configuration.prz_number}
-INVOICE #: {credit_note.sale_transaction.ultimate_recipt_number}
+VAT          : {configuration.vat_number}
+TIN          : {configuration.tin_number}
+PRZ          : {configuration.prz_number}
+INVOICE #    : {credit_note.sale_transaction.ultimate_recipt_number}
 CREDIT NOTE #: {credit_note.ultimate_credit_note_number}
 ------------------------------------------------
                     BUYER
@@ -1145,30 +1184,30 @@ PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title
                 },
             ]}
 
-        # order_list_array = request.GET.getlist('order_list_array')
-        # order_list_array = str(order_list_array)[2:-2]
+        order_list_array = request.GET.getlist('order_list_array')
+        order_list_array = str(order_list_array)[2:-2]
 
-        # # Parse the JSON string into a Python list of dictionaries
-        # data = json.loads(order_list_array)
+        # Parse the JSON string into a Python list of dictionaries
+        data = json.loads(order_list_array)
 
-        # for item in data:
-        #     document['content'].append({
-        #         "type": "row",
-        #             "columns": [
-        #                 {
-        #                     "text": f"{str(item['productDescription'])[:34]}",
-        #                     "align": "left",
-        #                 },
-        #                 {
-        #                     "text": f"[{item['totalUnitsAvailable']}] ",
-        #                     "align": "center",
-        #                 },
-        #                 {
-        #                     "text": f"{item['orderQuantity']}",
-        #                     "align": "right",
-        #                 },
-        #             ],
-        #         })
+        for item in data:
+            document['content'].append({
+                "type": "row",
+                    "columns": [
+                        {
+                            "text": f"{str(item['productDescription'])[:34]}",
+                            "align": "left",
+                        },
+                        {
+                            "text": f"[{item['totalUnitsAvailable']}] ",
+                            "align": "center",
+                        },
+                        {
+                            "text": f"{item['orderQuantity']}",
+                            "align": "right",
+                        },
+                    ],
+                })
 
         document['content'].append({
             "type": "text",
@@ -1189,6 +1228,299 @@ PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title
             printer,
             document,
         )
+
+    elif document_type == "QUOTATION":
+        print(document_type)
+
+        quotation = Quotation.objects.get(id=int(document_id))
+        branch = Branch.objects.filter(is_local=True).first()
+        customer = quotation.customer
+
+        if quotation:
+            document = {
+                'type': "document",
+                'printer_name': printer.name,
+                'paper': {
+                    'width': 80, #add printer.width
+                    'cut': True,
+                    'copies': 1,
+                },
+
+                'content': [
+                    {
+                        "type": "text",
+                        "text": f"""------------------------------------------------
+QUOTATION
+------------------------------------------------
+{ is_copy }
+
+""",
+                        "align": "center",
+                    },
+
+                    {
+                        'type': "image",
+                        'data': logo_data,
+                        'align': "center",
+                        'width': 350,
+                    },
+
+                    {
+                        'type': "text",
+                        'text': configuration.company_name.upper(),
+                        'align': "center",
+                        'bold': True,
+                        'size': 1,
+                    },
+
+                    {
+                        "type": "divider",
+                    },
+
+
+                    {
+                        "type": "text",
+                        "text": f"""{custome_wraper(configuration.address)}
+{custome_wraper(configuration.tel)}
+Email        : {configuration.email}
+------------------------------------------------
+Quotation #  : {quotation.ultimate_quotation_number}
+Date         : {quotation.date_added}
+Valid Until  : {quotation.expiration_date}
+Currency     : {quotation.currency.currency}
+Sales Rep    : {quotation.user.first_name.title()} {quotation.user.last_name.title()}
+------------------------------------------------
+VAT      :{configuration.vat_number}
+TIN      :{configuration.tin_number}
+PRZ      :{configuration.prz_number}
+------------------------------------------------
+                    BUYER
+Buyer Name   : {quotation.customer.company_name if customer else ""}
+Buyer TIN    : {quotation.customer.tin_number if customer else ""}
+Buyer VAT    : {quotation.customer.vat_number if customer else ""}
+Buyer Address: {custome_wraper(quotation.customer.address if customer else "")}
+
+""",
+                        "align": "left",
+                    },
+
+                    {
+                        'type': "row",
+                        'columns': [
+                            {
+                                'text': "Qty   Description",
+                                'align': "left",
+                                'bold': True,
+                            },
+                            {
+                                'text': "Total Price",
+                                'align': "right",
+                                'bold': True,
+                            },
+                        ],
+                    },
+
+                    {
+                        "type": "text",
+                        "text": f"""------------------------------------------------""",
+                        "align": "left",
+                    },
+
+                ]
+            }
+
+            # Get quotation items
+            quotation = Quotation.objects.get(id=int(document_id))
+            quotation_items = QuotationItem.objects.filter(quotation=quotation).select_related(
+                'stock', 
+                'stock__product',
+                'stock__product__vat_code'
+            )
+
+            currency_rate = quotation.currency.rate
+            subtotal = 0
+            VAT = 0
+            for item in quotation_items:
+                item_subtotal = Decimal(str(item.unit_price)) * Decimal(str(item.quantity))
+                subtotal += item_subtotal
+                
+                # Calculate VAT
+                vat_percentage = Decimal('0.00')
+                if item.stock and item.stock.product and item.stock.product.vat_code:
+                    vat_percentage = Decimal(str(item.stock.product.vat_code.percentage))
+                
+
+                # Formula to extract VAT from an already inclusive subtotal
+                item_vat = item_subtotal * (vat_percentage / (Decimal('100.00') + vat_percentage))
+
+                VAT += item_vat
+
+                # Apply currency conversion
+                converted_total = item_subtotal * currency_rate
+
+                document['content'].append({
+                    'type': "row",
+                    'columns': [
+                        {
+                            "text": f"{item.quantity} x ({str(item.stock.product.product_code)}) {str(item.stock.product.title)}",
+                            "align": "left",
+                        },
+                        {
+                            "text": f"{ locale.format_string('%.2f', converted_total, grouping=True) }",
+                            "align": "right",
+                        },
+                    ],
+                })
+
+
+            discount = 0
+            total_cost = subtotal
+
+
+            
+            suma = f"""
+
+------------------------------------------------
+{quotation.currency.shortcut} quotation.
+{'Subtotal':<10}{ locale.format_string('%.2f', subtotal * currency_rate, grouping=True):>20}
+{'Discount':<10}{ locale.format_string('%.2f', discount * currency_rate, grouping=True):>20}
+{'VAT     ':<10}{ locale.format_string('%.2f', VAT * currency_rate, grouping=True):>20}
+------------------------------------------------
+{'Total   ':<10}{ locale.format_string('%.2f', total_cost * currency_rate, grouping=True):>20}
+```````````````````````````````````````````````` """
+
+            document['content'].append({
+                    'type': "text",
+                    'text': suma,
+                    'align': "left",
+               })
+
+            document['content'].append({
+                    'type': "text",
+                    'text': f"""
+
+BANKING DETAILS:
+    Bank    : {branch.bank_1_bank_name}
+    Acc     : {branch.bank_1_account_name}
+    Nostro  : {branch.bank_1_nostro}
+    ZiG     : {branch.bank_1_zig}
+
+                    """,
+                    'align': "left",
+               })
+
+            document['content'].append({
+                    'type': "text",
+                    'text': f"{branch.thank_you_message}",
+                    'align': "center"
+                })
+
+            document['content'].append({
+                    'type': "text",
+                    'text': f"""
+
+
+                    """,
+                    'align': "center"
+                })
+
+        return print_document(
+            printer,
+            document,
+        )
+
+
+    elif document_type == "STOCKSUMMARY":
+        from enventory.views import get_stock_value_summary
+
+        summary_response = get_stock_value_summary(request)
+        summary = json.loads(summary_response.content)
+
+        document = {
+            "type": "document",
+
+            "printer_name": printer.name,
+
+            "paper": {
+                "width": 80,
+                "cut": True,
+                "copies": 1,
+            },
+
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"""------------------------------------------------
+STOCK SUMMARY
+------------------------------------------------
+                    """,
+                    "align": "center",
+                },
+                {
+                    "type": "image",
+                    "data": logo_data,
+                    "align": "center",
+                    "width": 350,
+                },
+
+                {
+                    "type": "text",
+                    "text": f"""{ configuration.company_name }""",
+                    "align": "center",
+                    "bold": True,
+                    "size": 1,
+                },
+
+                {
+                    "type": "text",
+                    "text": f"""
+------------------------------------------------
+GENERATED   : {summary['generated_at']}
+PREPARED BY : { request.user.first_name.title() } { request.user.first_name.title() }
+------------------------------------------------
+                    """,
+                    "align": "left",
+                },
+
+
+                {
+                    "type": "text",
+                    "text": f"""
+Total Products   :  {locale.format_string('%.0f', summary['total_products'], grouping=True):>20}
+Selling Value    : ${locale.format_string('%.2f', summary['total_selling_value'], grouping=True):>20}
+Profit Margin    : {locale.format_string('%.2f', summary['profit_margin_percentage'], grouping=True):>20}%
+Profit Potential : ${locale.format_string('%.2f', summary['total_profit_potential'], grouping=True):>20}
+Purchase Value   : ${locale.format_string('%.2f', summary['total_purchase_value'], grouping=True):>20}
+Status           :  {locale.format_string('%.0f', summary['total_products'], grouping=True):>20} Active
+Total Units      :  {locale.format_string('%.0f', summary['total_units'], grouping=True):>20}
+Avg Value/Product: ${locale.format_string('%.2f', (summary['total_selling_value'] / summary['total_products'] if summary['total_products'] else 0), grouping=True):>20}
+
+""",
+                    "align": "left",
+                },
+            ]}
+
+        document['content'].append({
+            "type": "text",
+            "text": f"""------------------------------------------------
+
+
+
+***STAMP***
+
+
+
+------------------------------------------------
+
+""",
+            "align": "center",
+        })
+
+        return print_document(
+            printer,
+            document,
+        )
+
 
 # ============================================================
 # SIMPLE TEXT

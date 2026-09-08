@@ -757,50 +757,21 @@ def printer_set_default(
 # HEALTH CHECK
 # ============================================================
 
-@require_GET
-def printer_health(
-    request,
-    printer_id,
-):
 
-    printer = get_object_or_404(
-        Printer,
-        id=printer_id,
-    )
+def printer_health(request, printer_id):
+    printer = get_object_or_404(Printer, id=printer_id)
 
     try:
-
         with socket.create_connection(
-
             (
                 printer.server_ip,
                 printer.server_port,
             ),
 
             timeout=3,
-
         ):
 
-            return JsonResponse({
-
-                "status": "success",
-
-                "online": True,
-
-                "message": (
-                    "Print server is reachable."
-                ),
-
-            })
+            return JsonResponse({"status": "success", "online": True, "message": "Print server is reachable."})
 
     except Exception as e:
-
-        return JsonResponse({
-
-            "status": "error",
-
-            "online": False,
-
-            "message": str(e),
-
-        })
+        return JsonResponse({ "status": "error", "online": False, "message": str(e)})

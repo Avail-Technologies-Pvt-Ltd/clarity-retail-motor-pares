@@ -115,7 +115,7 @@
                             <div class="btn-list">
                                 <div class="footer_buttons" id="add-invoice-footer-buttons" style="display: flex; justify-content:space-between;">
                                     <button class="btn btn-danger notika-btn-danger" disabled>Clear</button>
-                                    <button class="btn btn-success notika-btn-success" disabled>Save</button>
+                                    <button class="btn btn-success notika-btn-success" id="print-stock-summary-btn">Print To POS</button>
                                 </div>
                             </div>
                         </div>
@@ -482,6 +482,33 @@
         $('#adjustStockModal').on('hidden.bs.modal', function (){
             stocksInitialLoad()
         })
+
+        $('#print-stock-summary-btn').on('click', function(e) {
+            $.ajax({
+                url: "{% url 'print_out_stock_summary_to_pos' %}",
+                data: {},
+                success: function(responseData) {
+                    if (responseData.custome_status == "Error"){
+                        swal({
+                            title: "Error",
+                            text: responseData.message,
+                            type: "error"
+                        });
+                    }else{
+                        swal({
+                            title: "Success",
+                            text: responseData.message,
+                            type: "success"
+                        });
+                    }
+                    
+                },
+                error: function(responseData, error) {
+                    alert("An error ocured! " + error)
+                }
+            });
+        })
+
 
         $('#reorderModal').on('show.bs.modal', function (event) {
             $.ajax({

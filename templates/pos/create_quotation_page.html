@@ -714,8 +714,14 @@ function handleQuotationGeneration() {
         })
         return;
     }
-    
+
+
+    if (!buyerId || buyerId.trim().toLowerCase() === "all" || buyerId.trim() === "") {
+        buyerId = "0";
+    }
+
     if (destination === 'pos') {
+
         $.ajax({
             url: "{% url 'print_quotation_in_pos_printer' %}",
             data: {

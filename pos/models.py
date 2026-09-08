@@ -39,6 +39,7 @@ class Quotation(models.Model):
     customer = models.ForeignKey('accounts.CustomerAccount', on_delete=models.CASCADE, blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    currency = models.ForeignKey('payments.PaymentMethod', on_delete=models.CASCADE, blank=True, null=True)
     just_created = models.BooleanField(default=True)
     is_sold = models.BooleanField(default=False)
 

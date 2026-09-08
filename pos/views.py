@@ -1,3 +1,5 @@
+import time
+
 from decimal import Decimal
 
 from django.views.decorators.csrf import csrf_exempt
@@ -235,6 +237,62 @@ def create_quotation_page(request, pk=None):
 
 
 def print_quotation_in_pos_printer(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return print_quotation_in_pos_printer_old(request)
+
+    else:
+        return print_quotation_in_pos_printer_new(request)
+
+
+def print_quotation_in_pos_printer_new(request):
+    try:
+        currency_id = request.GET.get('currency_id')
+        quotation_id = request.GET.get('quotation_id')
+        buyer_id = request.GET.get('buyer_id')
+        expiration_date = request.GET.get('expiration_date')
+
+        print(buyer_id.isdigit())
+        print(buyer_id.isdigit())
+        print(buyer_id)
+        print(buyer_id)
+
+        quotation = Quotation.objects.get(id=int(quotation_id))
+
+        if quotation:
+            quotation.expiration_date = expiration_date
+            quotation.user = request.user
+            if buyer_id.isdigit():
+                quotation.customer = CustomerAccount.objects.filter(id=int(buyer_id)).first()
+            quotation.is_active = True
+            if currency_id.isdigit():
+                quotation.currency = PaymentMethod.objects.filter(id=int(currency_id)).first()
+            quotation.save()
+
+        else:
+            quotation = Quotation()
+            quotation.expiration_date = expiration_date
+            quotation.user = request.user
+            if buyer_id.isdigit():
+                quotation.customer = CustomerAccount.objects.filter(id=int(buyer_id)).first()
+            quotation.is_active = True
+            if currency_id.isdigit():
+                quotation.currency = PaymentMethod.objects.filter(id=int(currency_id)).first()
+            quotation.save()
+
+
+        printer = get_printer(request)
+
+        print_this_document(request, printer, "QUOTATION", quotation_id, "")
+
+        return JsonResponse({"type":'success', "title":'Print job sent', "message":"The printe job has been sent"})
+
+    except Exception as e:
+        return JsonResponse({"type":'error', "title":'Failed', "message": str(e)})
+
+
+
+def print_quotation_in_pos_printer_old(request):
     currency_id = request.GET.get('currency_id')
     quotation_id = request.GET.get('quotation_id')
     buyer_id = request.GET.get('buyer_id')
@@ -1317,17 +1375,18 @@ from fiscalisation.models import FiscalisationSettings
 from fiscalisation.services import create_fiscal_receipt, sync_receipt
 import os 
 from print_out.models import Printer
-from print_out.print_client import print_this_document
+from print_out.print_client import print_this_document, get_printer
+
 
 logger = logging.getLogger(__name__)
 
 def check_out(request):
-    NEW_PRINT = os.getenv("NEW_PRINT")
-    if NEW_PRINT:
-        return check_out_new(request)
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return check_out_old(request)
 
     else:
-        return check_out_old(request)
+        return check_out_new(request)
 
 
 def check_out_new(request):
@@ -1639,10 +1698,11 @@ def check_out_new(request):
             # Start sync in background - doesn't block checkout
             sync_receipt_async(fiscal_receipt.id)
 
-            time.sleep(5)
+            logger.info(f"Receipt {sale_transaction.recipt_number} queued for background sync")
+            
+            # time.sleep(configuration.print_delay)
 
             
-            logger.info(f"Receipt {sale_transaction.recipt_number} queued for background sync")
 
         # ============================================================
         # STEP 10: Print receipt
@@ -1666,9 +1726,10 @@ def check_out_new(request):
         # else:
 
 
-        printer = Printer.objects.get(id=1)  # or by name
+        printer = get_printer(request)
 
         print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "")
         return JsonResponse({
             "custome_status": "",
             "message": "Done"
@@ -1685,7 +1746,10 @@ def check_out_new(request):
 
 @transaction.atomic
 def check_out_old(request):
+    print("__________ old print running")
     try:
+        print("try__________ old print running")
+
         # ============================================================
         # STEP 1: Check if fiscalisation is active
         # ============================================================
@@ -1916,7 +1980,7 @@ def check_out_old(request):
         # ============================================================
         if not fiscalisation_active:
             locale_receipt_number = sale_transaction.recipt_number
-            fiscal_details = get_fiscal_details(locale_receipt_number)
+            fiscal_details = get_fiscal_details("RECEIPT", locale_receipt_number)
 
             custome_status, message = print_receipt(sale_transaction.recipt_number, " ", fiscal_details)
             print_receipt(sale_transaction.recipt_number, "(COPY)", fiscal_details)
@@ -1992,7 +2056,7 @@ def check_out_old(request):
         # ============================================================
         # STEP 10: Print receipt
         # ============================================================
-        fiscal_details = get_fiscal_details(sale_transaction.recipt_number)
+        fiscal_details = get_fiscal_details("RECEIPT", sale_transaction.recipt_number)
         custome_status, message = print_receipt(sale_transaction.recipt_number, " ", fiscal_details)
         print_receipt(sale_transaction.recipt_number, "(COPY)", fiscal_details)
 
@@ -2100,10 +2164,6 @@ def load_receipt_payment_portions_data(request):
         change_or_remaining_text = "REQUIRED"
 
 
-    
-
-
-
     totals = {
         "total_receipt_price": locale.format_string('%.2f', float(total_price), grouping=True),
         "discount": locale.format_string('%.2f', float(discount), grouping=True),
@@ -2115,12 +2175,38 @@ def load_receipt_payment_portions_data(request):
     return JsonResponse({"receipt_money_portions_table_rows": receipt_money_portions_table_rows, "totals":totals})
 
 
-@login_required
+
 def reprint_user_last_receipt(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return reprint_user_last_receipt_old(request)
+
+    else:
+        return reprint_user_last_receipt_new(request)
+
+
+
+@login_required
+def reprint_user_last_receipt_new(request):
+    sale_transaction = SaleTransaction.objects.filter(created_by=request.user).last()
+    if sale_transaction:
+        printer = get_printer(request)
+        locale_receipt_number = sale_transaction.recipt_number
+        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "")
+        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+
+        return JsonResponse({"custome_status":"", "message":"Printer job sent!"})
+    else:
+        return JsonResponse({"custome_status":"Error", "message":"No receipt found for this user."})
+
+
+
+@login_required
+def reprint_user_last_receipt_old(request):
     sale_transaction = SaleTransaction.objects.filter(created_by=request.user).last()
     if sale_transaction:
         locale_receipt_number = sale_transaction.recipt_number
-        fiscal_details = get_fiscal_details(locale_receipt_number)
+        fiscal_details = get_fiscal_details("RECEIPT", locale_receipt_number)
         custome_status, message = print_receipt(sale_transaction.recipt_number, " ", fiscal_details)
         print_receipt(sale_transaction.recipt_number, "(COPY)", fiscal_details)
         return JsonResponse({"custome_status":custome_status, "message":message})

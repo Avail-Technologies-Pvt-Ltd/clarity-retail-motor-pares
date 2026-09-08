@@ -4,48 +4,14 @@ import os
 
 
 class Printer(models.Model):
-
-    name = models.CharField(
-        max_length=100,
-        unique=True,
-        help_text="Exact Windows printer name, e.g. POS-90",
-    )
-
-    display_name = models.CharField(
-        max_length=150,
-        blank=True,
-        help_text="Friendly name shown in Clarity Retail",
-    )
-
-    server_ip = models.CharField(
-        max_length=255,
-        help_text=(
-            "IP address or hostname of the Windows computer "
-            "running the print server"
-        ),
-        default="127.0.0.1",
-    )
-
-    server_port = models.PositiveIntegerField(
-        default=9101,
-        help_text="Windows print server port",
-    )
-
-    enabled = models.BooleanField(
-        default=True
-    )
-
-    is_default = models.BooleanField(
-        default=False
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    name = models.CharField(max_length=100, unique=True, help_text="Exact Windows printer name, e.g. POS-90")
+    display_name = models.CharField(max_length=150, blank=True, help_text="Friendly name shown in Clarity Retail")
+    server_ip = models.CharField(max_length=255, help_text="IP address or hostname of the Windows computer running the print server", default="127.0.0.1")
+    server_port = models.PositiveIntegerField(default=9101, help_text="Windows print server port")
+    enabled = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-is_default", "name"]

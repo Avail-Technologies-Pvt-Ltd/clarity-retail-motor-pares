@@ -1,4 +1,8 @@
+import os
+import time
+
 from django.shortcuts import render
+
 
 # models
 from .models import *
@@ -7,6 +11,8 @@ from accounts.models import ClientSetting
 from knowledge_base.models import Compatibility
 from pos.models import CartItem, QuotationItem
 
+
+from print_out.print_client import print_this_document, get_printer, get_fiscal_details
 
 import json
 
@@ -132,9 +138,30 @@ def mass_price_adjustments_page(request):
 # ------------------------------------------------------------------------
 
 
-
-
 from django.db.models import Sum
+
+
+def print_out_stock_summary_to_pos(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    
+    if OLD_PRINT:
+        return print_out_stock_summary_to_pos_new(request)
+
+    else:
+        return print_out_stock_summary_to_pos_new(request)
+
+
+
+def print_out_stock_summary_to_pos_new(request):
+    from print_out.print_client import test_printer, print_this_document
+
+    printer = get_printer(request)
+    print_this_document(request, printer, "STOCKSUMMARY", 0, "")
+
+    return JsonResponse({'custome_status': '', 'message': str("Print job sent")})
+
+
+
 
 def get_stock_value_summary(request):
     try:
@@ -1052,48 +1079,70 @@ NOTE: Only active stock is printed.
     #     return JsonResponse({"type": 'error', 'title':"Error!", "message": f"{e}"})
 
 
+def print_out_order_list(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    
+    if OLD_PRINT:
+        return print_out_order_list_old(request)
+
+    else:
+        return print_out_order_list_new(request)
+
+
+
 @login_required
 @role_validator(['Data Analyst','Supervisor','Sales Rep'])
-def print_out_order_list(request):
+def print_out_order_list_new(request):
     try:
         from reports.views import tester
         from print_out.print_client import print_this_document
-        from print_out.models import Printer
+
         from print_out.print_client import test_printer, print_this_document
     
         # Get printer from database
-        printer = Printer.objects.get(id=1)  # or by name
-        print_this_document(request ,printer, "ORDERLIST", 0, "")
-#         order_list_array = request.GET.getlist('order_list_array')
-#         order_list_array = str(order_list_array)[2:-2]
-
-#         # Parse the JSON string into a Python list of dictionaries
-#         data = json.loads(order_list_array)
-
-#         # Iterate over the list of dictionaries and print the values
-#         order_list_print_out = f"""----------------------------------------------
-# DATE: {datetime.strptime(str(datetime.today())[:10],"%Y-%m-%d").date()}
-# PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title() }
-# ----------------------------------------------
-# PRODUCT                           [STOCK]  BUY
-# ----------------------------------------------
-#         """
-#         for item in data:
-#             product_line = f"""\n{str(item['productDescription'])[:34]:<34} [{item['totalUnitsAvailable']:>3}] {item['orderQuantity']:>5}"""
-
-#             order_list_print_out += product_line
-#         order_list_print_out += """
-# ----------------------------------------------
-
-#                 *STAMP*
-#         \n\n\n"""
-        
-#         print(order_list_print_out)
-#         custome_status, message = print_formated_text(order_list_print_out)
-#         return JsonResponse({"custome_status": custome_status, "message": message,})
+        printer = get_printer(request)
+        print_this_document(request, printer, "ORDERLIST", 0, "")
 
     except Exception as e:
         return JsonResponse({"custome_status": "Error", "message": f"{e}"})
+
+
+@login_required
+@role_validator(['Data Analyst','Supervisor','Sales Rep'])
+def print_out_order_list_old(request):
+    try:
+        order_list_array = request.GET.getlist('order_list_array')
+        order_list_array = str(order_list_array)[2:-2]
+
+        # Parse the JSON string into a Python list of dictionaries
+        data = json.loads(order_list_array)
+
+        # Iterate over the list of dictionaries and print the values
+        order_list_print_out = f"""----------------------------------------------
+DATE: {datetime.strptime(str(datetime.today())[:10],"%Y-%m-%d").date()}
+PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title() }
+----------------------------------------------
+PRODUCT                           [STOCK]  BUY
+----------------------------------------------
+        """
+        for item in data:
+            product_line = f"""\n{str(item['productDescription'])[:34]:<34} [{item['totalUnitsAvailable']:>3}] {item['orderQuantity']:>5}"""
+
+            order_list_print_out += product_line
+        order_list_print_out += """
+----------------------------------------------
+
+                *STAMP*
+        \n\n\n"""
+        
+        print(order_list_print_out)
+        custome_status, message = print_formated_text(order_list_print_out)
+        return JsonResponse({"custome_status": custome_status, "message": message,})
+
+    except Exception as e:
+        return JsonResponse({"custome_status": "Error", "message": f"{e}"})
+
+
 
 @login_required
 @role_validator(['Data Analyst','Supervisor','Sales Rep'])
@@ -1845,7 +1894,9 @@ def add_batch_invoice_patching(request):
 
     return JsonResponse({'title': "Added", 'text': "Batch added succesefully", 'type': "success"})
 
-# pos/views.py - return_inn_sale_bulk (keeping your original working calculations)
+
+
+
 
 import logging
 import json
@@ -1861,10 +1912,383 @@ from fiscalisation.services import create_fiscal_receipt, sync_receipt
 
 logger = logging.getLogger(__name__)
 
+
+def return_inn_sale_bulk(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return return_inn_sale_bulk_old(request)
+
+    else:
+        return return_inn_sale_bulk_new(request)
+
+
+
+
+@login_required
+@role_validator(['Sales Rep'])
+# @transaction.atomic
+def return_inn_sale_bulk_new(request):
+    """
+    Complete bulk return with fiscalisation support.
+    ALL database operations are atomic - either all succeed or all fail.
+    """
+    try:
+        # ============================================================
+        # STEP 1: Get POST data
+        # ============================================================
+        receipt_number = request.POST.get('receipt_number')
+        return_date = request.POST.get('return_date')
+        return_reason = request.POST.get('return_reason')
+        refund_amount = request.POST.get('refund_amount')
+        payment_method_id = request.POST.get('payment_method')
+        amount_paid = request.POST.get('amount_paid')
+        tableData = json.loads(request.POST.get('tableData', '[]'))
+
+        # ============================================================
+        # STEP 2: Get the original sale transaction
+        # ============================================================
+        original_sale = SaleTransaction.objects.get(recipt_number=int(receipt_number))
+        sale_payments = Payment.objects.filter(payment_for="RECEIPT", payment_for_id=receipt_number)
+        
+        # ============================================================
+        # STEP 3: Check conditions to fiscalise credit note
+        # ============================================================
+        # -invoice fiscalise
+        # -1 payment method
+        # -same payment method as invoice
+        # -same rate as invoice
+        original_fiscal_receipt = FiscalReceipt.objects.filter(
+            local_receipt_number=str(receipt_number),
+            doc_type='FISCALINVOICE'
+        ).first()
+
+        should_fiscalise_return = original_fiscal_receipt is not None
+        fiscal_settings = FiscalisationSettings.get_settings()
+        
+        if not original_fiscal_receipt:
+            logger.warning(f"Original sale {receipt_number} was not fiscalised. Return will NOT be fiscalised.")
+        
+        payment_method = PaymentMethod.objects.get(id=int(payment_method_id))
+        
+        # ============================================================
+        # STEP 4: Create Credit Note record
+        # ============================================================
+        new_credit_note = CreditNote()
+        new_credit_note.sale_transaction = original_sale
+        new_credit_note.reason = ReturnReason.objects.get(id=int(return_reason))
+        new_credit_note.notes = ""
+        new_credit_note.refund_amount = Decimal(str(refund_amount))
+        new_credit_note.date = return_date
+        new_credit_note.created_by = request.user
+        new_credit_note.save()
+        credit_note = new_credit_note
+
+        # ============================================================
+        # STEP 5: Process returned items and calculate totals
+        # ============================================================
+        no_items_selected = True
+        credit_note_lines = []
+        total_credit_incl_vat = Decimal('0')
+        total_refund_amount = Decimal('0')
+
+        # Tax accumulators (will be negative for credit note)
+        document_total = Decimal('0')
+        nontaxible_sales_amt_total = Decimal('0')
+        zero_per_taxamt = Decimal('0')
+        zero_perc_sales_amt_total = Decimal('0')
+        tax_amt_15_perc = Decimal('0')
+        tax_15_perc_sales_total = Decimal('0')
+
+        for sale_data in tableData:
+            no_items_selected = False
+            sale = Sale.objects.get(id=int(sale_data['id']))
+            return_quantity = int(sale_data['return_quantity'])
+            
+            if return_quantity <= 0:
+                continue
+                
+            if sale.actual_sales < return_quantity:
+                return_quantity = sale.actual_sales
+            
+            # Update sale return totals
+            sale.total_returned += return_quantity
+            sale.save()
+            
+            # Return items to batches (stock) - existing code
+            used_batches = sale.used_batches.rstrip(",") if sale.used_batches else ""
+            used_batch_quantities = sale.used_batch_quantities.rstrip(",") if sale.used_batch_quantities else ""
+            
+            if used_batches and used_batch_quantities:
+                used_batches_list = used_batches.split(",")
+                used_batch_quantities_list = used_batch_quantities.split(",")
+                
+                used_batches_list_int = [int(b) for b in used_batches_list if b]
+                used_batch_quantities_list_int = [int(q) for q in used_batch_quantities_list if q]
+                
+                used_batches_list_int.reverse()
+                used_batch_quantities_list_int.reverse()
+                
+                remaining_needed = return_quantity
+                still_needed = True
+                
+                for i in range(len(used_batches_list_int)):
+                    if still_needed:
+                        current_batch = Batch.objects.get(id=used_batches_list_int[i])
+                        current_batch_used_quantity = used_batch_quantities_list_int[i]
+                        
+                        if current_batch_used_quantity - remaining_needed >= 0:
+                            current_batch.total_units = int(current_batch.total_units) + remaining_needed
+                            current_batch.save()
+                            used_batch_quantities_list_int[i] = current_batch_used_quantity - remaining_needed
+                            still_needed = False
+                        else:
+                            current_batch.total_units = int(current_batch.total_units) + current_batch_used_quantity
+                            current_batch.save()
+                            remaining_needed -= current_batch_used_quantity
+                            used_batches_list_int[i] = 0
+                            used_batch_quantities_list_int[i] = 0
+                
+                filtered_batches = []
+                filtered_quantities = []
+                for i in range(len(used_batches_list_int)):
+                    if used_batches_list_int[i] != 0:
+                        filtered_batches.append(str(used_batches_list_int[i]))
+                        filtered_quantities.append(str(used_batch_quantities_list_int[i]))
+                
+                filtered_batches.reverse()
+                filtered_quantities.reverse()
+                
+                sale.used_batches = ",".join(filtered_batches)
+                sale.used_batch_quantities = ",".join(filtered_quantities)
+                sale.save()
+            
+            # ============================================================
+            # Calculate prices for credit note
+            # ============================================================
+            price_incl_vat = Decimal(str(sale.unit_price))
+            quantity = Decimal(str(return_quantity))
+            rate = Decimal(str(payment_method.rate))
+            
+            # Get VAT percentage
+            vat_percentage = 0
+            int_tax_code = 2  # Default Zero%
+            
+            if sale.stock.product.vat_code:
+                int_tax_code = sale.stock.product.vat_code.zimra_tax_id or 2
+                vat_percentage = Decimal(str(sale.stock.product.vat_code.percentage or 0))
+                if vat_percentage == 15:
+                    vat_percentage = 15.5
+                    int_tax_code = 517
+            
+            # Calculate line total (POSITIVE amount)
+            line_total_incl_vat = Decimal(str(price_incl_vat * quantity * rate))
+            
+            # Accumulate total refund amount
+            total_refund_amount += Decimal(str(line_total_incl_vat))
+            
+            # Determine tax code and accumulate
+            if int_tax_code == 1:  # Exempt
+                str_tax_code = "A"
+                tax_percentage = ""
+                nontaxible_sales_amt_total += line_total_incl_vat
+
+            elif int_tax_code == 2:  # Zero %
+                str_tax_code = "B"
+                tax_percentage = str(round(0, 2))
+                zero_perc_sales_amt_total += line_total_incl_vat
+
+            elif int_tax_code == 3:  # 15% VAT Inclusive
+                str_tax_code = "C"
+                tax_percentage = str(round(15, 2))
+                tax_amt_15_perc += Decimal(str(15 / 115)) * Decimal(str(line_total_incl_vat))
+                tax_15_perc_sales_total += line_total_incl_vat
+
+            elif int_tax_code == 4 or int_tax_code == 517:  # 15.5% VAT Inclusive
+                int_tax_code = 517
+                str_tax_code = "D"
+                tax_percentage = str(round(15.5, 2))
+                tax_amt_15_perc += Decimal(str(15.5 / 115.5)) * Decimal(str(line_total_incl_vat))
+                tax_15_perc_sales_total += line_total_incl_vat
+
+            else:
+                str_tax_code = "B"
+                tax_percentage = str(round(0, 2))
+                zero_perc_sales_amt_total += line_total_incl_vat
+
+            # Accumulate total credit
+            total_credit_incl_vat += Decimal(str(line_total_incl_vat))
+
+            # Get HS code
+            hs_code = sale.stock.product.zimra_hs_code
+            if not is_correct_hs_code_format(str(hs_code)):
+                hs_code = sale.stock.product.vat_code.default_hs_code
+                if not is_correct_hs_code_format(str(hs_code)):
+                    hs_code = '95069100'
+            
+            # Add to credit note lines (NEGATIVE for credit note)
+            credit_note_lines.append({
+                "LineDescription": f"{sale.stock.product.title} {sale.stock.product.details}",
+                "UnitPrice": str(round(-price_incl_vat * rate, 2)),
+                "Quantity": str(quantity),
+                "Total": str(round(-line_total_incl_vat, 2)),
+                "IntTaxCode": int_tax_code,
+                "StrTaxCode": str_tax_code,
+                "TaxPercentage": tax_percentage,
+                "receiptLineHSCode": hs_code,
+            })
+
+            # Create ReturnInn record
+            new_return_inn = ReturnInn()
+            new_return_inn.credit_note = credit_note
+            new_return_inn.sale = sale
+            new_return_inn.stock = sale.stock
+            new_return_inn.refund_amount = 0
+            new_return_inn.total_units = return_quantity
+            new_return_inn.sale_value = line_total_incl_vat
+            new_return_inn.created_by = request.user
+            new_return_inn.save()
+        
+        if no_items_selected:
+            return JsonResponse({
+                "custome_status": "", 
+                "message": "Nothing returned inn. The given items have been returned already or you're trying to return zero items."
+            })
+        
+        # ============================================================
+        # STEP 6: Create refund payment record
+        # ============================================================
+        payments_list = []
+
+        # Use the calculated total refund amount, not the POSTed amount
+        refund_total = float(total_refund_amount)
+        
+        if refund_total > 0:
+            refund_payment = Payment()
+            refund_payment.payment_for = "CREDIT_NOTE"
+            refund_payment.payment_for_id = credit_note.id
+            refund_payment.payment_method = payment_method
+            refund_payment.date = datetime.today()
+            refund_payment.rate = payment_method.rate
+            refund_payment.amount_paid = Decimal(str(refund_total))
+            refund_payment.created_by = request.user
+            refund_payment.save()
+
+            payments_list.append({
+                "PaymentMethodName": refund_payment.payment_method.zimra_money_type_text.upper(),
+                "PaymentAmt": str(-round(refund_total, 2)),
+            })
+        else:
+            # If no refund amount, add a zero payment
+            payments_list.append({
+                "PaymentMethodName": payment_method.zimra_money_type_text.upper(),
+                "PaymentAmt": "0.00",
+            })
+
+        # ============================================================
+        # STEP 7: Make totals NEGATIVE for credit note
+        # ============================================================
+        document_total = -total_credit_incl_vat
+        nontaxible_sales_amt_total = -nontaxible_sales_amt_total
+        zero_per_taxamt = -zero_per_taxamt
+        zero_perc_sales_amt_total = -zero_perc_sales_amt_total
+        tax_amt_15_perc = -tax_amt_15_perc
+        tax_15_perc_sales_total = -tax_15_perc_sales_total
+
+        # ============================================================
+        # STEP 8: Create FISCAL CREDIT NOTE (ONLY if original was fiscalised)
+        # ============================================================
+        qr_url = ""
+        fiscal_credit_note = None
+        
+        sale_transaction = credit_note.sale_transaction
+
+        if should_fiscalise_return and original_fiscal_receipt:
+            the_password = ""
+            role = ""
+            payment_lines = payments_list
+            line_items = credit_note_lines
+            doc_type = "CREDITNOTE"
+            doc_currency = payment_method.shortcut.upper()
+            my_yyy_mm_dd_date = credit_note.created_at.strftime('%Y-%m-%d')
+            my_24hr_time_format_with_seconds = credit_note.created_at.strftime('%H:%M:%S')
+            invoice_number_to_credit_debit = original_fiscal_receipt.inv_number
+            local_invoice_number_to_credit_debit = credit_note.id
+            
+            buyer_register_name = sale_transaction.buyer_name or "Walk In Customer"
+            buyer_TIN = sale_transaction.buyer_tin or ""
+            VAT_number = sale_transaction.buyer_vat or "" 
+            phone_no = sale_transaction.buyer_tel or "" 
+            email = sale_transaction.buyer_email or "" 
+            local_receipt_number = sale_transaction.recipt_number
+            status = "PENDING"
+
+            fiscal_credit_note = create_fiscal_receipt(
+                the_password,
+                role,
+                payment_lines,
+                line_items,
+                doc_type,
+                doc_currency,
+                my_yyy_mm_dd_date,
+                my_24hr_time_format_with_seconds,
+                document_total,
+                nontaxible_sales_amt_total,
+                zero_per_taxamt,
+                zero_perc_sales_amt_total,
+                tax_amt_15_perc,
+                tax_15_perc_sales_total,
+                invoice_number_to_credit_debit,
+                local_invoice_number_to_credit_debit,
+                buyer_register_name,
+                buyer_TIN,
+                VAT_number,
+                phone_no,
+                email,
+                local_receipt_number,
+                status
+            )
+
+            # Start background sync
+            from fiscalisation.services import sync_receipt_async
+            sync_receipt_async(fiscal_credit_note.id)
+
+            # time.sleep(configuration.print_delay)
+            
+            
+            # if fiscal_credit_note.qr_code_url:
+            #     qr_url = fiscal_credit_note.qr_code_url
+            
+        else:
+            logger.info(f"Original sale {receipt_number} was NOT fiscalised. Skipping fiscal credit note.")
+        
+        # ============================================================
+        # STEP 9: Print credit note
+        # ============================================================
+        printer = get_printer(request)
+
+        print_this_document(request, printer, "CREDITNOTE", credit_note.id, "(COPY)")
+        print_this_document(request, printer, "CREDITNOTE", credit_note.id, "")
+        
+        return JsonResponse({
+            "custome_status": "", 
+            "message": f"Product(s) returned in stock successfully!<br>{message}",
+        })
+        
+    except Exception as e:
+        logger.exception("Return failed")
+        return JsonResponse({
+            "custome_status": "Error", 
+            "message": str(e)
+        })
+
+
+
+
+
 @login_required
 @role_validator(['Sales Rep'])
 @transaction.atomic
-def return_inn_sale_bulk(request):
+def return_inn_sale_bulk_old(request):
     """
     Complete bulk return with fiscalisation support.
     ALL database operations are atomic - either all succeed or all fail.
@@ -4886,25 +5310,58 @@ def add_temporary_invoice_item(request):
 
     temporary_invoice_item.save()
 
-   
     message = "Invoice item added succesefully"
     return JsonResponse({'message': message})
 
 
 
+def print_out_credit_note(request):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return print_out_credit_note_old(request)
+
+    else:
+        return print_out_credit_note_new(request)
+
 
 
 @login_required
-def print_out_credit_note(request):
+def print_out_credit_note_new(request):
     try:
-        print("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPJKU")
+        print("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP NEW")
         credit_note_id = request.GET.get('credit_note_id')
         credit_note = CreditNote.objects.get(id=credit_note_id)
         receipt_number = credit_note.sale_transaction.recipt_number
 
         if credit_note:
-            custome_status, message = print_out_credit_note_bulk(receipt_number, credit_note.id, "")
-            print_out_credit_note_bulk(receipt_number, credit_note.id, "COPY")
+
+            printer = get_printer(request)
+
+            print_this_document(request, printer, "CREDITNOTE", credit_note.id, "")
+            print_this_document(request, printer, "CREDITNOTE", credit_note.id, "(COPY)")
+            return JsonResponse({"title":title, "message":"Print job sent", "type":"success"})
+        else:
+            message = f"No credit not found with the id {credit_note_id}."
+            return JsonResponse({"title":"Error", "message":message, "type":"error"})
+
+    except Exception as e:
+        return JsonResponse({"title":"Error", "message":str(e), "type":"error"})
+
+
+
+@login_required
+def print_out_credit_note_old(request):
+    try:
+        credit_note_id = request.GET.get('credit_note_id')
+        credit_note = CreditNote.objects.get(id=credit_note_id)
+        receipt_number = credit_note.sale_transaction.recipt_number
+
+        if credit_note:
+            print("available cdnt")
+            fiscal_details = get_fiscal_details("CREDITNOTE", credit_note.id)
+            qr_url = fiscal_details['url']
+            fiscal_device_id = fiscal_details['url']
+            custome_status, message = print_out_credit_note_bulk(receipt_number, credit_note.id, "", qr_url, fiscal_device_id)
             return JsonResponse({"title":title, "message":message, "type":"success"})
         else:
             message = f"No credit not found with the id {credit_note_id}."

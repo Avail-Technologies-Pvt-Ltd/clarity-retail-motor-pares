@@ -141,6 +141,8 @@ class ClientSetting(models.Model):
 	bank_1_name_nostro = models.CharField(max_length=30, blank=True, default="")
 	bank_1_name_zig = models.CharField(max_length=30, blank=True, default="")
 
+	print_delay = models.IntegerField(default=5, help_text="Time delay when printing fiscal invoices to give time for sync (in sec)")
+
 	branch_verification_key = models.CharField(max_length=300, blank=True, default="")
 	branch_id = models.CharField(max_length=300, default=0)
 	branch_name = models.CharField(max_length=100, blank=True, null=True)
@@ -229,9 +231,9 @@ class CustomerAccount(models.Model):
 	balance = models.IntegerField(default=0)
 	credit_limit = models.IntegerField(default=0)
 
-	tin_number = models.CharField(max_length=30,blank=True, null=True)
-	prz_number = models.CharField(max_length=30,blank=True, null=True)
-	vat_number = models.CharField(max_length=30,blank=True, null=True)
+	tin_number = models.CharField(max_length=30,blank=True, null=True, default='')
+	prz_number = models.CharField(max_length=30,blank=True, null=True, default='')
+	vat_number = models.CharField(max_length=30,blank=True, null=True, default='')
 
 	created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	created_at = models.DateTimeField(auto_now_add=True)

@@ -92,7 +92,5 @@ def get_fiscal_details(document_type, local_document_id):
     return 0
 
 
-
-
 def is_correct_hs_code_format(s):
     return len(s) == 8 and s.isdigit()

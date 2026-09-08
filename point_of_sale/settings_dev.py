@@ -4,11 +4,11 @@ from .settings import *
 load_dotenv(BASE_DIR / ".env")
 
 
-NEW_PRINT = os.getenv("NEW_PRINT")
-print(NEW_PRINT)
-print(NEW_PRINT)
-print(NEW_PRINT)
-print(NEW_PRINT)
+OLD_PRINT = os.getenv("OLD_PRINT")
+print(OLD_PRINT)
+print(OLD_PRINT)
+print(OLD_PRINT)
+print(OLD_PRINT)
 
 
 # ------------------------------------------------------------------------------
