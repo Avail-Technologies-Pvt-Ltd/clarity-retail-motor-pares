@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 
 from django.shortcuts import render
 
@@ -2266,8 +2267,21 @@ def return_inn_sale_bulk_new(request):
         # ============================================================
         printer = get_printer(request)
 
-        print_this_document(request, printer, "CREDITNOTE", credit_note.id, "(COPY)")
-        print_this_document(request, printer, "CREDITNOTE", credit_note.id, "")
+
+
+
+        def _print():
+            try:
+                if should_fiscalise_return:
+                    time.sleep(configuration.print_delay)
+                else:
+                    pass #no fiscalisation no delay
+                print_this_document(request, printer, "CREDITNOTE", credit_note.id, "(COPY)")
+                print_this_document(request, printer, "CREDITNOTE", credit_note.id, "")
+            except Exception:
+                logger.exception("Receipt reprint failed")
+
+        threading.Thread(target=_print, daemon=True).start()
         
         return JsonResponse({
             "custome_status": "", 
@@ -4420,6 +4434,11 @@ def ajax_stock_live_search(request):
         else:
             quantity_cell = f"""<td style="text-align: right;"><a href="" style="color: blue;">{ locale.format_string('%.0f', stock_.total_units, grouping=True) }</a></td>"""
 
+        if stock_.status:
+            tbn_title, color = "Active", "green" 
+        else:
+            tbn_title, color = "Frozen", "red"
+            
         row = f"""
             <tr>
                 <th>{ stock_.product.product_code.upper() }</th>
@@ -4429,7 +4448,9 @@ def ajax_stock_live_search(request):
                 <td style="text-align: right;">{ locale.format_string('%.0f', stock_.reorder_quantity, grouping=True) }</td>
                 <td style="text-align: right;">{ locale.format_string('%.2f', stock_.avarage_unit_cost, grouping=True) }</td>
                 <td style="text-align: right;">{ locale.format_string('%.2f', stock_.selling_price, grouping=True) }</td>
-                <td><a href="" title="Deactivate" class="btn btn-primary" data-object-id="{ stock_.id }" type="button" disabled>{  stock_.status }</a></td>
+                <td style="text-align: right;">
+                    <span style="background: { color }; padding: 5px; color: white; border-radius: 15px;">{ tbn_title }</span>
+                </td>
                 <td><a href="" title="Update" class="btn btn-primary" data-object-id="{ stock_.id }" type="button"  data-toggle="modal" data-target="#adjustStockModal" id="payment-modal-button"><i class="notika-icon notika-edit"></a></td>
                 <td><a href="" title="Details" class="btn btn-primary" data-object-id="{ stock_.id }" type="button"  data-toggle="modal" data-target="#stockDetailsModal" id="payment-modal-button"><i class="notika-icon notika-menus"></a></td>
             </tr>

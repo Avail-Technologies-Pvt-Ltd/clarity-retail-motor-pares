@@ -29,6 +29,8 @@ urlpatterns = [
 ]
 
 
+print(f'DEBUG MODE {settings.DEBUG}')
+
 if settings.DEBUG:
     # add debugging tool bar
     urlpatterns += [

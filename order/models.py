@@ -2,6 +2,15 @@ from django.db import models
 
 from accounts.models import User
 
+'''
+CLASSES HERE:
+	SubscriptionPayment
+	SubscriptionManager
+	SyncManager
+	NotificationsManager
+	SystemInfo
+'''
+
 class SubscriptionPayment(models.Model):
 	duration = models.CharField(max_length=50)
 	date_from = models.DateTimeField()

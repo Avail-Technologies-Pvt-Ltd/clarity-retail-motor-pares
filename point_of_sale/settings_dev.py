@@ -5,10 +5,8 @@ load_dotenv(BASE_DIR / ".env")
 
 
 OLD_PRINT = os.getenv("OLD_PRINT")
-print(OLD_PRINT)
-print(OLD_PRINT)
-print(OLD_PRINT)
-print(OLD_PRINT)
+print(f'OLD PRINT MODE {OLD_PRINT}')
+
 
 
 # ------------------------------------------------------------------------------
@@ -17,6 +15,7 @@ print(OLD_PRINT)
 
 required = [
     "SECRET_KEY",
+    "OLD_PRINT",
 ]
 
 missing = [name for name in required if not os.getenv(name)]
@@ -50,7 +49,7 @@ INTERNAL_IPS = [
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -71,3 +70,9 @@ ZIMRA_TEST_MODE = os.getenv("ZIMRA_TEST_MODE", "True").lower() == "true"
 ZIMRA_MODEL_NAME = os.getenv("ZIMRA_MODEL_NAME", "Server")
 ZIMRA_MODEL_VERSION = os.getenv("ZIMRA_MODEL_VERSION", "v1")
 ZIMRA_COMPANY_NAME = os.getenv("ZIMRA_COMPANY_NAME", "ClarityPOS")
+
+print("=" * 60)
+print("DEVELOPMENT MODE - Env (sqlite3)")
+print(f"Database : sqlite3")
+print(f"Debug    : {DEBUG}")
+print("=" * 60)

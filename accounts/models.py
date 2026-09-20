@@ -37,7 +37,7 @@ class User(AbstractUser):
 	phone_number = models.CharField(max_length=30, blank=True)
 	address = models.TextField(max_length=255, blank=True)
 	roles = models.CharField(max_length=1000)
-	e_signature_link = models.TextField(max_length=255, default="", blank=True, null=True)
+	e_signature = models.ImageField(null=True, blank=True, upload_to='e_signatures/')
 	created_by = models.ForeignKey('User', on_delete=models.DO_NOTHING, null=True)
 	current_printer = models.ForeignKey('PrinterCase', on_delete=models.DO_NOTHING, null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)

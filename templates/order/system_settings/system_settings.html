@@ -972,7 +972,7 @@
     <div class="app-main">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header"><span class="sidebar-label">Menu</span><button class="collapse-toggle" id="collapseSidebarBtn"><i class="fas fa-chevron-left"></i></button></div>
-            <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="sidebarSearch" autocomplete="false" placeholder="Search settings..."></div>
+            <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="sidebarSearch" autocomplete="false"  placeholder="Search settings..." outofill="false"></div>
             <div class="sidebar-menu" id="sidebarMenu">
                 <button class="sidebar-btn active" data-section="company" data-keywords="company details name registration tin prz vat logo"><i class="fas fa-building sidebar-icon"></i><span class="sidebar-label">Company</span></button>
                 <button class="sidebar-btn" data-section="branch" data-keywords="branch verification key id name address tel email bank manager city country type local"><i class="fas fa-store-alt sidebar-icon"></i><span class="sidebar-label">Branch</span></button>
@@ -982,6 +982,7 @@
                 <button class="sidebar-btn" data-section="notifications" data-keywords="notification email password receiving expiration warning"><i class="fas fa-bell sidebar-icon"></i><span class="sidebar-label">Notifications</span></button>
                 <button class="sidebar-btn" data-section="subscription" data-keywords="subscription key history expiration date duration"><i class="fas fa-crown sidebar-icon"></i><span class="sidebar-label">Subscription</span></button>
                 <button class="sidebar-btn" data-section="printers" data-keywords="printers print jobs queue management spool thermal receipt network"><i class="fas fa-print sidebar-icon"></i><span class="sidebar-label">Printers</span></button>
+                <button class="sidebar-btn" data-section="my-profile" data-keywords="my user account settings"><i class="fas fa-user sidebar-icon"></i><span class="sidebar-label">My Profile</span></button>
                 <button class="sidebar-btn" data-section="system" data-keywords="system info version updates technologies company"><i class="fas fa-info-circle sidebar-icon"></i><span class="sidebar-label">System Info</span></button>
                 <span style="display:none;" id="searchCatalogue">company details name registration tin prz vat logo branch verification key id name address tel email bank manager city country type local invoice quotation credit note prefix number sync url last time user online interval display pagination slice length notification email password receiving expiration warning subscription key history expiration date duration printers print jobs queue management spool thermal receipt network system info version updates technologies company</span>
             </div>
@@ -1281,6 +1282,61 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================================================== -->
+            <!-- MY-PROFILE SECTION -->
+            <!-- ==================================================== -->
+            <div class="section" id="section-my-profile">
+                <div class="section-header"><h2><i class="fas fa-store-alt"></i> My User Account |<small style="color: gray;">{{ user.roles }}</small></h2></div>
+                <div class="placeholder-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input class="form-control readonly-field" id="my_username" value="{{ user.username }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <input class="form-control" id="my_first_name" value="{{ user.first_name|title }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input class="form-control" id="my_last_name" value="{{ user.last_name|title }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" id="my_email" value="{{ user.email }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input class="form-control" id="my_phone_number" value="{{ user.phone_number }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" id="my_address">{{ user.address }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">E-Signature</label>
+                            <div class="form-control" style="display: flex; align-items: center; gap: 10px; height: 33px;">
+                                {% if user.e_signature %}
+                                <img src="{{ user.e_signature.url }}" alt="Company Logo" style="max-height: 100%; object-fit: contain;">
+                                {% endif %}
+                                <input type="file" id="my_e_signature_upload" name="logo" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Old password</label>
+                            <input class="form-control" id="my_old_password" value="" placeholder="Only when changing password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New password</label>
+                            <input class="form-control" id="my_new_password" value="" placeholder="Only when changing password">
+                        </div>
+                    </div>
+                    <div class="save-bottom">
+                        <button class="save-btn-bottom" id="saveProfileBtn"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -1681,6 +1737,89 @@
                                     icon: "error",
                                     confirmButtonColor: '#2563eb'
                                 });
+                            }
+                        });
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: "Validation Error",
+                    text: errors,
+                    icon: "error",
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        });
+
+        
+
+        // ---- SAVE PROFILE ----
+        document.getElementById('saveProfileBtn').addEventListener('click', function() {
+            var first_name = document.getElementById('my_first_name').value;
+            var last_name = document.getElementById('my_last_name').value;
+            var email = document.getElementById('my_email').value.trim();
+            var phone_number = document.getElementById('my_phone_number').value;
+            var address = document.getElementById('my_address').value;
+            var e_signature_file = document.getElementById('my_e_signature_upload').files[0];
+            var old_password = document.getElementById('my_old_password').value;
+            var new_password = document.getElementById('my_new_password').value;
+
+            var errors = "";
+
+            if (first_name == "") {
+                errors = "First name field can not be blank";
+            } else if (last_name == "") {
+                errors = "Last name field can not be blank";
+            } else if (email != "") {
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    errors = "Invalid email format";
+                }
+            } else if ((old_password != "" || new_password != "") && (old_password != new_password)){
+                errors = "Old password and new password did not match"
+            }
+            if (errors == "") {
+                Swal.fire({
+                    title: 'Save Branch Changes?',
+                    text: 'Confirm to update branch settings.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, save',
+                    cancelButtonText: 'Cancel',
+                    background: '#fff',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#94a3b8'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var formData = new FormData();
+                        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                        formData.append('first_name', first_name);
+                        formData.append('last_name', last_name);
+                        formData.append('email', email);
+                        formData.append('phone_number', phone_number);
+                        formData.append('address', address);
+                        formData.append('old_password', old_password);
+                        formData.append('new_password', new_password);
+                        if (e_signature_file) {
+                            formData.append('e_signature', e_signature_file);
+                        }
+                        $.ajax({
+                            url: "{% url 'update_my_profile_details' %}",
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function(responseData) {
+                                Swal.fire({
+                                    title: responseData.title,
+                                    icon: responseData.icon,
+                                    text: responseData.text,
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                console.log("Error:", xhr.responseText);
+                                showError(error); 
                             }
                         });
                     }

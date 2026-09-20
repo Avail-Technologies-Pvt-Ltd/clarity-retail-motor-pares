@@ -2,9 +2,9 @@
 Common Django settings.
 
 Environment-specific configuration is defined in:
-
     settings_dev.py
     settings_prod.py
+    
 """
 
 import os

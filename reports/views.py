@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render
 
 import json
@@ -5,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 from payments.models import *
 from enventory.models import *
-from accounts.models import ClientSetting
+from accounts.models import ClientSetting, Branch
 
 from datetime import datetime as datetime_
 import datetime
@@ -28,6 +29,10 @@ from reusable_functions.univesal.reporting import calculate_net
 from reusable_functions.univesal.reporting import group_money_portions_into_dict, group_money_portions_by_payment_methods
 from reusable_functions.univesal.periodic_reports import get_day_end_summary
 
+from print_out.print_client import print_this_document, get_printer
+
+from django.core.exceptions import ObjectDoesNotExist
+
 import calendar
 
 # import requests
@@ -37,6 +42,11 @@ try:
     pagination_slice_leangth = configuration.pagination_slice_leangth
 except Exception as e:
     HttpResponseRedirect('client_settings_page')
+
+
+branch = Branch.objects.filter(is_local=True, is_active=True).first()
+if branch is None:
+    raise ObjectDoesNotExist("No active local branch found.")
 
 
 @login_required
@@ -907,8 +917,9 @@ def print_data_for_year_end(request):
 	year = int(filter_date[:4])
 	filter_date_from = datetime.date(year, month, 1)
 	filter_date_to = datetime.date(year, 12, calendar.monthrange(year, month)[1])
+	time_length = "YEAR"
 
-	custome_status, message = print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to)
+	custome_status, message = print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to, time_length)
 
 	return JsonResponse({"custome_status": custome_status, "message": message,})
 
@@ -920,8 +931,9 @@ def print_data_for_month_end(request):
 	year = int(filter_date[:4])
 	filter_date_from = datetime.date(year, month, 1)
 	filter_date_to = datetime.date(year, month, calendar.monthrange(year, month)[1])
+	time_length = "MONTH"
 
-	custome_status, message = print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to)
+	custome_status, message = print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to, time_length)
 
 	return JsonResponse({"custome_status": custome_status, "message": message,})
 
@@ -931,15 +943,127 @@ def print_data_for_day_end(request):
 	filter_date = request.GET.get('filter_date')
 	filter_date_from = filter_date
 	filter_date_to = filter_date
+	time_length = "DAY"
 
-
-	custome_status, message = print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to)
+	custome_status, message = print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to, time_length)
 
 	return JsonResponse({"custome_status": custome_status, "message": message,})
 
 
 
-def print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to):
+
+def print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_from, filter_date_to, time_length):
+    OLD_PRINT = os.getenv("OLD_PRINT", "false").lower() == "true"
+    if OLD_PRINT:
+        return print_time_frame_summary_to_pos_printer_old(request, filter_date, filter_date_from, filter_date_to, time_length)
+
+    else:
+        return print_time_frame_summary_to_pos_printer_new(request, filter_date, filter_date_from, filter_date_to, time_length)
+
+
+def print_time_frame_summary_to_pos_printer_new(request, filter_date, filter_date_from, filter_date_to, time_length):
+	summery, income_currencies, expenses_currencies, totals_dict = get_day_end_summary(filter_date_from, filter_date_to)
+
+	cash_in_hand_print_out = ""
+
+	total_rated_value_all_currencies = 0
+	keys = totals_dict.keys()
+	for key in keys:
+		shortcut = str(totals_dict[key][0])
+		income_amount = locale.format_string('%.2f', float(income_currencies[key][1]), grouping=True)
+		expenses_amount = f"- {locale.format_string('%.2f', float(expenses_currencies[key][1]), grouping=True)}"
+		total_amount = locale.format_string('%.2f', float(totals_dict[key][1]), grouping=True)
+		total_value = locale.format_string('%.2f', float(totals_dict[key][2]), grouping=True)
+
+
+		cash_in_hand_print_out += f"""{shortcut:<14}{income_amount:>15}{'':>16}
+{'':<14}{expenses_amount:>15}{'':>16}
+{'__________':>29}
+{'':<14}{total_amount:>15}{total_value:>16}
+-----------------------------------------------
+"""
+		total_rated_value_all_currencies += float(total_value.replace(',', ''))
+
+	text = f"""
+
+***********************************************
+Time frame : { time_length }
+Time       : { filter_date }
+***********************************************
+Branch Name: { branch.branch_name}
+Branch ID  : { branch.branch_id}
+
+By         : { request.user.first_name.title() } { request.user.last_name.title() }
+Printed at : { str(datetime_.today())[:16] }
+===============================================
+
+SALES:
+-----------------------------------------------
+{'Number of Sales'}        {locale.format_string('%.0f', summery['number_of_sales'], grouping=True):>22}
+{'Items Sold'}             {locale.format_string('%.0f', summery['number_of_items_sold'], grouping=True):>22}
+{'Cost of Items Sold'}     {locale.format_string('%.2f', summery['cost_of_sales'], grouping=True):>22}
+{'Gross Sales Value'}      {locale.format_string('%.2f', summery['gross_sales_value'], grouping=True):>22}
+{'Discounts Offered'}      {locale.format_string('%.2f', summery['discount_given'], grouping=True):>22}
+{'Sales Value'}            {locale.format_string('%.2f', summery['sales_value'], grouping=True):>22}
+{'Total Credit Notes'}     {locale.format_string('%.0f', summery['total_credit_notes'], grouping=True):>22}
+{'Total Returns'}          {locale.format_string('%.0f', summery['total_returns_inn'], grouping=True):>22}
+{'Total Items Returned'}   {locale.format_string('%.0f', summery['total_items_returned_inn'], grouping=True):>22}
+    {'Returns Value'}      {locale.format_string('%.2f', summery['returns_inn_value'], grouping=True):>22}
+    {'Refund Paid'}        {locale.format_string('%.2f', summery['refund_paid'], grouping=True):>22}
+    {'Refund Outstanding'} {locale.format_string('%.2f', summery['refund_outstanding'], grouping=True):>22}
+-----------------------------------------------
+{'Net Sales Value'}        {locale.format_string('%.2f', summery['net_sales_value'], grouping=True):>22}
+-----------------------------------------------
+{'Sales Profit'}           {locale.format_string('%.2f', summery['sales_profit'], grouping=True):>22}
+===============================================
+	
+INVOICES:
+-----------------------------------------------
+{'Total Invoices Received'}{locale.format_string('%.0f', summery['total_invoices'], grouping=True):>22}
+{'Total Items Received'}   {locale.format_string('%.0f', summery['total_items_received'], grouping=True):>22}
+{'Received Stock Value'}   {locale.format_string('%.2f', summery['received_stock_value'], grouping=True):>22}
+{'Discount Received'}      {locale.format_string('%.2f', summery['discount_received'], grouping=True):>22}
+{'Invoice Payments Value'} {locale.format_string('%.2f', summery['paid_for_invoices'], grouping=True):>22}
+{'Total Returns Out'}      {locale.format_string('%.0f', summery['total_returns_out'], grouping=True):>22}
+{'Returns Out Refunds'}    {locale.format_string('%.2f', summery['returns_out_value'], grouping=True):>22}
+{'Paid Return Out Refunds'}{locale.format_string('%.2f', summery['paid_returns_out_value'], grouping=True):>22}
+===============================================
+
+EXPENSES:
+-----------------------------------------------
+{'Total Incurred Expenses'}{locale.format_string('%.0f', summery['total_expenses'], grouping=True):>22}
+{'Incurred Expenses Value'}{locale.format_string('%.2f', summery['expenses_value'], grouping=True):>22}
+{'Paid Expenses Value'}    {locale.format_string('%.2f', summery['paid_for_expenses'], grouping=True):>22}
+===============================================
+
+CASHFLOW SUMMERY:
+-----------------------------------------------
+{'CASH INFLOW'}           {locale.format_string('%.2f', summery['cash_inflow'], grouping=True):>22}
+{'CASH OUTFLOW'}          {locale.format_string('%.2f', summery['cash_outflow'], grouping=True):>22}
+-----------------------------------------------
+{'CASHFOLW BALANCE'}      {locale.format_string('%.2f', summery['cash_flow_balance'], grouping=True):>22}
+===============================================
+
+
+CASHFLOW DEATAILS:
+***********************************************
+{'CURR':<14}{'AMOUNT':>15}{'VALUE':>16}
+***********************************************
+{cash_in_hand_print_out}
+{'TOTAL CASH AT HAND'} {locale.format_string('%.2f', float(total_rated_value_all_currencies), grouping=True):>26}
+_______________________________________________
+-----------------------------------------------
+	"""
+
+	printer = get_printer(request)
+	print_this_document(request, printer, "PERIODIC REPORT", 0, text)
+	custome_status = ""
+	message = "Print job sent"
+	return custome_status, message
+
+	
+
+def print_time_frame_summary_to_pos_printer_old(request, filter_date, filter_date_from, filter_date_to, time_length):
 	summery, income_currencies, expenses_currencies, totals_dict = get_day_end_summary(filter_date_from, filter_date_to)
 
 	cash_in_hand_print_out = ""
@@ -964,7 +1088,7 @@ def print_time_frame_summary_to_pos_printer(request, filter_date, filter_date_fr
 
 	text = f"""
 		***************
-		DAY-END SUMMERY
+		{time_length}-END SUMMERY
 		***************
 		FOR: { filter_date }
 
@@ -1659,195 +1783,99 @@ def activate_all_deactivated_batches(request):
 	print(f"{batches.count()} activated")
 
 
-@transaction.atomic
-def db_fix(request):
 
+@transaction.atomic
+def load_data(request):
+	import csv
+
+	global_suplier = Supplier()
+	global_suplier.company_name = "INTIAL DEFAULT"
+	global_suplier.registration_number = "INTIAL DEFAULT"
+	global_suplier.phone_number = ""
+	global_suplier.email = ""
+	global_suplier.address = ""
+	global_suplier.created_by = request.user
+	global_suplier.save()
+	print("global_suplier saved")
+
+	global_manufacturer = Manufacturer()
+	global_manufacturer.company_name = "INTIAL DEFAULT"
+	global_manufacturer.registration_number = "INTIAL DEFAULT"
+	global_manufacturer.phone_number = ""
+	global_manufacturer.email = ""
+	global_manufacturer.address = ""
+	global_manufacturer.created_by = request.user
+	global_manufacturer.save()
+	print("global_manufacturer saved")
+
+	global_invoice = Invoice()
+	global_invoice.invoice_number = "AAAA0001"
+	global_invoice.supplier = global_suplier
+	global_invoice.date = datetime_.today().date()
+	global_invoice.created_by = request.user
+	global_invoice.save()
+	print("global_invoice saved")
+
+	global_vat_code = VATCode()
+	global_vat_code.title = "Zero rated"
+	global_vat_code.percentage = 0
+	global_vat_code.created_by = request.user
+	global_vat_code.save()
+	print("global_vat_code saved")
+
+	counter = 0
+
+	file_path = "reports/products.csv"
+	with open(file_path, 'r', encoding='utf-8') as file:
+		reader = csv.DictReader(file)
+		for row in reader:
+			product_already_exist = Product.objects.filter(title=row['Name']).first()
+			if product_already_exist:
+				print(f"{row['Name']} already exist...")
+			else:
+				counter+= 1
+				new_product = Product()
+				new_product.title = row['Name']
+				new_product.bar_code = row['Barcode']
+				# new_product.product_code = row['']
+				new_product.details = row['Name']
+				new_product.vat_code = global_vat_code
+				new_product.created_by = request.user
+				new_product.save()
+				print("new_product saved")
+
+				new_stock = Stock()
+				new_stock.product = new_product
+				new_stock.selling_price = row['Price']
+				new_stock.markup = row['Markup']
+				new_stock.reorder_quantity = 5
+				# new_stock.expiration_warning_days = row['']
+				# new_stock.status = row['']
+				# new_stock.is_tax_inclusive = row['']
+				new_stock.save()
+				print("new_stock saved")
+
+
+				new_batch = Batch()
+				new_batch.batch_number = f"INTIAL-B-{counter}"
+				new_batch.stock = new_stock
+				new_batch.manufacturer = global_manufacturer
+				new_batch.invoice = global_invoice
+				# new_batch.total_packs = row['Quantity']
+				new_batch.total_packs = 1
+				new_batch.pack_size = 1
+				# new_batch.total_units = row['Quantity']
+				new_batch.total_units = 1
+				new_batch.buying_pack_price = row['Cost']
+				new_batch.VAT = 0
+				new_batch.markup = row['Markup']
+				new_batch.created_by = request.user
+				new_batch.save()
+				print(f"{counter} new_batch saved")	
 	return JsonResponse({"response":"Done"})
 
 
 
-# Example 1: Print to a specific printer by ID
-def tester(request):
-	from print_out.models import Printer
-	from print_out.print_client import test_printer, print_this_document
-	
-	# Get printer from database
-	printer = Printer.objects.get(id=1)  # or by name
-	
-	# Print using the printer object
-
-	fiscal_details = {
-		'is_fiscalised': False,
-		'fiscal_day': "001",
-		'global_count': "001",
-		'fiscal_count': "001",
-		'validation_code': "001",
-		'url': "https://avail.co.zw",
-	}
-
-	# result = print_this_document(request ,printer, "RECEIPT", 714, "(COPY)")
-	# result = print_this_document(request ,printer, "CREDITNOTE", 192, "(COPY)")
-	result = print_this_document(request ,printer, "ORDERLIST", 0, "")
-
-
-	return JsonResponse(result)
-
-
-def tester1(request):
-	from print_out.models import Printer
-	from print_out.print_client import test_printer, print_this_document
-	
-	# Get printer from database
-	printer = Printer.objects.get(id=1)  # or by name
-	
-	# Print using the printer object
-
-	fiscal_details = {
-		'is_fiscalised': False,
-		'fiscal_day': "001",
-		'global_count': "001",
-		'fiscal_count': "001",
-		'validation_code': "001",
-		'url': "https://avail.co.zw",
-	}
-
-	result = print_this_document(printer, "CREDIT_NOTE", 714, "(COPY)")
-
-	return JsonResponse(result)
 
 
 
-
-def viewer(request):
-    document = {
-        "type": "document",
-
-        "printer_name": "printer.name",
-
-        "paper": {
-            "width": 80,
-            "cut": True,
-            "copies": 1,
-        },
-
-        "content": [
-            {
-                "type": "text",
-                "text": "PRINT TEST RECEIPT",
-                "align": "center",
-                "bold": True,
-            },
-
-            {
-                "type": "text",
-                "text": "Normal text test",
-                "align": "left",
-            },
-
-            {
-                "type": "--------------------------------------------------------------",
-            },
-
-            {
-                "type": "row",
-                "columns": [
-                    {
-                        "text": "Item",
-                        "align": "left",
-                        "bold": True,
-                    },
-                    {
-                        "text": "Qty",
-                        "align": "center",
-                        "bold": True,
-                    },
-                    {
-                        "text": "Amount",
-                        "align": "right",
-                        "bold": True,
-                    },
-                ],
-            },
-
-            {
-                "type": "----------------------------------------------------------------------",
-            },
-
-            {
-                "type": "text",
-                "text": "TOTAL: 35.00",
-                "align": "right",
-                "bold": True,
-                "size": 2,
-            },
-
-            {
-                "type": "-----------------------------------------------------------------------",
-            },
-        ],
-
-        "type1": "document",
-    }
-
-
-    document['content'].append({
-                "type": "row",
-                "columns": [
-                    {
-                        "text": "Test Product",
-                        "align": "left",
-                    },
-                    {
-                        "text": "2",
-                        "align": "center",
-                    },
-                    {
-                        "text": "10.00",
-                        "align": "right",
-                    },
-                ],
-            },)
-
-    return JsonResponse(document)
-
-
-
-
-
-def lll():
-    # d = {
-    #             "type": "row",
-    #             "columns": [
-    #                 {
-    #                     "text": "Test Product",
-    #                     "align": "left",
-    #                 },
-    #                 {
-    #                     "text": "2",
-    #                     "align": "center",
-    #                 },
-    #                 {
-    #                     "text": "10.00",
-    #                     "align": "right",
-    #                 },
-    #             ],
-    #         },
-
-    #         {
-    #             "type": "row",
-    #             "columns": [
-    #                 {
-    #                     "text": "Another Item",
-    #                     "align": "left",
-    #                 },
-    #                 {
-    #                     "text": "1",
-    #                     "align": "center",
-    #                 },
-    #                 {
-    #                     "text": "25.00",
-    #                     "align": "right",
-    #                 },
-    #             ],
-    #         },
-    return 0

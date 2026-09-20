@@ -5,7 +5,7 @@ from .import views
 
 urlpatterns = [
     
-    path('db_fix', views.db_fix, name='db_fix'),
+    path('load_data', views.load_data, name='load_data'),
     #   html
     path('transactions_summery_page', views.transactions_summery_page, name='transactions_summery_page'),
     path('stock_analysis_page', views.stock_analysis_page, name='stock_analysis_page'),
@@ -48,12 +48,4 @@ urlpatterns = [
     path('sync_data_for_month_end', views.sync_data_for_month_end, name='sync_data_for_month_end'),    
     path('sync_data_for_year_end', views.sync_data_for_year_end, name='sync_data_for_year_end'),
 
-
-
-
-
-
-    
-    path('tester', views.tester, name='tester'),
-    path('viewer', views.viewer, name='viewer'),
 ]

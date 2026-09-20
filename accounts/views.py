@@ -715,6 +715,61 @@ def update_configuration(request):
     return JsonResponse({'custome_status': "",'message': "Configuration updated successfully"})
 
 
+
+@login_required
+@role_validator(['Supervisor'])
+def update_my_profile_details(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
+        address = request.POST.get('address')
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        e_signature = request.FILES.get('e_signature') 
+
+        user = request.user
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.phone_number = phone_number
+        user.address = address
+        if old_password != "":
+            #print("old not empty")
+            if new_password != "":
+                #print("new not empty")
+
+                old_password_is_valid = authenticate(request, username=username, password=old_password)
+                if old_password_is_valid is not None:
+                    #print(f"old valid {old_password_is_valid}")
+                    user.password = make_password(new_password)
+                else:
+                    #print(f"old not valid {old_password_is_valid}")
+                    return JsonResponse({'title':"Error", 'icon': "error", 'text':"Error! Your old password is incorrect!"})
+
+            else:
+                #print("new  empty")
+                return JsonResponse({'title':"Error", 'icon': "error", 'text':"Error! New password can not be empty if old password is not empty"})
+        
+        if e_signature:
+            # Delete old logo file if it exists (IMPORTANT: use storage.delete)
+            if user.e_signature:
+                # Delete the actual file from storage
+                if user.e_signature.storage.exists(user.e_signature.name):
+                    user.e_signature.storage.delete(user.e_signature.name)
+                # Or alternatively:
+                # user.e_signature.delete(save=False)  # This also works
+            
+            user.e_signature = e_signature
+
+        user.save()
+
+        return JsonResponse({'title':"Saved", 'icon': "success", 'text':"User updated successfully!"})
+
+
+
 @login_required
 @role_validator(['Supervisor'])
 def update_user(request):

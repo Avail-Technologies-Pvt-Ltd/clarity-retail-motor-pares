@@ -6,9 +6,11 @@ from decimal import Decimal
 
 
 from reusable_functions.univesal.client_spacific_functions.client_spacific_functions import custome_wraper
+from reusable_functions.univesal.periodic_reports import get_day_end_summary
 from reusable_functions.univesal.fiscalisation import get_fiscal_details
 
 from django.http import HttpResponseRedirect
+
 
 from .models import Printer
 
@@ -526,10 +528,9 @@ def test_printer(
 
 def print_this_document(request, printer, document_type, document_id, is_copy):
     logo_data = configuration.logo_base64
-    print("---------------------------")
-    print("---------------------------")
+    branch = Branch.objects.filter(is_local=True).first()
     print(document_type)
-    print("---------------------------")
+
 
 
     if document_type == "CREDITNOTE":
@@ -593,9 +594,9 @@ CREDIT NOTE
 
                     {
                         "type": "text",
-                        "text": f"""{custome_wraper(configuration.address)}
-{custome_wraper(configuration.tel)}
-Email        : {configuration.email}
+                        "text": f"""{custome_wraper(branch.address)}
+{custome_wraper(branch.phone)}
+Email        : {branch.email}
 ------------------------------------------------
 VAT          : {configuration.vat_number}
 TIN          : {configuration.tin_number}
@@ -737,7 +738,8 @@ Sales Rep: {credit_note.created_by.first_name.title()} {credit_note.created_by.l
                 'align': "left",
             },)
                 
-            total_cost = (VAT + subtotal) - discount
+            # total_cost = (VAT + subtotal) - discount
+            total_cost = subtotal - discount
 
             
 
@@ -827,7 +829,7 @@ _______________________________
 
             document['content'].append({
                     'type': "text",
-                    'text': f"{configuration.thank_you_message}",
+                    'text': f"{branch.thank_you_message}",
                     'align': "center",
                     'bold': True,
                 })
@@ -886,16 +888,7 @@ NETWORK ERROR WITH FISCAL DATA
                     'align': "center"
                 })
 
-        return print_document(
-            printer,
-            document,
-        )
-
-
-
-
-
-
+        return print_document(printer, document)
 
 
     elif document_type == "RECEIPT":
@@ -948,9 +941,9 @@ FISCAL TAX INVOICE
 
                     {
                         "type": "text",
-                        "text": f"""{custome_wraper(configuration.address)}
-{custome_wraper(configuration.tel)}
-Email    : {configuration.email}
+                        "text": f"""{custome_wraper(branch.address)}
+{custome_wraper(branch.phone)}
+Email    : {branch.email}
 ------------------------------------------------
 VAT      : {configuration.vat_number}
 TIN      : {configuration.tin_number}
@@ -1023,7 +1016,8 @@ Sales Rep: {receipt.created_by.first_name.title()} {receipt.created_by.last_name
                     ],
                 })
 
-            total_cost = (VAT + subtotal) - discount
+            # total_cost = (VAT + subtotal) - discount
+            total_cost = subtotal - discount
 
             suma = f"""
 
@@ -1044,7 +1038,7 @@ Sales Rep: {receipt.created_by.first_name.title()} {receipt.created_by.last_name
 
             document['content'].append({
                     'type': "text",
-                    'text': f"{configuration.thank_you_message}",
+                    'text': f"{branch.thank_you_message}",
                     'align': "center"
                 })
 
@@ -1103,10 +1097,7 @@ Validation Code : {fiscal_details.get('validation_code', '')}""",
                     'align': "center"
                 })
 
-        return print_document(
-            printer,
-            document,
-        )
+        return print_document(printer, document)
 
     elif document_type == "ORDERLIST":
         document = {
@@ -1224,16 +1215,12 @@ PREPARED BY: { request.user.first_name.title() } { request.user.first_name.title
             "align": "center",
         })
 
-        return print_document(
-            printer,
-            document,
-        )
+        return print_document(printer, document)
 
     elif document_type == "QUOTATION":
         print(document_type)
 
         quotation = Quotation.objects.get(id=int(document_id))
-        branch = Branch.objects.filter(is_local=True).first()
         customer = quotation.customer
 
         if quotation:
@@ -1280,9 +1267,9 @@ QUOTATION
 
                     {
                         "type": "text",
-                        "text": f"""{custome_wraper(configuration.address)}
-{custome_wraper(configuration.tel)}
-Email        : {configuration.email}
+                        "text": f"""{custome_wraper(branch.address)}
+{custome_wraper(branch.phone)}
+Email        : {branch.email}
 ------------------------------------------------
 Quotation #  : {quotation.ultimate_quotation_number}
 Date         : {quotation.date_added}
@@ -1424,10 +1411,7 @@ BANKING DETAILS:
                     'align': "center"
                 })
 
-        return print_document(
-            printer,
-            document,
-        )
+        return print_document(printer, document)
 
 
     elif document_type == "STOCKSUMMARY":
@@ -1516,10 +1500,54 @@ Avg Value/Product: ${locale.format_string('%.2f', (summary['total_selling_value'
             "align": "center",
         })
 
-        return print_document(
-            printer,
-            document,
-        )
+        return print_document(printer, document)
+
+
+    elif document_type == "PERIODIC REPORT":
+
+        document = {
+            "type": "document",
+
+            "printer_name": printer.name,
+
+            "paper": {
+                "width": 80,
+                "cut": True,
+                "copies": 1,
+            },
+
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"""------------------------------------------------
+STOCK SUMMARY
+------------------------------------------------
+                    """,
+                    "align": "center",
+                },
+                {
+                    "type": "image",
+                    "data": logo_data,
+                    "align": "center",
+                    "width": 350,
+                },
+
+                {
+                    "type": "text",
+                    "text": f"""{ configuration.company_name }""",
+                    "align": "center",
+                    "bold": True,
+                    "size": 1,
+                },
+
+                {
+                    "type": "text",
+                    "text": f"{ is_copy }", #This is text formated in reports.views
+                    "align": "left",
+                },
+            ]}
+
+        return print_document(printer, document)
 
 
 # ============================================================

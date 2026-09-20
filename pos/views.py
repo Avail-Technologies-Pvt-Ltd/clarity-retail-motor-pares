@@ -1,4 +1,5 @@
 import time
+import threading
 
 from decimal import Decimal
 
@@ -1728,8 +1729,22 @@ def check_out_new(request):
 
         printer = get_printer(request)
 
-        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
-        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "")
+
+        # threading printing to give time for fiscalisation
+        def _print():
+            try:
+                if fiscalisation_active:
+                    time.sleep(configuration.print_delay)
+                else:
+                    pass # No fiscalisation, need to delay
+
+                print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+                print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "")
+            except Exception:
+                logger.exception("Receipt reprint failed")
+
+        threading.Thread(target=_print, daemon=True).start()
+
         return JsonResponse({
             "custome_status": "",
             "message": "Done"
@@ -2186,18 +2201,41 @@ def reprint_user_last_receipt(request):
 
 
 
+# @login_required
+# def reprint_user_last_receipt_new(request):
+#     sale_transaction = SaleTransaction.objects.filter(created_by=request.user).last()
+#     if sale_transaction:
+#         printer = get_printer(request)
+#         locale_receipt_number = sale_transaction.recipt_number
+#         print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "")
+#         print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+
+#         return JsonResponse({"custome_status":"", "message":"Printer job sent!"})
+#     else:
+#         return JsonResponse({"custome_status":"Error", "message":"No receipt found for this user."})
+
+
+
 @login_required
 def reprint_user_last_receipt_new(request):
     sale_transaction = SaleTransaction.objects.filter(created_by=request.user).last()
-    if sale_transaction:
-        printer = get_printer(request)
-        locale_receipt_number = sale_transaction.recipt_number
-        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "")
-        print_this_document(request, printer, "RECEIPT", sale_transaction.recipt_number, "(COPY)")
+    if not sale_transaction:
+        return JsonResponse({"custome_status": "Error", "message": "No receipt found for this user."})
 
-        return JsonResponse({"custome_status":"", "message":"Printer job sent!"})
-    else:
-        return JsonResponse({"custome_status":"Error", "message":"No receipt found for this user."})
+    printer = get_printer(request)
+    receipt_number = sale_transaction.recipt_number
+
+    def _print():
+        try:
+            time.sleep(configuration.print_delay)
+            print_this_document(request, printer, "RECEIPT", receipt_number, "")
+            print_this_document(request, printer, "RECEIPT", receipt_number, "(COPY)")
+        except Exception:
+            logger.exception("Receipt reprint failed")
+
+    threading.Thread(target=_print, daemon=True).start()
+
+    return JsonResponse({"custome_status": "", "message": "Printer job sent!"})
 
 
 

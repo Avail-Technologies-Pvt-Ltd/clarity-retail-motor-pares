@@ -28,6 +28,7 @@ urlpatterns = [
     path('update_customer', views.update_customer, name='update_customer'),
     path('update_manufacturer', views.update_manufacturer, name='update_manufacturer'),
     path('update_configuration', views.update_configuration, name='update_configuration'),
+    path('update_my_profile_details', views.update_my_profile_details, name='update_my_profile_details'),
 
 
     #   details
