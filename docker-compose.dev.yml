@@ -25,7 +25,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "8001:8000"
+      - "8085:8000"
     environment:
       DJANGO_SETTINGS_MODULE: point_of_sale.settings_dev_docker
       DEBUG: "True"

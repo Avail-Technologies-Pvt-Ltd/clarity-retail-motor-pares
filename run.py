@@ -17,14 +17,14 @@ if __name__ == '__main__':
     print("=" * 60)
     print("Point of Sale System - Production Server")
     print("=" * 60)
-    print("Listening on http://0.0.0.0:8081")
+    print("Listening on http://0.0.0.0:8085")
     print("Press Ctrl+C to stop")
     print("=" * 60)
     
     serve(
         application,
         host='0.0.0.0',
-        port=8081,
+        port=8085,
         threads=6,
         connection_limit=100,
     )
