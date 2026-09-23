@@ -37,7 +37,7 @@ ENV DEBUG=False
 
 # Copy and setup entrypoint - ALL DONE INSIDE DOCKER
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Don't run collectstatic here - it will run at container startup
 
