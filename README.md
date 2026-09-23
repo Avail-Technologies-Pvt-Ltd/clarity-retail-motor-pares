@@ -47,7 +47,7 @@ If you omit the message and simply press **Enter**, it automatically creates a t
 1. Detects the active branch (`master`).
 2. Stages modified files respecting `.gitignore` and `.dockerignore`.
 3. Commits and pushes to `origin master`.
-4. Triggers the GitHub Actions workflow at `https://github.com/Recusants/CLARITY-POS/actions`.
+4. Triggers the GitHub Actions workflow at `https://github.com/Avail-Technologies-Pvt-Ltd/clarity-retail-motor-pares/actions`.
 5. GitHub Actions builds the Docker image and publishes it to `tinashemp/clarity-pos:latest`.
 
 ---
@@ -147,7 +147,7 @@ ZIMRA_MODEL_VERSION=v1
 
 ## 🔒 GitHub Actions Secrets Setup
 
-To enable automated Docker image builds on GitHub, ensure the following repository secrets are configured at `https://github.com/Recusants/CLARITY-POS/settings/secrets/actions`:
+To enable automated Docker image builds on GitHub, ensure the following repository secrets are configured at `https://github.com/Avail-Technologies-Pvt-Ltd/clarity-retail-motor-pares/settings/secrets/actions`:
 
 | Secret Name | Description | Example |
 |---|---|---|
@@ -162,8 +162,8 @@ If you prefer to run the raw Python Django development server:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Recusants/CLARITY-POS.git
-cd CLARITY-POS
+git clone https://github.com/Avail-Technologies-Pvt-Ltd/clarity-retail-motor-pares.git
+cd clarity-retail-motor-pares
 
 # 2. Virtual environment
 python -m venv venv

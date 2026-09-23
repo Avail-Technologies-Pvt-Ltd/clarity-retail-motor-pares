@@ -90,6 +90,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
+echo.
 echo ============================================================
 echo                   PUSH SUCCESSFUL!
 echo ============================================================
@@ -97,8 +98,18 @@ echo.
 echo GitHub Actions has been automatically triggered to build and
 echo push the updated Docker image to Docker Hub.
 echo.
+
+set "REPO_URL="
+for /f "tokens=*" %%u in ('git remote get-url origin 2^>nul') do set "REPO_URL=%%u"
+if defined REPO_URL (
+    set "REPO_URL=!REPO_URL:.git=!"
+    set "ACTIONS_URL=!REPO_URL!/actions"
+) else (
+    set "ACTIONS_URL=https://github.com/Avail-Technologies-Pvt-Ltd/clarity-retail-motor-pares/actions"
+)
+
 echo Track build progress live here:
-echo   https://github.com/Recusants/CLARITY-POS/actions
+echo   !ACTIONS_URL!
 echo.
 echo Once the build is green, deploy with 1-click using:
 echo   update.bat
