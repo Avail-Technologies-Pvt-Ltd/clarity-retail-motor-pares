@@ -37,7 +37,7 @@ echo    https://www.docker.com/products/docker-desktop/
 echo 2. Start Docker Desktop and wait until it says "Engine running".
 echo.
 echo INSTALLATION STEPS:
-echo 1. Copy this entire folder to: C:\pos-app
+echo 1. Copy this entire folder to: C:\avail\pos-app
 echo    ^(You can also run it directly from this folder^)
 echo 2. Open the .env file in Notepad and configure:
 echo    - SECRET_KEY ^(set a secure random string^)
@@ -79,7 +79,7 @@ echo Zip Archive:   %ZIP_FILE%
 echo.
 echo What to do next:
 echo 1. Copy "%ZIP_FILE%" to the other machine ^(via USB, network, etc.^).
-echo 2. Extract to "C:\pos-app" on the other machine.
+echo 2. Extract to "C:\avail\pos-app" on the other machine.
 echo 3. Configure .env and double-click "update.bat".
 echo ============================================================
 echo.

@@ -35,6 +35,10 @@ if ($AppPath -and (Test-Path $AppPath)) {
     $resolvedPath = (Resolve-Path "$PSScriptRoot\..").Path
 } elseif (Test-Path "$PSScriptRoot\docker-compose.prod.yml") {
     $resolvedPath = (Resolve-Path "$PSScriptRoot").Path
+} elseif (Test-Path "C:\avail\pos-app\docker-compose.prod.yml") {
+    $resolvedPath = "C:\avail\pos-app"
+} elseif (Test-Path "C:\avail\pos-app") {
+    $resolvedPath = "C:\avail\pos-app"
 } elseif (Test-Path "C:\pos-app\docker-compose.prod.yml") {
     $resolvedPath = "C:\pos-app"
 } elseif (Test-Path "C:\pos-app") {
@@ -43,7 +47,7 @@ if ($AppPath -and (Test-Path $AppPath)) {
 
 if (-not $resolvedPath -or -not (Test-Path $resolvedPath)) {
     Write-Host "ERROR: Application directory could not be determined." -ForegroundColor Red
-    Write-Host "Expected location: C:\pos-app or current directory with docker-compose.prod.yml" -ForegroundColor Yellow
+    Write-Host "Expected location: C:\avail\pos-app or current directory with docker-compose.prod.yml" -ForegroundColor Yellow
     exit 1
 }
 
