@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -30,16 +31,15 @@ urlpatterns = [
 
 
 print(f'DEBUG MODE {settings.DEBUG}')
-
 if settings.DEBUG:
-    # add debugging tool bar
-    urlpatterns += [
-        path("__debug__/", include("debug_toolbar.urls")),
-    ]
+    DJANGO_DEBUG_TOOLBAR = os.getenv("DJANGO_DEBUG_TOOLBAR", "false").lower() == "true"
+    if DJANGO_DEBUG_TOOLBAR:
+        urlpatterns += [
+            path("__debug__/", include("debug_toolbar.urls")),
+        ]
 
     # Serving media files
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 else:
     # Force serve media files even in production (temporary fix)
     from django.views.static import serve

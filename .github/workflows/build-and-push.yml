@@ -20,48 +20,65 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Verify Docker Hub Secrets
+      - name: Resolve Docker Hub Credentials
+        id: docker_creds
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME }}
-          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN || secrets.DOCKER_PASSWORD || secrets.DOCKERHUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME || secrets.DOCKER_USER }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN || secrets.DOCKER_PASSWORD || secrets.DOCKERHUB_TOKEN || secrets.DOCKERHUB_PASSWORD }}
         run: |
           if [ -z "$DOCKER_USERNAME" ] || [ -z "$DOCKER_TOKEN" ]; then
-            echo "::error::Missing Docker Hub credentials in GitHub Secrets!"
-            echo "Please go to Settings > Secrets and variables > Actions in your GitHub repository and add:"
-            echo "  - DOCKER_USERNAME (e.g. tinashemp)"
-            echo "  - DOCKER_TOKEN (Personal Access Token from https://hub.docker.com/settings/security)"
+            echo "::error title=Missing Docker Hub Credentials::Docker Hub username or token is missing in GitHub Repository Secrets!"
+            echo "================================================================="
+            echo "ACTION REQUIRED: Please configure Docker Hub Secrets in GitHub:"
+            echo "1. Open your repository Settings: ${{ github.server_url }}/${{ github.repository }}/settings/secrets/actions"
+            echo "2. Add 'DOCKER_USERNAME' (e.g. tinashemp)"
+            echo "3. Add 'DOCKER_TOKEN' (Docker Hub Personal Access Token or Password)"
+            echo "================================================================="
             exit 1
           fi
-      
+          echo "username=$DOCKER_USERNAME" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN || secrets.DOCKER_PASSWORD || secrets.DOCKERHUB_TOKEN }}
+          username: ${{ steps.docker_creds.outputs.username }}
+          password: ${{ secrets.DOCKER_TOKEN || secrets.DOCKER_PASSWORD || secrets.DOCKERHUB_TOKEN || secrets.DOCKERHUB_PASSWORD }}
       
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.docker_creds.outputs.username }}/clarity-pos
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME || 'tinashemp' }}/clarity-pos:latest
-            ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME || 'tinashemp' }}/clarity-pos:${{ github.sha }}
-            ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME || 'tinashemp' }}/clarity-pos:${{ github.ref_name }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
-      - name: Deployment Summary
+      - name: Output Deployment Summary
         run: |
+          IMAGE_NAME="${{ steps.docker_creds.outputs.username }}/clarity-pos"
+          echo "### 🚀 Docker Image Successfully Built and Pushed!" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Repository:** \`${IMAGE_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "  - \`${IMAGE_NAME}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "  - \`${IMAGE_NAME}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [View on Docker Hub](https://hub.docker.com/r/${IMAGE_NAME})" >> $GITHUB_STEP_SUMMARY
           echo "===================================================="
-          echo "Docker Image successfully built and pushed!"
-          echo "Repository: ${{ secrets.DOCKER_USERNAME || 'tinashemp' }}/clarity-pos"
-          echo "Tags:"
-          echo "  - latest"
-          echo "  - ${{ github.sha }}"
-          echo "  - ${{ github.ref_name }}"
+          echo "Image successfully published to Docker Hub: ${IMAGE_NAME}"
           echo "===================================================="

@@ -31,19 +31,22 @@ if missing:
 # Django Debug Toolbar
 # ------------------------------------------------------------------------------
 
-INSTALLED_APPS += [
-    "debug_toolbar",
-]
+DJANGO_DEBUG_TOOLBAR = os.getenv("DJANGO_DEBUG_TOOLBAR", "false").lower() == "true"
 
-MIDDLEWARE.insert(
-    1,
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-)
+if DJANGO_DEBUG_TOOLBAR:
+    INSTALLED_APPS += [
+        "debug_toolbar",
+    ]
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-    "localhost",
-]
+    MIDDLEWARE.insert(
+        1,
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    )
+
+    INTERNAL_IPS = [
+        "127.0.0.1",
+        "localhost",
+    ]
 
 # ------------------------------------------------------------------------------
 
